@@ -23,16 +23,24 @@ function Landing() {
   return (
     <div className="min-h-screen text-foreground">
       {/* Nav */}
-      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between">
+      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between gap-3">
         <Link to="/" className="flex items-center gap-3">
           <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
           <span className="font-display text-xl font-bold tracking-tight brand-text">Blacure</span>
         </Link>
-        <Link to="/app">
-          <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
-            Open Generator <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2">
+            Pricing
+          </Link>
+          <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2 hidden sm:inline">
+            Sign in
+          </Link>
+          <Link to="/app">
+            <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
+              Open Generator <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
       </nav>
 
       <main>
@@ -53,6 +61,7 @@ function Landing() {
           <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl text-muted-foreground">
             Studio-grade music prompts in seconds. Hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic — built by producers, polished by AI.
           </p>
+          <p className="mt-3 text-sm brand-text font-semibold">Start with 10 free prompts — no card required.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Link to="/app">
               <Button size="lg" className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
