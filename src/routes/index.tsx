@@ -14,10 +14,10 @@ import { generatePrompt } from "@/lib/prompt.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI Song Prompt Generator — Suno-Ready Music Prompts" },
-      { name: "description", content: "Build polished Suno-ready music prompts from genre, vocals, mood, topic, instruments, tempo, and style. Free AI music prompt generator." },
-      { property: "og:title", content: "AI Song Prompt Generator" },
-      { property: "og:description", content: "Create polished Suno-ready music prompts in seconds." },
+      { title: "The Promptor — AI Song Prompt Generator" },
+      { name: "description", content: "The Promptor builds polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { property: "og:title", content: "The Promptor — AI Song Prompt Generator" },
+      { property: "og:description", content: "Create polished AI music prompts in seconds." },
     ],
   }),
   component: Index,
@@ -51,9 +51,11 @@ function Index() {
   };
 
   const handleClear = () => {
-    setInputs(DEFAULT_INPUTS);
+    setInputs({ ...DEFAULT_INPUTS });
     setPrompt("");
     setError(null);
+    setLoading(false);
+    toast("Form cleared");
   };
 
   const handleSave = () => {
@@ -81,13 +83,14 @@ function Index() {
             <div className="brand-gradient w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-primary/40">
               <Music2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-sm font-medium text-muted-foreground">Suno-ready · Powered by Lovable AI</span>
+            <span className="text-sm font-medium text-muted-foreground">Powered by Lovable AI</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-            <span className="brand-text">AI Song Prompt Generator</span>
+            <span className="brand-text">The Promptor</span>
           </h1>
+          <p className="mt-2 text-sm sm:text-base font-medium text-muted-foreground/90">AI Song Prompt Generator</p>
           <p className="mt-4 max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Create polished Suno-ready music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
+            Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" onClick={handleGenerate} disabled={loading} className="brand-gradient text-white border-0 hover:opacity-90 shadow-lg shadow-primary/30">
@@ -124,6 +127,10 @@ function Index() {
                 <Shuffle className="h-4 w-4" />
                 Randomize
               </Button>
+              <Button variant="ghost" onClick={handleClear}>
+                <RotateCcw className="h-4 w-4" />
+                Clear Form
+              </Button>
             </div>
           </Card>
 
@@ -140,7 +147,7 @@ function Index() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
-        Built for Suno producers. Prompts are AI-generated — always review before use.
+        The Promptor · Prompts are AI-generated — always review before use.
       </footer>
     </div>
   );
