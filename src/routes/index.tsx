@@ -120,6 +120,8 @@ function Landing() {
           </Link>
         </div>
       </section>
+      </main>
+
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-10 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
