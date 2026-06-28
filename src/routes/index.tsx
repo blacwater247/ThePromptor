@@ -35,6 +35,7 @@ function Landing() {
         </Link>
       </nav>
 
+      <main>
       {/* Hero */}
       <header className="relative overflow-hidden">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 text-center">
@@ -44,10 +45,10 @@ function Landing() {
             </div>
           </div>
           <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]">
-            <span className="brand-text">Blacure</span>
+            <span className="brand-text">Blacure</span> — AI Song Prompt Generator
           </h1>
           <p className="mt-3 text-base sm:text-lg font-semibold text-foreground/80 tracking-wide uppercase">
-            The Promptor — AI Song Prompt Generator
+            The Promptor
           </p>
           <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl text-muted-foreground">
             Studio-grade music prompts in seconds. Hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic — built by producers, polished by AI.
