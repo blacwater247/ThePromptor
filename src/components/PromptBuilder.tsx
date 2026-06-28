@@ -67,7 +67,7 @@ export function PromptBuilder({ value, onChange }: Props) {
   };
 
   return (
-    <Accordion type="multiple" defaultValue={["basics", "genre", "vocals", "mood", "topic"]} className="w-full">
+    <Accordion type="multiple" defaultValue={["basics", "genre", "vocals", "mood", "topic", "instruments", "tempo", "style"]} className="w-full">
       <AccordionItem value="basics">
         <AccordionTrigger className="text-base">
           <span className="flex items-center gap-2"><span className="text-primary">01</span> Song Basics</span>

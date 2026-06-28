@@ -1,6 +1,6 @@
 export const PROMPT_TYPES = [
-  "Full Suno prompt",
-  "Short Suno prompt",
+  "Full music prompt",
+  "Short music prompt",
   "Lyrics prompt",
   "Beat/instrumental prompt",
   "Hook idea",
@@ -10,6 +10,7 @@ export const PROMPT_TYPES = [
   "Game soundtrack",
   "Movie scene song",
 ];
+
 
 export const SONG_LENGTHS = [
   "2-minute song",
@@ -132,7 +133,7 @@ export type PromptInputs = {
 
 export const DEFAULT_INPUTS: PromptInputs = {
   title: "",
-  promptType: "Full Suno prompt",
+  promptType: "Full music prompt",
   songLength: "3-minute radio song",
   mainGenre: "Hip-Hop",
   fusionGenre: "None",
