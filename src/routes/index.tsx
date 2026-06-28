@@ -147,7 +147,7 @@ function Index() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
-        Built for Suno producers. Prompts are AI-generated — always review before use.
+        The Promptor · Prompts are AI-generated — always review before use.
       </footer>
     </div>
   );
