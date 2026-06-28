@@ -83,14 +83,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "AI Song Prompt Generator" },
+      { name: "description", content: "Create polished Suno-ready music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "AI Song Prompt Generator" },
+      { property: "og:description", content: "Create polished Suno-ready music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
