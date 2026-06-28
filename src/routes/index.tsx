@@ -51,9 +51,11 @@ function Index() {
   };
 
   const handleClear = () => {
-    setInputs(DEFAULT_INPUTS);
+    setInputs({ ...DEFAULT_INPUTS });
     setPrompt("");
     setError(null);
+    setLoading(false);
+    toast("Form cleared");
   };
 
   const handleSave = () => {
