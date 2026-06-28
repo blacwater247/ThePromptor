@@ -90,6 +90,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "Blacure" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Blacure — The Promptor" },
+      { name: "twitter:title", content: "Blacure — The Promptor" },
+      { property: "og:description", content: "Blacure builds polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { name: "twitter:description", content: "Blacure builds polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
