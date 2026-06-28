@@ -19,9 +19,9 @@ export const Route = createFileRoute("/app")({
       { name: "description", content: "Build studio-grade AI music prompts with Blacure's Promptor." },
       { property: "og:title", content: "The Promptor — Blacure" },
       { property: "og:description", content: "Build studio-grade AI music prompts in seconds." },
-      { property: "og:url", content: "/app" },
+      { property: "og:url", content: "https://thepromptor.life/app" },
     ],
-    links: [{ rel: "canonical", href: "/app" }],
+    links: [{ rel: "canonical", href: "https://thepromptor.life/app" }],
   }),
   component: AppPage,
 });
