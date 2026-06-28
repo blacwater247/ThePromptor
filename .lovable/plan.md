@@ -1,43 +1,72 @@
-## Rebrand to Blacure + Landing Page
 
-### 1. Brand assets
-- Save the uploaded gold "B" logo as a Lovable Asset pointer at `src/assets/blacure-logo.png.asset.json` (no binary copied into repo).
-- Update theme tokens in `src/styles.css`: shift the accent from violet/fuchsia to **gold on black** (deep black background `oklch(0.12 0 0)`, gold primary `oklch(0.78 0.14 80)`, soft amber glow). Update `.brand-gradient` and `.brand-text` to use gold gradient.
+## Goal
 
-### 2. New landing page route (`/`)
-Convert the current `/` (the generator) into `/app`, and build a real landing page at `/`.
+Gate prompt generation behind a credit system and let users pay to top up or subscribe.
 
-Landing page sections:
-- **Top nav**: Blacure logo + wordmark on the left, "Open Generator" CTA on the right.
-- **Hero**: Big logo, "Blacure" wordmark, headline "AI Song Prompt Generator", subheadline about polished music prompts, primary CTA "Launch The Promptor" → `/app`, secondary "See how it works" (scrolls to features).
-- **Features grid** (3–4 cards): Genre/Vocal/Mood control, Randomize Vibe, Copy & Save prompts, Studio-ready output.
-- **How it works**: 3 steps (Build → Generate → Copy to your DAW/Suno workflow).
-- **Footer**: Blacure © + small tagline. No "Powered by Lovable AI" anywhere.
+**Pricing**
+- 10 free prompts on signup (one-time, = 20 credits)
+- Pay-as-you-go: **$2.00 for 20 prompts** (40 credits)
+- Monthly subscription: **$19.99/mo for 200 credits** (= 100 prompts)
+- **1 prompt = 2 credits** (every successful generation deducts 2)
 
-### 3. Generator page (`/app`)
-- Move current `src/routes/index.tsx` content into `src/routes/app.tsx`.
-- Replace the "Powered by Lovable AI" badge with the **Blacure logo + "Blacure"** wordmark (links to `/`).
-- Keep "The Promptor" heading and tagline.
-- Update footer to "Blacure · The Promptor".
+## Prerequisites (require user action before I build)
 
-### 4. Fix the second Randomize button
-The Randomize button inside the Prompt Builder card (next to Generate/Clear) currently calls `handleRandomize` correctly, but reportedly doesn't work. Root cause to verify: `randomizeVibe` returns a new object spreading `current` first, but the fields it overrides should overwrite — this works. Real likely issue: the button is labeled "Randomize" while the hero button is "Randomize Vibe", and clicking it changes state but the user may not see a visible toast or the accordion sections are collapsed so the changes look invisible.
+1. **Lovable Cloud** must be enabled (for auth, DB, secure credit ledger). The app currently has no auth — credits can't be securely tracked per-user without it.
+2. **Pro plan** on Lovable (required for payments).
+3. **Payment provider**: I recommend **Paddle** (merchant of record, handles global VAT/tax automatically for a digital AI tool sold worldwide; both one-time and subscription supported). I'll run `recommend_payment_provider` to confirm fit before enabling.
 
-Fix:
-- Rename the in-card button label to **"Randomize Vibe"** for parity.
-- After randomizing, briefly auto-open key accordion sections (Genre, Vocals, Mood) so the user sees fields update, OR add a clearer toast that lists what changed (e.g. "Vibe randomized · {genre} · {mood[0]}").
-- Verify `randomizeVibe` actually mutates state by adding a defensive new object reference (already done) and ensuring `setInputs` is called with the function form: `setInputs((cur) => randomizeVibe(cur))` (already correct).
-- Add a console-free runtime check via Playwright after build to confirm clicking the in-card Randomize updates the Main Genre select value.
+## Plan
 
-### 5. Metadata
-- Update `__root.tsx` and route `head()` titles/descriptions: "Blacure — The Promptor" / "Blacure builds polished AI music prompts…".
-- Update OG tags. Add the Blacure logo as favicon link in `__root.tsx`.
+### 1. Enable Cloud + Auth
+- Turn on Lovable Cloud.
+- Add a simple email/password (and Google) auth flow with a gated `/app` route (`_authenticated` layout).
+- On first signup, seed the user with **20 credits** (the 10 free prompts).
 
-### Files touched
-- `src/assets/blacure-logo.png.asset.json` (new)
-- `src/styles.css` (gold/black theme tokens)
-- `src/routes/__root.tsx` (title, favicon, meta)
-- `src/routes/index.tsx` (replace with landing page)
-- `src/routes/app.tsx` (new — moved generator)
-- `src/components/PromptBuilder.tsx` (optional: default-open sections after randomize is handled in parent)
-- No business-logic changes to `prompt.functions.ts` or `randomize.ts` beyond the label/toast tweaks in the page.
+### 2. Credits data model (Cloud / Supabase)
+- `profiles` (user_id, email, created_at)
+- `credits_balance` (user_id PK, balance int, updated_at) — current credit total
+- `credit_transactions` (id, user_id, delta int, reason enum: `signup_bonus | purchase_pack | subscription_grant | prompt_spend | refund`, ref text, created_at) — full audit log
+- `subscriptions` (user_id, provider_customer_id, provider_sub_id, status, current_period_end, plan)
+- RLS: users read their own rows only. All writes go through SECURITY DEFINER RPC `spend_credits(amount)` and `grant_credits(amount, reason, ref)` so the client can never inflate balance.
+- `user_roles` + `has_role` for admin (per platform rules).
+
+### 3. Spend gate on generation
+- `generatePrompt` server fn: require auth, call `spend_credits(2)` BEFORE the AI call inside a transaction. If balance < 2 → throw a typed "insufficient_credits" error. If the AI call fails, refund the 2 credits (insert compensating transaction).
+- UI shows current balance in the app header and disables **Generate Prompt** at 0–1 credits with a "Buy credits" CTA.
+
+### 4. Payments (Paddle)
+- Enable Paddle via `enable_paddle_payments`.
+- Create two products:
+  - **Prompt Pack 20** — one-time $2.00 → grants 40 credits
+  - **Promptor Monthly** — $19.99/mo → grants 200 credits on initial purchase and on each renewal
+- Checkout flow: "Buy credits" / "Upgrade" buttons open Paddle checkout sessions tied to the signed-in user.
+- Webhook at `src/routes/api/public/paddle-webhook.ts`:
+  - Verify Paddle signature (HMAC, timing-safe)
+  - On `transaction.completed` for the pack → `grant_credits(40, 'purchase_pack', tx_id)` (idempotent on tx_id)
+  - On `subscription.activated` and `subscription.renewed` → `grant_credits(200, 'subscription_grant', event_id)` (idempotent)
+  - On `subscription.canceled` → mark sub canceled; do not revoke already-granted credits
+
+### 5. UI changes
+- **Header (in `/app`)**: avatar menu, credits badge (e.g. "⚡ 18 credits"), "Buy credits" button.
+- **New `/pricing` route**: three cards — Free (10 prompts), Pack ($2 / 20 prompts), Monthly ($19.99 / 100 prompts). Each with checkout button. Reuse gold/black brand styling.
+- **Landing page**: add a "Pricing" link in nav and a pricing section/CTA above the footer.
+- **Insufficient credits**: toast + modal pointing to /pricing.
+- **Account page** (`/account`): show balance, recent credit transactions, active subscription + manage/cancel link (Paddle customer portal).
+
+### 6. Copy + SEO
+- `/pricing` head(): unique title, meta description, canonical, og tags.
+- Update landing subtitle to mention "Start with 10 free prompts".
+
+## Technical notes
+
+- Credit math is server-side only via Postgres RPCs; client never writes to balance tables.
+- All grants are idempotent keyed by Paddle event/transaction ID to survive webhook retries.
+- Refund-on-failure path covers AI gateway 429/402/network errors so users aren't charged credits for failed generations.
+- Subscription credits are **granted, not metered** — on renewal the user gets +200 (they don't roll over by default; confirm below).
+
+## Open questions
+
+1. **Auth methods** — email/password only, or also Google sign-in?
+2. **Subscription credit rollover** — when a subscriber renews with leftover credits, do unused credits **roll over** or **reset to 200**? (Default I'll use: roll over / accumulate, since they paid for them.)
+3. **Free prompts trigger** — 10 free on signup only, or also "try before signup" (anonymous, IP-throttled)? Anonymous is abusable; I recommend signup-gated.
+4. **Provider confirmation** — OK to proceed with Paddle, or do you want Stripe?
