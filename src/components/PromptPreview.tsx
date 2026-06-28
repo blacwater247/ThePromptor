@@ -21,12 +21,13 @@ type Props = {
   onUseSaved: (p: SavedPrompt) => void;
 };
 
-function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
+function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?: string; ariaLabel?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <Button
       variant="secondary"
       size="sm"
+      aria-label={ariaLabel ?? (label ? undefined : "Copy prompt")}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
@@ -39,7 +40,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
       }}
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      <span className="ml-1.5">{copied ? "Copied" : label}</span>
+      {(label || copied) && <span className="ml-1.5">{copied ? "Copied" : label}</span>}
     </Button>
   );
 }
@@ -102,8 +103,8 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
                     {s.title || "Untitled prompt"}
                   </button>
                   <div className="flex gap-1">
-                    <CopyButton text={s.prompt} label="" />
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(s.id)}>
+                    <CopyButton text={s.prompt} label="" ariaLabel={`Copy prompt: ${s.title || "Untitled prompt"}`} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Delete prompt: ${s.title || "Untitled prompt"}`} onClick={() => onDelete(s.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
