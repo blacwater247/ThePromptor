@@ -14,10 +14,10 @@ import { generatePrompt } from "@/lib/prompt.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI Song Prompt Generator — Suno-Ready Music Prompts" },
-      { name: "description", content: "Build polished Suno-ready music prompts from genre, vocals, mood, topic, instruments, tempo, and style. Free AI music prompt generator." },
-      { property: "og:title", content: "AI Song Prompt Generator" },
-      { property: "og:description", content: "Create polished Suno-ready music prompts in seconds." },
+      { title: "The Promptor — AI Song Prompt Generator" },
+      { name: "description", content: "The Promptor builds polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { property: "og:title", content: "The Promptor — AI Song Prompt Generator" },
+      { property: "og:description", content: "Create polished AI music prompts in seconds." },
     ],
   }),
   component: Index,
