@@ -25,7 +25,7 @@ function Landing() {
       {/* Nav */}
       <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure" className="h-10 w-10 rounded-full" />
+          <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
           <span className="font-display text-xl font-bold tracking-tight brand-text">Blacure</span>
         </Link>
         <Link to="/app">
