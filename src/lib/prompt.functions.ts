@@ -1,12 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   PROMPT_TYPES, SONG_LENGTHS, MAIN_GENRES, FUSION_GENRES, VOCAL_TYPES,
   VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
   THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
   SOUND_QUALITIES,
 } from "./prompt-options";
+
+const CREDITS_PER_PROMPT = 2;
 
 const enumOf = (values: readonly string[]) =>
   z.string().refine((v) => values.includes(v), { message: "Invalid value" });
@@ -38,10 +41,27 @@ const InputSchema = z.object({
 });
 
 export const generatePrompt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI is not configured. Please try again later.");
+
+    // Generate a per-attempt ref id for idempotency / refund linking
+    const attemptRef = crypto.randomUUID();
+
+    // Spend 2 credits up front (atomic; raises insufficient_credits)
+    const { data: newBalance, error: spendErr } = await context.supabase.rpc("spend_credits", {
+      _amount: CREDITS_PER_PROMPT,
+      _ref: attemptRef,
+    });
+    if (spendErr) {
+      const msg = (spendErr.message || "").toLowerCase();
+      if (msg.includes("insufficient_credits")) {
+        throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
+      }
+      throw new Error(spendErr.message || "Could not deduct credits.");
+    }
 
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const gateway = createLovableAiGatewayProvider(key);
@@ -70,9 +90,9 @@ export const generatePrompt = createServerFn({ method: "POST" })
       data.avoidWords && `AVOID: ${data.avoidWords}`,
     ].filter(Boolean).join("\n");
 
-    const system = `You are an expert music producer who writes prompts for the Suno AI music generator.
+    const system = `You are an expert music producer who writes prompts for AI music generators.
 
-Output ONE polished, Suno-ready prompt as a single flowing paragraph (or 2 short paragraphs max). No preamble. No markdown. No headings. No lists. No quotes around the prompt. Do not explain what you wrote.
+Output ONE polished prompt as a single flowing paragraph (or 2 short paragraphs max). No preamble. No markdown. No headings. No lists. No quotes around the prompt. Do not explain what you wrote.
 
 Weave genre, fusion, vocal type and delivery, mood, instruments, drum style, tempo (use the BPM if provided), key, and production style into natural producer language. Keep it concrete and sensory.
 
@@ -84,12 +104,21 @@ If the user supplied "AVOID" terms or styles, strictly do not use any of those w
         system,
         prompt: userBlock,
       });
-      return { prompt: text.trim() };
+      return { prompt: text.trim(), balance: newBalance as number };
     } catch (err: unknown) {
+      // Refund the 2 credits because the AI call failed
+      try {
+        await context.supabase.rpc("refund_credits", {
+          _amount: CREDITS_PER_PROMPT,
+          _ref: attemptRef,
+        });
+      } catch (refundErr) {
+        console.error("[credits] refund failed for", attemptRef, refundErr);
+      }
       const e = err as { statusCode?: number; status?: number; message?: string };
       const status = e.statusCode ?? e.status;
-      if (status === 429) throw new Error("Rate limit reached. Please wait a moment and try again.");
-      if (status === 402) throw new Error("AI credits exhausted. Add credits in workspace settings.");
-      throw new Error(e.message || "Failed to generate prompt. Please try again.");
+      if (status === 429) throw new Error("Rate limit reached. Please wait a moment and try again. Your credits were refunded.");
+      if (status === 402) throw new Error("AI credits exhausted on the server. Your prompt credits were refunded.");
+      throw new Error((e.message || "Failed to generate prompt. Your credits were refunded."));
     }
   });

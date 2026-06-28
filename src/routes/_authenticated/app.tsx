@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Shuffle, RotateCcw, ArrowLeft } from "lucide-react";
+import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
@@ -11,8 +12,10 @@ import { DEFAULT_INPUTS, type PromptInputs } from "@/lib/prompt-options";
 import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePrompt } from "@/lib/prompt.functions";
+import { getMyCredits } from "@/lib/credits.functions";
+import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/app")({
+export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
       { title: "The Promptor — Blacure" },
@@ -27,22 +30,46 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppPage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [inputs, setInputs] = useState<PromptInputs>(DEFAULT_INPUTS);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useLocalStorage<SavedPrompt[]>("songPrompts.v1", []);
 
+  const creditsQuery = useQuery({
+    queryKey: ["credits", "balance"],
+    queryFn: () => getMyCredits(),
+  });
+  const balance = creditsQuery.data?.balance ?? 0;
+  const lowCredits = balance < 2;
+
   const handleGenerate = async () => {
+    if (lowCredits) {
+      toast.error("Not enough credits", { description: "Each prompt costs 2 credits. Top up to keep generating." });
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const res = await generatePrompt({ data: inputs });
       setPrompt(res.prompt);
+      queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
-      setError(msg);
-      toast.error(msg);
+      if (msg.startsWith("INSUFFICIENT_CREDITS")) {
+        setError("You're out of credits. Buy more to keep generating.");
+        toast.error("Out of credits", {
+          description: "Each prompt costs 2 credits.",
+          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else {
+        setError(msg);
+        toast.error(msg);
+      }
+      // refresh balance in case of refund
+      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
     } finally {
       setLoading(false);
     }
@@ -76,21 +103,43 @@ function AppPage() {
     toast.success("Prompt saved");
   };
 
+  const handleSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
   return (
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
 
-      {/* Header */}
       <header className="relative overflow-hidden border-b border-border/40">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
-          <div className="flex items-center justify-between mb-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
             <Link to="/" className="flex items-center gap-3 group">
               <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
               <span className="font-display text-xl font-bold brand-text">Blacure</span>
             </Link>
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" /> Home
-            </Link>
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${lowCredits ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
+                <Zap className="h-3.5 w-3.5" />
+                {creditsQuery.isLoading ? "…" : `${balance} credits`}
+                <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} prompts</span>
+              </div>
+              <Link to="/pricing">
+                <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
+                  <CreditCard className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Buy credits</span>
+                </Button>
+              </Link>
+              <Button size="sm" variant="ghost" onClick={handleSignOut} aria-label="Sign out">
+                <LogOut className="h-4 w-4" />
+              </Button>
+              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground hidden sm:flex items-center gap-1 ml-1">
+                <ArrowLeft className="h-4 w-4" /> Home
+              </Link>
+            </div>
           </div>
           <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight">
             <span className="brand-text">The Promptor</span> — AI Music Prompt Builder
@@ -99,9 +148,9 @@ function AppPage() {
             Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" onClick={handleGenerate} disabled={loading} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
+            <Button size="lg" onClick={handleGenerate} disabled={loading || lowCredits} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
               <Sparkles className="h-4 w-4" />
-              {loading ? "Generating…" : "Generate Prompt"}
+              {loading ? "Generating…" : "Generate Prompt (2 credits)"}
             </Button>
             <Button size="lg" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
               <Shuffle className="h-4 w-4" />
@@ -112,6 +161,11 @@ function AppPage() {
               Clear Form
             </Button>
           </div>
+          {lowCredits && (
+            <p className="mt-4 text-sm text-destructive">
+              You don't have enough credits. <Link to="/pricing" className="underline font-semibold">Buy more</Link> to keep generating.
+            </p>
+          )}
         </div>
       </header>
 
@@ -124,9 +178,9 @@ function AppPage() {
             </div>
             <PromptBuilder value={inputs} onChange={setInputs} />
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={handleGenerate} disabled={loading} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
+              <Button onClick={handleGenerate} disabled={loading || lowCredits} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
                 <Sparkles className="h-4 w-4" />
-                {loading ? "Generating…" : "Generate Prompt"}
+                {loading ? "Generating…" : "Generate (2 credits)"}
               </Button>
               <Button type="button" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
                 <Shuffle className="h-4 w-4" />
