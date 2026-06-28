@@ -1,29 +1,40 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
+import {
+  PROMPT_TYPES, SONG_LENGTHS, MAIN_GENRES, FUSION_GENRES, VOCAL_TYPES,
+  VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
+  THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
+  SOUND_QUALITIES,
+} from "./prompt-options";
+
+const enumOf = (values: readonly string[]) =>
+  z.string().refine((v) => values.includes(v), { message: "Invalid value" });
+
+const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
 const InputSchema = z.object({
-  title: z.string().max(200).optional().default(""),
-  promptType: z.string().max(100),
-  songLength: z.string().max(100),
-  mainGenre: z.string().max(60),
-  fusionGenre: z.string().max(80),
-  vocalType: z.string().max(80),
-  vocalPerformance: z.string().max(80),
-  vocalExtras: z.array(z.string().max(60)).max(20),
-  moods: z.array(z.string().max(40)).max(20),
-  energy: z.string().max(40),
-  emotionDepth: z.string().max(40),
-  themePreset: z.string().max(80),
-  topic: z.string().max(2000).optional().default(""),
-  instruments: z.array(z.string().max(60)).max(40),
-  drumStyle: z.string().max(80),
-  tempo: z.string().max(60),
-  customBpm: z.string().max(10).optional().default(""),
-  key: z.string().max(40),
-  productionStyle: z.string().max(80),
-  soundQuality: z.string().max(80),
-  avoidWords: z.string().max(500).optional().default(""),
+  title: z.string().max(200).optional().default("").transform(stripNewlines),
+  promptType: enumOf(PROMPT_TYPES),
+  songLength: enumOf(SONG_LENGTHS),
+  mainGenre: enumOf(MAIN_GENRES),
+  fusionGenre: enumOf(FUSION_GENRES),
+  vocalType: enumOf(VOCAL_TYPES),
+  vocalPerformance: enumOf(VOCAL_PERFORMANCES),
+  vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
+  moods: z.array(enumOf(MOODS)).max(20),
+  energy: enumOf(ENERGY_LEVELS),
+  emotionDepth: enumOf(EMOTION_DEPTHS),
+  themePreset: enumOf(THEME_PRESETS),
+  topic: z.string().max(2000).optional().default("").transform(stripNewlines),
+  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
+  drumStyle: enumOf(DRUM_STYLES),
+  tempo: enumOf(TEMPOS),
+  customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
+  key: enumOf(KEYS),
+  productionStyle: enumOf(PRODUCTION_STYLES),
+  soundQuality: enumOf(SOUND_QUALITIES),
+  avoidWords: z.string().max(500).optional().default("").transform(stripNewlines),
 });
 
 export const generatePrompt = createServerFn({ method: "POST" })
