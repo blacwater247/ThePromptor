@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
       { property: "og:url", content: "https://thepromptor.life/" },
       { name: "twitter:image", content: "https://thepromptor.life/favicon.ico" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "https://thepromptor.life/" }],
   }),
   component: Landing,
 });
