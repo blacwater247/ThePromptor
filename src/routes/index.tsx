@@ -83,13 +83,14 @@ function Index() {
             <div className="brand-gradient w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-primary/40">
               <Music2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-sm font-medium text-muted-foreground">Suno-ready · Powered by Lovable AI</span>
+            <span className="text-sm font-medium text-muted-foreground">Powered by Lovable AI</span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-            <span className="brand-text">AI Song Prompt Generator</span>
+            <span className="brand-text">The Promptor</span>
           </h1>
+          <p className="mt-2 text-sm sm:text-base font-medium text-muted-foreground/90">AI Song Prompt Generator</p>
           <p className="mt-4 max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Create polished Suno-ready music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
+            Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" onClick={handleGenerate} disabled={loading} className="brand-gradient text-white border-0 hover:opacity-90 shadow-lg shadow-primary/30">
