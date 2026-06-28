@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Blacure — AI Song Prompt Generator" },
-      { name: "description", content: "Blacure is the studio-grade AI prompt builder for music. Generate polished prompts for hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more." },
+      { name: "description", content: "Blacure is The Promptor: studio-grade AI prompts for hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, and cinematic music." },
       { property: "og:title", content: "Blacure — AI Song Prompt Generator" },
       { property: "og:description", content: "Studio-grade AI prompts for music — built in seconds." },
       { property: "og:image", content: logoAsset.url },
