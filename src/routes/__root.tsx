@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import logoAsset from "../assets/blacure-logo.png.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import "@fontsource/outfit/400.css";
 import "@fontsource/outfit/600.css";
@@ -83,19 +84,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The Promptor" },
-      { name: "description", content: "The Promptor — create polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "The Promptor" },
-      { property: "og:description", content: "The Promptor — create polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { title: "Blacure — The Promptor" },
+      { name: "description", content: "Blacure builds polished AI music prompts from genre, vocals, mood, topic, instruments, tempo, and style." },
+      { name: "author", content: "Blacure" },
+      { property: "og:site_name", content: "Blacure" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: logoAsset.url, type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
@@ -123,7 +121,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
   );

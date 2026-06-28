@@ -1,0 +1,159 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Sparkles, Shuffle, RotateCcw, ArrowLeft } from "lucide-react";
+import { Toaster, toast } from "sonner";
+import logoAsset from "@/assets/blacure-logo.png.asset.json";
+import { PromptBuilder } from "@/components/PromptBuilder";
+import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
+import { DEFAULT_INPUTS, type PromptInputs } from "@/lib/prompt-options";
+import { randomizeVibe } from "@/lib/randomize";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { generatePrompt } from "@/lib/prompt.functions";
+
+export const Route = createFileRoute("/app")({
+  head: () => ({
+    meta: [
+      { title: "The Promptor — Blacure" },
+      { name: "description", content: "Build studio-grade AI music prompts with Blacure's Promptor." },
+      { property: "og:title", content: "The Promptor — Blacure" },
+      { property: "og:description", content: "Build studio-grade AI music prompts in seconds." },
+      { property: "og:url", content: "/app" },
+    ],
+    links: [{ rel: "canonical", href: "/app" }],
+  }),
+  component: AppPage,
+});
+
+function AppPage() {
+  const [inputs, setInputs] = useState<PromptInputs>(DEFAULT_INPUTS);
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useLocalStorage<SavedPrompt[]>("songPrompts.v1", []);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await generatePrompt({ data: inputs });
+      setPrompt(res.prompt);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRandomize = () => {
+    const next = randomizeVibe(inputs);
+    setInputs(next);
+    toast("Vibe randomized", {
+      description: `${next.mainGenre} · ${next.vocalType} · ${next.moods.slice(0, 2).join(", ") || "—"}`,
+    });
+  };
+
+  const handleClear = () => {
+    setInputs({ ...DEFAULT_INPUTS });
+    setPrompt("");
+    setError(null);
+    setLoading(false);
+    toast("Form cleared");
+  };
+
+  const handleSave = () => {
+    if (!prompt) return;
+    const entry: SavedPrompt = {
+      id: crypto.randomUUID(),
+      title: inputs.title.trim() || `${inputs.mainGenre} · ${inputs.themePreset}`,
+      createdAt: Date.now(),
+      prompt,
+    };
+    setSaved([entry, ...saved]);
+    toast.success("Prompt saved");
+  };
+
+  return (
+    <div className="min-h-screen text-foreground">
+      <Toaster theme="dark" position="top-center" richColors />
+
+      {/* Header */}
+      <header className="relative overflow-hidden border-b border-border/40">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="flex items-center gap-3 group">
+              <img src={logoAsset.url} alt="Blacure" className="h-10 w-10 rounded-full" />
+              <span className="font-display text-xl font-bold brand-text">Blacure</span>
+            </Link>
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <ArrowLeft className="h-4 w-4" /> Home
+            </Link>
+          </div>
+          <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight">
+            <span className="brand-text">The Promptor</span>
+          </h1>
+          <p className="mt-3 max-w-2xl text-base sm:text-lg text-muted-foreground">
+            Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button size="lg" onClick={handleGenerate} disabled={loading} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
+              <Sparkles className="h-4 w-4" />
+              {loading ? "Generating…" : "Generate Prompt"}
+            </Button>
+            <Button size="lg" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
+              <Shuffle className="h-4 w-4" />
+              Randomize Vibe
+            </Button>
+            <Button size="lg" variant="ghost" onClick={handleClear}>
+              <RotateCcw className="h-4 w-4" />
+              Clear Form
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 lg:py-10">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
+          <Card className="border-border/60 bg-card/70 backdrop-blur p-5 lg:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-display text-lg font-semibold">Prompt Builder</h2>
+              <span className="text-xs text-muted-foreground hidden sm:block">All sections feed the AI</span>
+            </div>
+            <PromptBuilder value={inputs} onChange={setInputs} />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={handleGenerate} disabled={loading} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
+                <Sparkles className="h-4 w-4" />
+                {loading ? "Generating…" : "Generate Prompt"}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
+                <Shuffle className="h-4 w-4" />
+                Randomize Vibe
+              </Button>
+              <Button type="button" variant="ghost" onClick={handleClear}>
+                <RotateCcw className="h-4 w-4" />
+                Clear Form
+              </Button>
+            </div>
+          </Card>
+
+          <PromptPreview
+            prompt={prompt}
+            loading={loading}
+            error={error}
+            onSave={handleSave}
+            saved={saved}
+            onDelete={(id) => setSaved(saved.filter((s) => s.id !== id))}
+            onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
+          />
+        </div>
+      </main>
+
+      <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
+        Blacure · The Promptor — prompts are AI-generated, always review before use.
+      </footer>
+    </div>
+  );
+}
