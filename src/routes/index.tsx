@@ -127,6 +127,10 @@ function Index() {
                 <Shuffle className="h-4 w-4" />
                 Randomize
               </Button>
+              <Button variant="ghost" onClick={handleClear}>
+                <RotateCcw className="h-4 w-4" />
+                Clear Form
+              </Button>
             </div>
           </Card>
 
