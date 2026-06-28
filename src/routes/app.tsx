@@ -19,9 +19,9 @@ export const Route = createFileRoute("/app")({
       { name: "description", content: "Build studio-grade AI music prompts with Blacure's Promptor." },
       { property: "og:title", content: "The Promptor — Blacure" },
       { property: "og:description", content: "Build studio-grade AI music prompts in seconds." },
-      { property: "og:url", content: "/app" },
+      { property: "og:url", content: "https://thepromptor.life/app" },
     ],
-    links: [{ rel: "canonical", href: "/app" }],
+    links: [{ rel: "canonical", href: "https://thepromptor.life/app" }],
   }),
   component: AppPage,
 });
@@ -85,7 +85,7 @@ function AppPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="flex items-center gap-3 group">
-              <img src={logoAsset.url} alt="Blacure" className="h-10 w-10 rounded-full" />
+              <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
               <span className="font-display text-xl font-bold brand-text">Blacure</span>
             </Link>
             <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">

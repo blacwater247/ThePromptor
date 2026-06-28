@@ -10,11 +10,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Blacure is The Promptor: studio-grade AI prompts for hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, and cinematic music." },
       { property: "og:title", content: "Blacure — AI Song Prompt Generator" },
       { property: "og:description", content: "Studio-grade AI prompts for music — built in seconds." },
-      { property: "og:image", content: logoAsset.url },
-      { property: "og:url", content: "/" },
-      { name: "twitter:image", content: logoAsset.url },
+      { property: "og:image", content: "https://thepromptor.life/favicon.ico" },
+      { property: "og:url", content: "https://thepromptor.life/" },
+      { name: "twitter:image", content: "https://thepromptor.life/favicon.ico" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "https://thepromptor.life/" }],
   }),
   component: Landing,
 });
@@ -25,7 +25,7 @@ function Landing() {
       {/* Nav */}
       <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure" className="h-10 w-10 rounded-full" />
+          <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
           <span className="font-display text-xl font-bold tracking-tight brand-text">Blacure</span>
         </Link>
         <Link to="/app">
