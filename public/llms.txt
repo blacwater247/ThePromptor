@@ -1,0 +1,10 @@
+# Blacure
+
+> Blacure is The Promptor — an AI song prompt generator that builds polished, studio-grade music prompts from genre, vocals, mood, topic, instruments, tempo, and style.
+
+Blacure helps producers, songwriters, and hobbyists craft prompts for AI music tools (Suno, Udio, and similar). Users pick from curated dropdowns covering hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more, then generate or randomize a complete prompt ready to paste into their music workflow.
+
+## Pages
+
+- [Home](/): Landing page introducing Blacure and The Promptor.
+- [The Promptor](/app): Interactive prompt builder with genre, vocals, mood, instruments, tempo, and style controls.

@@ -101,6 +101,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: logoAsset.url, type: "image/png" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://thepromptor.life/#organization",
+              name: "Blacure",
+              url: "https://thepromptor.life",
+              logo: "https://thepromptor.life/favicon.ico",
+              description: "Blacure builds polished AI music prompts for producers and songwriters.",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://thepromptor.life/#website",
+              name: "Blacure — The Promptor",
+              url: "https://thepromptor.life",
+              description: "AI Song Prompt Generator for hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.",
+              publisher: { "@id": "https://thepromptor.life/#organization" },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

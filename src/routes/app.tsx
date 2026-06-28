@@ -93,7 +93,7 @@ function AppPage() {
             </Link>
           </div>
           <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight">
-            <span className="brand-text">The Promptor</span>
+            <span className="brand-text">The Promptor</span> — AI Music Prompt Builder
           </h1>
           <p className="mt-3 max-w-2xl text-base sm:text-lg text-muted-foreground">
             Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
