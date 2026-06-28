@@ -108,7 +108,7 @@ export function PromptBuilder({ value, onChange }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {VOCAL_EXTRAS.map((e) => (
                 <label key={e} className="flex items-center gap-2 rounded-md border border-border bg-secondary/30 px-2.5 py-2 text-sm cursor-pointer hover:bg-secondary/50">
-                  <Checkbox checked={value.vocalExtras.includes(e)} onCheckedChange={() => toggleArr("vocalExtras", e)} />
+                  <Checkbox aria-label={e} checked={value.vocalExtras.includes(e)} onCheckedChange={() => toggleArr("vocalExtras", e)} />
                   <span>{e}</span>
                 </label>
               ))}
