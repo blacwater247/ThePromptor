@@ -3,16 +3,16 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard } from "lucide-react";
+import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown, Lock } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
-import { DEFAULT_INPUTS, type PromptInputs } from "@/lib/prompt-options";
+import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
 import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePrompt } from "@/lib/prompt.functions";
-import { getMyCredits } from "@/lib/credits.functions";
+import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -42,18 +42,35 @@ function AppPage() {
     queryKey: ["credits", "balance"],
     queryFn: () => getMyCredits(),
   });
+  const subQuery = useQuery({
+    queryKey: ["subscription"],
+    queryFn: () => getMySubscription(),
+  });
   const balance = creditsQuery.data?.balance ?? 0;
-  const lowCredits = balance < 2;
+  const isPro = subQuery.data?.subscription?.status === "active";
+  const canStandard = balance >= 2;
+  const canPro = balance >= 6;
 
-  const handleGenerate = async () => {
-    if (lowCredits) {
-      toast.error("Not enough credits", { description: "Each prompt costs 2 credits. Top up to keep generating." });
+  const handleGenerate = async (mode: PromptMode = "standard") => {
+    const cost = mode === "pro" ? 6 : 2;
+    if (mode === "pro" && !isPro) {
+      toast.error("Pro Studio Prompt is a subscriber feature", {
+        description: "Unlock longer, structured prompts with the Monthly plan.",
+        action: { label: "Upgrade", onClick: () => navigate({ to: "/pricing" }) },
+      });
+      return;
+    }
+    if (balance < cost) {
+      toast.error("Not enough credits", {
+        description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits. Top up to keep generating.`,
+        action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+      });
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await generatePrompt({ data: inputs });
+      const res = await generatePrompt({ data: { ...inputs, mode } });
       setPrompt(res.prompt);
       queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
     } catch (e: unknown) {
@@ -61,14 +78,18 @@ function AppPage() {
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
         setError("You're out of credits. Buy more to keep generating.");
         toast.error("Out of credits", {
-          description: "Each prompt costs 2 credits.",
+          description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits.`,
           action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else if (msg.startsWith("PRO_REQUIRED")) {
+        toast.error("Pro Studio Prompt requires a subscription", {
+          description: "Upgrade to the Monthly plan to unlock.",
+          action: { label: "Upgrade", onClick: () => navigate({ to: "/pricing" }) },
         });
       } else {
         setError(msg);
         toast.error(msg);
       }
-      // refresh balance in case of refund
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
     } finally {
       setLoading(false);
