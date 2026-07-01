@@ -73,7 +73,10 @@ function AppPage() {
     try {
       const res = await generatePrompt({ data: { ...inputs, mode } });
       setPrompt(res.prompt);
-      queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
+      if (typeof res.balance === "number") {
+        queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
+      }
+
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
