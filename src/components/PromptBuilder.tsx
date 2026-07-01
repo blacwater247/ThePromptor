@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  DRUM_STYLES, EMOTION_DEPTHS, ENERGY_LEVELS, FUSION_GENRES, INSTRUMENTS,
+  AVOID_PRESETS, DRUM_STYLES, EMOTION_DEPTHS, ENERGY_LEVELS, FUSION_GENRES, INSTRUMENTS,
   KEYS, MAIN_GENRES, MOODS, PRODUCTION_STYLES, PROMPT_TYPES, SONG_LENGTHS,
   SOUND_QUALITIES, TEMPOS, THEME_PRESETS, VOCAL_EXTRAS, VOCAL_PERFORMANCES,
   VOCAL_TYPES, type PromptInputs,
@@ -60,7 +60,7 @@ function Dropdown({ value, onChange, options, placeholder }: { value: string; on
 export function PromptBuilder({ value, onChange }: Props) {
   const set = <K extends keyof PromptInputs>(k: K, v: PromptInputs[K]) => onChange({ ...value, [k]: v });
 
-  const toggleArr = (key: "vocalExtras" | "moods" | "instruments", item: string) => {
+  const toggleArr = (key: "vocalExtras" | "moods" | "instruments" | "avoidPresets", item: string) => {
     const arr = value[key];
     const next = arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
     onChange({ ...value, [key]: next });
@@ -79,7 +79,7 @@ export function PromptBuilder({ value, onChange }: Props) {
               onChange={(e) => set("title", e.target.value)}
               placeholder='e.g. "Love Myself to Win"'
               className="bg-secondary/40"
-              maxLength={200}
+              maxLength={80}
             />
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -138,15 +138,16 @@ export function PromptBuilder({ value, onChange }: Props) {
         <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">05</span> Topic & Story</span></AccordionTrigger>
         <AccordionContent className="grid gap-4 pt-2">
           <Field label="Theme preset"><Dropdown value={value.themePreset} onChange={(v) => set("themePreset", v)} options={THEME_PRESETS} /></Field>
-          <Field label="Topic / story">
+          <Field label="Extra story detail (optional)">
             <Textarea
-              rows={4}
+              rows={3}
               value={value.topic}
               onChange={(e) => set("topic", e.target.value)}
-              placeholder="A man who came from pain, learned to love himself, and now wins with confidence."
+              placeholder="One or two sentences of specific detail. The theme preset above already sets the story."
               className="bg-secondary/40 resize-none"
-              maxLength={2000}
+              maxLength={200}
             />
+            <p className="text-xs text-muted-foreground mt-1">{value.topic.length}/200 · Keep it short — the AI works best with tight input.</p>
           </Field>
         </AccordionContent>
       </AccordionItem>
@@ -192,16 +193,22 @@ export function PromptBuilder({ value, onChange }: Props) {
             <Field label="Production style"><Dropdown value={value.productionStyle} onChange={(v) => set("productionStyle", v)} options={PRODUCTION_STYLES} /></Field>
             <Field label="Sound quality"><Dropdown value={value.soundQuality} onChange={(v) => set("soundQuality", v)} options={SOUND_QUALITIES} /></Field>
           </div>
-          <Field label="Avoid these words / styles">
-            <Textarea
-              rows={3}
+          <Field label={`Avoid these (${value.avoidPresets.length} selected)`}>
+            <div className="flex flex-wrap gap-2">
+              {AVOID_PRESETS.map((a) => (
+                <Chip key={a} active={value.avoidPresets.includes(a)} onClick={() => toggleArr("avoidPresets", a)}>{a}</Chip>
+              ))}
+            </div>
+          </Field>
+          <Field label="Other avoid words (optional)">
+            <Input
               value={value.avoidWords}
               onChange={(e) => set("avoidWords", e.target.value)}
-              placeholder="Do not mention artist names. Avoid the words neon, shadow, echo, violet."
-              className="bg-secondary/40 resize-none"
-              maxLength={500}
+              placeholder="e.g. violet, midnight"
+              className="bg-secondary/40"
+              maxLength={120}
             />
-            <p className="text-xs text-muted-foreground mt-1">The AI will strictly avoid these words and styles.</p>
+            <p className="text-xs text-muted-foreground mt-1">The AI will strictly avoid the selected chips and words.</p>
           </Field>
         </AccordionContent>
       </AccordionItem>
