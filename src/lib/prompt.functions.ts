@@ -82,35 +82,53 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
     const cfg = MODE_CONFIG[data.mode];
 
-    // Server-side Pro gating: never trust the client
-    if (data.mode === "pro") {
-      const { data: sub } = await context.supabase
-        .from("subscriptions")
-        .select("status")
-        .eq("user_id", context.userId)
-        .maybeSingle();
-      const isPro = sub?.status === "active";
-      if (!isPro) {
-        throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
-      }
+    // Check active subscription — subscribers get unlimited (Standard + Pro)
+    const { data: sub } = await context.supabase
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    const isSubscriber = sub?.status === "active";
+
+    // Pro mode requires an active subscription
+    if (data.mode === "pro" && !isSubscriber) {
+      throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
     }
 
     const attemptRef = crypto.randomUUID();
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: newBalance, error: spendErr } = await supabaseAdmin.rpc("spend_credits", {
-      _user_id: context.userId,
-      _amount: cfg.credits,
-      _ref: attemptRef,
-    });
-    if (spendErr) {
-      const msg = (spendErr.message || "").toLowerCase();
-      if (msg.includes("insufficient_credits")) {
-        throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
+
+    // Rate-limit subscribers to prevent abuse: 60 generations / hour
+    if (isSubscriber) {
+      const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { count } = await supabaseAdmin
+        .from("generations_log")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", context.userId)
+        .gte("created_at", since);
+      if ((count ?? 0) >= 60) {
+        throw new Error("RATE_LIMITED: You've hit the hourly generation limit. Try again in a bit.");
       }
-      console.error("[prompt] spend_credits error", spendErr);
-      throw new Error("Could not deduct credits. Please try again.");
     }
+
+    let newBalance: number | null = null;
+    if (!isSubscriber) {
+      const { data: balAfter, error: spendErr } = await supabaseAdmin.rpc("spend_credits", {
+        _user_id: context.userId,
+        _amount: cfg.credits,
+        _ref: attemptRef,
+      });
+      if (spendErr) {
+        const msg = (spendErr.message || "").toLowerCase();
+        if (msg.includes("insufficient_credits")) {
+          throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
+        }
+        console.error("[prompt] spend_credits error", spendErr);
+        throw new Error("Could not deduct credits. Please try again.");
+      }
+      newBalance = balAfter as number;
+    }
+
 
     const { createOpenAI } = await import("@ai-sdk/openai");
     const openai = createOpenAI({ apiKey: openaiKey });
