@@ -170,23 +170,36 @@ export const generatePrompt = createServerFn({ method: "POST" })
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
       });
-      return { prompt: sanitizeOutput(text), balance: newBalance as number, mode: data.mode };
-    } catch (err: unknown) {
+      // Log for rate-limit tracking (best-effort, non-blocking on failure)
       try {
-        await supabaseAdmin.rpc("refund_credits", {
-          _user_id: context.userId,
-          _amount: cfg.credits,
-          _ref: attemptRef,
+        await supabaseAdmin.from("generations_log").insert({
+          user_id: context.userId,
+          mode: data.mode,
         });
-      } catch (refundErr) {
-        console.error("[credits] refund failed for", attemptRef, refundErr);
+      } catch (logErr) {
+        console.error("[prompt] log insert failed", logErr);
+      }
+      return { prompt: sanitizeOutput(text), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+    } catch (err: unknown) {
+      if (!isSubscriber) {
+        try {
+          await supabaseAdmin.rpc("refund_credits", {
+            _user_id: context.userId,
+            _amount: cfg.credits,
+            _ref: attemptRef,
+          });
+        } catch (refundErr) {
+          console.error("[credits] refund failed for", attemptRef, refundErr);
+        }
       }
       const e = err as { statusCode?: number; status?: number; message?: string };
       const status = e.statusCode ?? e.status;
       console.error("[prompt] generation error", err);
-      if (status === 401) throw new Error("OpenAI API key is invalid. Your credits were refunded.");
-      if (status === 429) throw new Error("OpenAI rate limit reached. Please try again shortly. Your credits were refunded.");
-      if (status === 402 || /quota/i.test(e.message || "")) throw new Error("OpenAI quota exceeded. Your credits were refunded.");
-      throw new Error("Failed to generate prompt. Your credits were refunded.");
+      const suffix = isSubscriber ? "Please try again." : "Your credits were refunded.";
+      if (status === 401) throw new Error(`OpenAI API key is invalid. ${suffix}`);
+      if (status === 429) throw new Error(`OpenAI rate limit reached. Please try again shortly. ${suffix}`);
+      if (status === 402 || /quota/i.test(e.message || "")) throw new Error(`OpenAI quota exceeded. ${suffix}`);
+      throw new Error(`Failed to generate prompt. ${suffix}`);
     }
   });
+
