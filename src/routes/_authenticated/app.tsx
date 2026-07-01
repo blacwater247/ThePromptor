@@ -49,7 +49,7 @@ function AppPage() {
   const balance = creditsQuery.data?.balance ?? 0;
   const isPro = subQuery.data?.subscription?.status === "active";
   const canStandard = isPro || balance >= 2;
-  const canPro = isPro; // Pro requires subscription (and is unlimited for subscribers)
+
 
   const handleGenerate = async (mode: PromptMode = "standard") => {
     const cost = mode === "pro" ? 6 : 2;
