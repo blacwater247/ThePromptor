@@ -90,6 +90,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
+      { title: "Lovable App" },
+      { property: "og:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
+      { property: "og:description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
+      { name: "twitter:description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
