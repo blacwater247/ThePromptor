@@ -52,18 +52,19 @@ const TIERS: Tier[] = [
     name: "Monthly",
     price: "$19.99",
     cadence: "per month",
-    prompts: "100 prompts / month + Pro Studio",
+    prompts: "Unlimited prompts + Pro Studio",
     highlight: true,
     cta: "Subscribe monthly",
     ctaTo: "/app",
     features: [
-      "200 credits / month",
-      "Unlocks Pro Studio Prompt (longer, section-structured)",
-      "Best value per prompt",
+      "Unlimited Standard prompts",
+      "Unlimited Pro Studio prompts",
+      "Priority generation",
       "Cancel any time",
     ],
   },
 ];
+
 
 function Pricing() {
   return (
