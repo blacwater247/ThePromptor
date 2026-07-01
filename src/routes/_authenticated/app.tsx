@@ -234,18 +234,19 @@ function AppPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Button onClick={() => handleGenerate("standard")} disabled={loading || !canStandard} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
                 <Sparkles className="h-4 w-4" />
-                {loading ? "Generating…" : "Generate (2 credits)"}
+                {loading ? "Generating…" : isPro ? "Generate" : "Generate (2 credits)"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleGenerate("pro")}
-                disabled={loading || (isPro && !canPro)}
+                disabled={loading}
                 className="border-primary/60 hover:bg-primary/10"
               >
                 {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                Pro Studio (6 credits)
+                {isPro ? "Pro Studio" : "Pro Studio (6 credits)"}
               </Button>
+
               <Button type="button" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
                 <Shuffle className="h-4 w-4" />
                 Randomize Vibe
