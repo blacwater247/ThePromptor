@@ -155,7 +155,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
       return { prompt: sanitizeOutput(text), balance: newBalance as number, mode: data.mode };
     } catch (err: unknown) {
       try {
-        await context.supabase.rpc("refund_credits", {
+        await supabaseAdmin.rpc("refund_credits", {
+          _user_id: context.userId,
           _amount: cfg.credits,
           _ref: attemptRef,
         });
