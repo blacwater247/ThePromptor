@@ -85,7 +85,7 @@ function Pricing() {
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
             Start free with 10 prompts. Top up when you need more, or go monthly for the best value.
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">1 prompt = 2 credits.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Free & Pack use credits (1 prompt = 2 credits). Monthly is unlimited — no credit counting.</p>
         </header>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
