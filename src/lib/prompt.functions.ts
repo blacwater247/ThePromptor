@@ -156,6 +156,11 @@ export const generatePrompt = createServerFn({ method: "POST" })
       data.avoidWords,
     ].filter(Boolean).join(", ");
 
+    const requiredInstruments = data.instruments.slice();
+    const instrumentsLine = requiredInstruments.length
+      ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
+      : "";
+
     const userBlock = [
       data.title && `Title: "${data.title}"`,
       `Prompt type: ${data.promptType}`,
@@ -168,22 +173,47 @@ export const generatePrompt = createServerFn({ method: "POST" })
       `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
       `Theme: ${data.themePreset}`,
       data.topic && `Story/topic: ${data.topic}`,
-      data.instruments.length && `Instruments: ${data.instruments.join(", ")}`,
-      `Drums: ${data.drumStyle}`,
+      instrumentsLine,
+      `DRUMS (name exactly): ${data.drumStyle}`,
       tempoLine,
       `Key: ${data.key}`,
       `Production: ${data.productionStyle} · ${data.soundQuality}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
+      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${data.drumStyle}".`,
     ].filter(Boolean).join("\n");
 
+    const requiredForCheck = [...requiredInstruments, data.drumStyle];
+
     try {
-      const { text } = await generateText({
+      const first = await generateText({
         model: openai("gpt-4.1-mini"),
         system: cfg.system,
         prompt: userBlock,
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
       });
+
+      let finalText = first.text;
+      const missing = findMissing(finalText, requiredForCheck);
+      if (missing.length > 0) {
+        try {
+          const retry = await generateText({
+            model: openai("gpt-4.1-mini"),
+            system: cfg.system,
+            prompt: `${userBlock}\n\nPrevious attempt omitted these required items: ${missing.join(", ")}. Rewrite the prompt so every REQUIRED INSTRUMENT and the DRUMS style is named verbatim.`,
+            temperature: cfg.temperature,
+            maxOutputTokens: cfg.maxTokens,
+          });
+          const retryMissing = findMissing(retry.text, requiredForCheck);
+          if (retryMissing.length < missing.length) finalText = retry.text;
+          if (retryMissing.length > 0) {
+            console.warn("[prompt] still missing after retry:", retryMissing);
+          }
+        } catch (retryErr) {
+          console.warn("[prompt] retry failed, using first attempt", retryErr);
+        }
+      }
+
       // Log for rate-limit tracking (best-effort, non-blocking on failure)
       try {
         await supabaseAdmin.from("generations_log").insert({
@@ -193,7 +223,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
       } catch (logErr) {
         console.error("[prompt] log insert failed", logErr);
       }
-      return { prompt: sanitizeOutput(text), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+      return { prompt: sanitizeOutput(finalText), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+
     } catch (err: unknown) {
       if (!isSubscriber) {
         try {
