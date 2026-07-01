@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  DRUM_STYLES, EMOTION_DEPTHS, ENERGY_LEVELS, FUSION_GENRES, INSTRUMENTS,
+  AVOID_PRESETS, DRUM_STYLES, EMOTION_DEPTHS, ENERGY_LEVELS, FUSION_GENRES, INSTRUMENTS,
   KEYS, MAIN_GENRES, MOODS, PRODUCTION_STYLES, PROMPT_TYPES, SONG_LENGTHS,
   SOUND_QUALITIES, TEMPOS, THEME_PRESETS, VOCAL_EXTRAS, VOCAL_PERFORMANCES,
   VOCAL_TYPES, type PromptInputs,
@@ -60,7 +60,7 @@ function Dropdown({ value, onChange, options, placeholder }: { value: string; on
 export function PromptBuilder({ value, onChange }: Props) {
   const set = <K extends keyof PromptInputs>(k: K, v: PromptInputs[K]) => onChange({ ...value, [k]: v });
 
-  const toggleArr = (key: "vocalExtras" | "moods" | "instruments", item: string) => {
+  const toggleArr = (key: "vocalExtras" | "moods" | "instruments" | "avoidPresets", item: string) => {
     const arr = value[key];
     const next = arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
     onChange({ ...value, [key]: next });
@@ -79,7 +79,7 @@ export function PromptBuilder({ value, onChange }: Props) {
               onChange={(e) => set("title", e.target.value)}
               placeholder='e.g. "Love Myself to Win"'
               className="bg-secondary/40"
-              maxLength={200}
+              maxLength={80}
             />
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
