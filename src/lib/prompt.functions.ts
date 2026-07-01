@@ -97,7 +97,9 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
     const attemptRef = crypto.randomUUID();
 
-    const { data: newBalance, error: spendErr } = await context.supabase.rpc("spend_credits", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: newBalance, error: spendErr } = await supabaseAdmin.rpc("spend_credits", {
+      _user_id: context.userId,
       _amount: cfg.credits,
       _ref: attemptRef,
     });
