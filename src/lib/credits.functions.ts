@@ -9,7 +9,10 @@ export const getMyCredits = createServerFn({ method: "GET" })
       .select("balance")
       .eq("user_id", context.userId)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("[credits] balance query error", error);
+      throw new Error("Failed to load your credits. Please try again.");
+    }
     return { balance: data?.balance ?? 0 };
   });
 
@@ -22,7 +25,10 @@ export const getMyTransactions = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(50);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("[credits] transactions query error", error);
+      throw new Error("Failed to load your transactions. Please try again.");
+    }
     return { transactions: data ?? [] };
   });
 
@@ -34,6 +40,9 @@ export const getMySubscription = createServerFn({ method: "GET" })
       .select("*")
       .eq("user_id", context.userId)
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("[credits] subscription query error", error);
+      throw new Error("Failed to load your subscription. Please try again.");
+    }
     return { subscription: data ?? null };
   });

@@ -106,7 +106,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
       if (msg.includes("insufficient_credits")) {
         throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
       }
-      throw new Error(spendErr.message || "Could not deduct credits.");
+      console.error("[prompt] spend_credits error", spendErr);
+      throw new Error("Could not deduct credits. Please try again.");
     }
 
     const { createOpenAI } = await import("@ai-sdk/openai");
@@ -161,9 +162,10 @@ export const generatePrompt = createServerFn({ method: "POST" })
       }
       const e = err as { statusCode?: number; status?: number; message?: string };
       const status = e.statusCode ?? e.status;
+      console.error("[prompt] generation error", err);
       if (status === 401) throw new Error("OpenAI API key is invalid. Your credits were refunded.");
       if (status === 429) throw new Error("OpenAI rate limit reached. Please try again shortly. Your credits were refunded.");
       if (status === 402 || /quota/i.test(e.message || "")) throw new Error("OpenAI quota exceeded. Your credits were refunded.");
-      throw new Error(e.message || "Failed to generate prompt. Your credits were refunded.");
+      throw new Error("Failed to generate prompt. Your credits were refunded.");
     }
   });
