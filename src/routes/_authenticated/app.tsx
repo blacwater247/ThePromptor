@@ -184,23 +184,25 @@ function AppPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-base sm:text-lg text-muted-foreground">
             Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
-            {!isPro && <span className="block mt-1 text-sm">Long, structured Pro Studio prompts are included with the Monthly plan.</span>}
+            {isPro
+              ? <span className="block mt-1 text-sm brand-text">Monthly plan active — unlimited Standard & Pro Studio prompts.</span>
+              : <span className="block mt-1 text-sm">Go Monthly for unlimited Standard + Pro Studio prompts.</span>}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" onClick={() => handleGenerate("standard")} disabled={loading || !canStandard} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
               <Sparkles className="h-4 w-4" />
-              {loading ? "Generating…" : "Generate Prompt (2 credits)"}
+              {loading ? "Generating…" : isPro ? "Generate Prompt" : "Generate Prompt (2 credits)"}
             </Button>
             <Button
               size="lg"
               variant="outline"
               onClick={() => handleGenerate("pro")}
-              disabled={loading || (isPro && !canPro)}
+              disabled={loading}
               className="border-primary/60 hover:bg-primary/10 relative"
-              title={isPro ? "Longer, structured studio prompt" : "Unlock with Monthly plan"}
+              title={isPro ? "Longer, structured studio prompt — unlimited" : "Unlock with Monthly plan"}
             >
               {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-              Pro Studio Prompt (6 credits)
+              {isPro ? "Pro Studio Prompt" : "Pro Studio Prompt (6 credits)"}
               <span className="ml-1 rounded bg-primary/20 brand-text text-[10px] font-bold px-1.5 py-0.5">PRO</span>
             </Button>
             <Button size="lg" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
@@ -212,11 +214,12 @@ function AppPage() {
               Clear Form
             </Button>
           </div>
-          {!canStandard && (
+          {!isPro && !canStandard && (
             <p className="mt-4 text-sm text-destructive">
-              You don't have enough credits. <Link to="/pricing" className="underline font-semibold">Buy more</Link> to keep generating.
+              You don't have enough credits. <Link to="/pricing" className="underline font-semibold">Buy more</Link> or <Link to="/pricing" className="underline font-semibold">go Monthly</Link> for unlimited.
             </p>
           )}
+
         </div>
       </header>
 
