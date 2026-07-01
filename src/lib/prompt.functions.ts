@@ -44,8 +44,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("AI is not configured. Please try again later.");
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) throw new Error("OpenAI is not configured. Please add OPENAI_API_KEY.");
 
     // Generate a per-attempt ref id for idempotency / refund linking
     const attemptRef = crypto.randomUUID();
@@ -63,8 +63,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
       throw new Error(spendErr.message || "Could not deduct credits.");
     }
 
-    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-    const gateway = createLovableAiGatewayProvider(key);
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const openai = createOpenAI({ apiKey: openaiKey });
 
     const tempoLine = data.tempo === "Custom BPM" && data.customBpm
       ? `Tempo: ${data.customBpm} BPM`
@@ -100,13 +100,12 @@ If the user supplied "AVOID" terms or styles, strictly do not use any of those w
 
     try {
       const { text } = await generateText({
-        model: gateway("google/gemini-3-flash-preview"),
+        model: openai("gpt-4.1-mini"),
         system,
         prompt: userBlock,
       });
       return { prompt: text.trim(), balance: newBalance as number };
     } catch (err: unknown) {
-      // Refund the 2 credits because the AI call failed
       try {
         await context.supabase.rpc("refund_credits", {
           _amount: CREDITS_PER_PROMPT,
@@ -117,8 +116,9 @@ If the user supplied "AVOID" terms or styles, strictly do not use any of those w
       }
       const e = err as { statusCode?: number; status?: number; message?: string };
       const status = e.statusCode ?? e.status;
-      if (status === 429) throw new Error("Rate limit reached. Please wait a moment and try again. Your credits were refunded.");
-      if (status === 402) throw new Error("AI credits exhausted on the server. Your prompt credits were refunded.");
-      throw new Error((e.message || "Failed to generate prompt. Your credits were refunded."));
+      if (status === 401) throw new Error("OpenAI API key is invalid. Your credits were refunded.");
+      if (status === 429) throw new Error("OpenAI rate limit reached. Please try again shortly. Your credits were refunded.");
+      if (status === 402 || /quota/i.test(e.message || "")) throw new Error("OpenAI quota exceeded. Your credits were refunded.");
+      throw new Error(e.message || "Failed to generate prompt. Your credits were refunded.");
     }
   });
