@@ -48,25 +48,26 @@ function AppPage() {
   });
   const balance = creditsQuery.data?.balance ?? 0;
   const isPro = subQuery.data?.subscription?.status === "active";
-  const canStandard = balance >= 2;
-  const canPro = balance >= 6;
+  const canStandard = isPro || balance >= 2;
+  const canPro = isPro; // Pro requires subscription (and is unlimited for subscribers)
 
   const handleGenerate = async (mode: PromptMode = "standard") => {
     const cost = mode === "pro" ? 6 : 2;
     if (mode === "pro" && !isPro) {
       toast.error("Pro Studio Prompt is a subscriber feature", {
-        description: "Unlock longer, structured prompts with the Monthly plan.",
+        description: "Unlock unlimited Pro prompts with the Monthly plan.",
         action: { label: "Upgrade", onClick: () => navigate({ to: "/pricing" }) },
       });
       return;
     }
-    if (balance < cost) {
+    if (!isPro && balance < cost) {
       toast.error("Not enough credits", {
         description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits. Top up to keep generating.`,
         action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
       });
       return;
     }
+
     setLoading(true);
     setError(null);
     try {
