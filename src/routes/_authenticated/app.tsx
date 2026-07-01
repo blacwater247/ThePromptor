@@ -147,16 +147,24 @@ function AppPage() {
               <span className="font-display text-xl font-bold brand-text">Blacure</span>
             </Link>
             <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${!canStandard ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
-                <Zap className="h-3.5 w-3.5" />
-                {creditsQuery.isLoading ? "…" : `${balance} credits`}
-                <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} prompts</span>
-              </div>
+              {isPro ? (
+                <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border border-primary/40 brand-text">
+                  <Zap className="h-3.5 w-3.5" />
+                  Unlimited
+                </div>
+              ) : (
+                <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${!canStandard ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
+                  <Zap className="h-3.5 w-3.5" />
+                  {creditsQuery.isLoading ? "…" : `${balance} credits`}
+                  <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} prompts</span>
+                </div>
+              )}
               {isPro && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/50 brand-text px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
                   <Crown className="h-3 w-3" /> Pro
                 </span>
               )}
+
               <Link to="/pricing">
                 <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
                   <CreditCard className="h-4 w-4" />
