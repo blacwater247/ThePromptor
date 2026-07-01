@@ -43,11 +43,12 @@ const InputSchema = z.object({
 const MODE_CONFIG = {
   standard: {
     credits: 2,
-    maxTokens: 220,
+    maxTokens: 320,
     temperature: 0.85,
     system: `You write concise, ready-to-use AI music prompts.
-Output ONE flowing paragraph, max 90 words. No preamble, no markdown, no headings, no lists, no surrounding quotes. Do not explain.
+Output ONE flowing paragraph, max 110 words. No preamble, no markdown, no headings, no lists, no surrounding quotes. Do not explain.
 Weave genre, vocals, mood, instruments, drums, tempo, key, and production into natural producer language.
+HARD RULE: Every item listed under REQUIRED INSTRUMENTS and the exact DRUMS style must appear by name in the output. Do not substitute, rename, generalize, or omit any of them.
 Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
   },
   pro: {
@@ -59,6 +60,7 @@ Output a structured prompt using these bracketed sections in order: [Intro] [Ver
 Each section is 1–3 short sentences of concrete producer language (instrumentation, arrangement moves, vocal delivery, dynamics, FX). Max 280 words total.
 No preamble, no markdown headings (#), no lists, no surrounding quotes, no explanation of what you wrote.
 Honor the requested prompt type, length, tempo (use BPM if provided), key, and production style.
+HARD RULE: Every item under REQUIRED INSTRUMENTS and the exact DRUMS style must appear by name. Distribute them across [Intro]/[Verse]/[Hook]/[Bridge]/[Outro], and restate the full kit in [Production Notes]. Never substitute or omit.
 Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
   },
 } as const;
@@ -71,6 +73,18 @@ function sanitizeOutput(text: string): string {
     t = t.slice(1, -1).trim();
   }
   return t;
+}
+
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function findMissing(output: string, required: string[]): string[] {
+  const hay = normalize(output);
+  return required.filter((item) => {
+    const n = normalize(item);
+    return n.length > 0 && !hay.includes(n);
+  });
 }
 
 export const generatePrompt = createServerFn({ method: "POST" })
@@ -142,6 +156,11 @@ export const generatePrompt = createServerFn({ method: "POST" })
       data.avoidWords,
     ].filter(Boolean).join(", ");
 
+    const requiredInstruments = data.instruments.slice();
+    const instrumentsLine = requiredInstruments.length
+      ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
+      : "";
+
     const userBlock = [
       data.title && `Title: "${data.title}"`,
       `Prompt type: ${data.promptType}`,
@@ -154,22 +173,47 @@ export const generatePrompt = createServerFn({ method: "POST" })
       `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
       `Theme: ${data.themePreset}`,
       data.topic && `Story/topic: ${data.topic}`,
-      data.instruments.length && `Instruments: ${data.instruments.join(", ")}`,
-      `Drums: ${data.drumStyle}`,
+      instrumentsLine,
+      `DRUMS (name exactly): ${data.drumStyle}`,
       tempoLine,
       `Key: ${data.key}`,
       `Production: ${data.productionStyle} · ${data.soundQuality}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
+      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${data.drumStyle}".`,
     ].filter(Boolean).join("\n");
 
+    const requiredForCheck = [...requiredInstruments, data.drumStyle];
+
     try {
-      const { text } = await generateText({
+      const first = await generateText({
         model: openai("gpt-4.1-mini"),
         system: cfg.system,
         prompt: userBlock,
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
       });
+
+      let finalText = first.text;
+      const missing = findMissing(finalText, requiredForCheck);
+      if (missing.length > 0) {
+        try {
+          const retry = await generateText({
+            model: openai("gpt-4.1-mini"),
+            system: cfg.system,
+            prompt: `${userBlock}\n\nPrevious attempt omitted these required items: ${missing.join(", ")}. Rewrite the prompt so every REQUIRED INSTRUMENT and the DRUMS style is named verbatim.`,
+            temperature: cfg.temperature,
+            maxOutputTokens: cfg.maxTokens,
+          });
+          const retryMissing = findMissing(retry.text, requiredForCheck);
+          if (retryMissing.length < missing.length) finalText = retry.text;
+          if (retryMissing.length > 0) {
+            console.warn("[prompt] still missing after retry:", retryMissing);
+          }
+        } catch (retryErr) {
+          console.warn("[prompt] retry failed, using first attempt", retryErr);
+        }
+      }
+
       // Log for rate-limit tracking (best-effort, non-blocking on failure)
       try {
         await supabaseAdmin.from("generations_log").insert({
@@ -179,7 +223,8 @@ export const generatePrompt = createServerFn({ method: "POST" })
       } catch (logErr) {
         console.error("[prompt] log insert failed", logErr);
       }
-      return { prompt: sanitizeOutput(text), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+      return { prompt: sanitizeOutput(finalText), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+
     } catch (err: unknown) {
       if (!isSubscriber) {
         try {
