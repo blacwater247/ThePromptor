@@ -43,11 +43,12 @@ const InputSchema = z.object({
 const MODE_CONFIG = {
   standard: {
     credits: 2,
-    maxTokens: 220,
+    maxTokens: 320,
     temperature: 0.85,
     system: `You write concise, ready-to-use AI music prompts.
-Output ONE flowing paragraph, max 90 words. No preamble, no markdown, no headings, no lists, no surrounding quotes. Do not explain.
+Output ONE flowing paragraph, max 110 words. No preamble, no markdown, no headings, no lists, no surrounding quotes. Do not explain.
 Weave genre, vocals, mood, instruments, drums, tempo, key, and production into natural producer language.
+HARD RULE: Every item listed under REQUIRED INSTRUMENTS and the exact DRUMS style must appear by name in the output. Do not substitute, rename, generalize, or omit any of them.
 Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
   },
   pro: {
@@ -59,6 +60,7 @@ Output a structured prompt using these bracketed sections in order: [Intro] [Ver
 Each section is 1–3 short sentences of concrete producer language (instrumentation, arrangement moves, vocal delivery, dynamics, FX). Max 280 words total.
 No preamble, no markdown headings (#), no lists, no surrounding quotes, no explanation of what you wrote.
 Honor the requested prompt type, length, tempo (use BPM if provided), key, and production style.
+HARD RULE: Every item under REQUIRED INSTRUMENTS and the exact DRUMS style must appear by name. Distribute them across [Intro]/[Verse]/[Hook]/[Bridge]/[Outro], and restate the full kit in [Production Notes]. Never substitute or omit.
 Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
   },
 } as const;
@@ -71,6 +73,18 @@ function sanitizeOutput(text: string): string {
     t = t.slice(1, -1).trim();
   }
   return t;
+}
+
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function findMissing(output: string, required: string[]): string[] {
+  const hay = normalize(output);
+  return required.filter((item) => {
+    const n = normalize(item);
+    return n.length > 0 && !hay.includes(n);
+  });
 }
 
 export const generatePrompt = createServerFn({ method: "POST" })
