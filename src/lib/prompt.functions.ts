@@ -6,10 +6,8 @@ import {
   PROMPT_TYPES, SONG_LENGTHS, MAIN_GENRES, FUSION_GENRES, VOCAL_TYPES,
   VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
   THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
-  SOUND_QUALITIES,
+  SOUND_QUALITIES, AVOID_PRESETS, PROMPT_MODES,
 } from "./prompt-options";
-
-const CREDITS_PER_PROMPT = 2;
 
 const enumOf = (values: readonly string[]) =>
   z.string().refine((v) => values.includes(v), { message: "Invalid value" });
@@ -17,7 +15,8 @@ const enumOf = (values: readonly string[]) =>
 const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
 const InputSchema = z.object({
-  title: z.string().max(200).optional().default("").transform(stripNewlines),
+  mode: z.enum(PROMPT_MODES).default("standard"),
+  title: z.string().max(80).optional().default("").transform(stripNewlines),
   promptType: enumOf(PROMPT_TYPES),
   songLength: enumOf(SONG_LENGTHS),
   mainGenre: enumOf(MAIN_GENRES),
@@ -29,7 +28,7 @@ const InputSchema = z.object({
   energy: enumOf(ENERGY_LEVELS),
   emotionDepth: enumOf(EMOTION_DEPTHS),
   themePreset: enumOf(THEME_PRESETS),
-  topic: z.string().max(2000).optional().default("").transform(stripNewlines),
+  topic: z.string().max(200).optional().default("").transform(stripNewlines),
   instruments: z.array(enumOf(INSTRUMENTS)).max(40),
   drumStyle: enumOf(DRUM_STYLES),
   tempo: enumOf(TEMPOS),
@@ -37,8 +36,42 @@ const InputSchema = z.object({
   key: enumOf(KEYS),
   productionStyle: enumOf(PRODUCTION_STYLES),
   soundQuality: enumOf(SOUND_QUALITIES),
-  avoidWords: z.string().max(500).optional().default("").transform(stripNewlines),
+  avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
+  avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
 });
+
+const MODE_CONFIG = {
+  standard: {
+    credits: 2,
+    maxTokens: 220,
+    temperature: 0.85,
+    system: `You write concise, ready-to-use AI music prompts.
+Output ONE flowing paragraph, max 90 words. No preamble, no markdown, no headings, no lists, no surrounding quotes. Do not explain.
+Weave genre, vocals, mood, instruments, drums, tempo, key, and production into natural producer language.
+Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
+  },
+  pro: {
+    credits: 6,
+    maxTokens: 700,
+    temperature: 0.9,
+    system: `You write studio-grade AI music prompts for professional producers.
+Output a structured prompt using these bracketed sections in order: [Intro] [Verse] [Hook] [Bridge] [Outro] [Production Notes] [Mix Notes].
+Each section is 1–3 short sentences of concrete producer language (instrumentation, arrangement moves, vocal delivery, dynamics, FX). Max 280 words total.
+No preamble, no markdown headings (#), no lists, no surrounding quotes, no explanation of what you wrote.
+Honor the requested prompt type, length, tempo (use BPM if provided), key, and production style.
+Strictly avoid any AVOID terms. Never name real artists or copyrighted lyrics.`,
+  },
+} as const;
+
+function sanitizeOutput(text: string): string {
+  let t = text.trim();
+  t = t.replace(/^```[a-z]*\n?/i, "").replace(/```$/i, "").trim();
+  t = t.replace(/^(prompt|final prompt|output)\s*[:\-—]\s*/i, "");
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    t = t.slice(1, -1).trim();
+  }
+  return t;
+}
 
 export const generatePrompt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -47,12 +80,25 @@ export const generatePrompt = createServerFn({ method: "POST" })
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) throw new Error("OpenAI is not configured. Please add OPENAI_API_KEY.");
 
-    // Generate a per-attempt ref id for idempotency / refund linking
+    const cfg = MODE_CONFIG[data.mode];
+
+    // Server-side Pro gating: never trust the client
+    if (data.mode === "pro") {
+      const { data: sub } = await context.supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      const isPro = sub?.status === "active";
+      if (!isPro) {
+        throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
+      }
+    }
+
     const attemptRef = crypto.randomUUID();
 
-    // Spend 2 credits up front (atomic; raises insufficient_credits)
     const { data: newBalance, error: spendErr } = await context.supabase.rpc("spend_credits", {
-      _amount: CREDITS_PER_PROMPT,
+      _amount: cfg.credits,
       _ref: attemptRef,
     });
     if (spendErr) {
@@ -69,6 +115,11 @@ export const generatePrompt = createServerFn({ method: "POST" })
     const tempoLine = data.tempo === "Custom BPM" && data.customBpm
       ? `Tempo: ${data.customBpm} BPM`
       : `Tempo: ${data.tempo}`;
+
+    const avoidCombined = [
+      ...(data.avoidPresets ?? []),
+      data.avoidWords,
+    ].filter(Boolean).join(", ");
 
     const userBlock = [
       data.title && `Title: "${data.title}"`,
@@ -87,28 +138,22 @@ export const generatePrompt = createServerFn({ method: "POST" })
       tempoLine,
       `Key: ${data.key}`,
       `Production: ${data.productionStyle} · ${data.soundQuality}`,
-      data.avoidWords && `AVOID: ${data.avoidWords}`,
+      avoidCombined && `AVOID: ${avoidCombined}`,
     ].filter(Boolean).join("\n");
-
-    const system = `You are an expert music producer who writes prompts for AI music generators.
-
-Output ONE polished prompt as a single flowing paragraph (or 2 short paragraphs max). No preamble. No markdown. No headings. No lists. No quotes around the prompt. Do not explain what you wrote.
-
-Weave genre, fusion, vocal type and delivery, mood, instruments, drum style, tempo (use the BPM if provided), key, and production style into natural producer language. Keep it concrete and sensory.
-
-If the user supplied "AVOID" terms or styles, strictly do not use any of those words or describe those styles. Never reference real artist names or copyrighted lyrics. Honor the requested prompt type and length/structure.`;
 
     try {
       const { text } = await generateText({
         model: openai("gpt-4.1-mini"),
-        system,
+        system: cfg.system,
         prompt: userBlock,
+        temperature: cfg.temperature,
+        maxOutputTokens: cfg.maxTokens,
       });
-      return { prompt: text.trim(), balance: newBalance as number };
+      return { prompt: sanitizeOutput(text), balance: newBalance as number, mode: data.mode };
     } catch (err: unknown) {
       try {
         await context.supabase.rpc("refund_credits", {
-          _amount: CREDITS_PER_PROMPT,
+          _amount: cfg.credits,
           _ref: attemptRef,
         });
       } catch (refundErr) {
