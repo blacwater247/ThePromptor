@@ -162,11 +162,11 @@ export type Database = {
         Returns: boolean
       }
       refund_credits: {
-        Args: { _amount: number; _ref: string }
+        Args: { _amount: number; _ref: string; _user_id: string }
         Returns: number
       }
       spend_credits: {
-        Args: { _amount: number; _ref: string }
+        Args: { _amount: number; _ref: string; _user_id: string }
         Returns: number
       }
     }
