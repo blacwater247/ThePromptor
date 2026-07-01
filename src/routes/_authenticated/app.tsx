@@ -143,11 +143,16 @@ function AppPage() {
               <span className="font-display text-xl font-bold brand-text">Blacure</span>
             </Link>
             <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${lowCredits ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
+              <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${!canStandard ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
                 <Zap className="h-3.5 w-3.5" />
                 {creditsQuery.isLoading ? "…" : `${balance} credits`}
                 <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} prompts</span>
               </div>
+              {isPro && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/50 brand-text px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
+                  <Crown className="h-3 w-3" /> Pro
+                </span>
+              )}
               <Link to="/pricing">
                 <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
                   <CreditCard className="h-4 w-4" />
@@ -167,11 +172,24 @@ function AppPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-base sm:text-lg text-muted-foreground">
             Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
+            {!isPro && <span className="block mt-1 text-sm">Long, structured Pro Studio prompts are included with the Monthly plan.</span>}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" onClick={handleGenerate} disabled={loading || lowCredits} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
+            <Button size="lg" onClick={() => handleGenerate("standard")} disabled={loading || !canStandard} className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
               <Sparkles className="h-4 w-4" />
               {loading ? "Generating…" : "Generate Prompt (2 credits)"}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => handleGenerate("pro")}
+              disabled={loading || (isPro && !canPro)}
+              className="border-primary/60 hover:bg-primary/10 relative"
+              title={isPro ? "Longer, structured studio prompt" : "Unlock with Monthly plan"}
+            >
+              {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+              Pro Studio Prompt (6 credits)
+              <span className="ml-1 rounded bg-primary/20 brand-text text-[10px] font-bold px-1.5 py-0.5">PRO</span>
             </Button>
             <Button size="lg" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
               <Shuffle className="h-4 w-4" />
@@ -182,7 +200,7 @@ function AppPage() {
               Clear Form
             </Button>
           </div>
-          {lowCredits && (
+          {!canStandard && (
             <p className="mt-4 text-sm text-destructive">
               You don't have enough credits. <Link to="/pricing" className="underline font-semibold">Buy more</Link> to keep generating.
             </p>
@@ -199,9 +217,19 @@ function AppPage() {
             </div>
             <PromptBuilder value={inputs} onChange={setInputs} />
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={handleGenerate} disabled={loading || lowCredits} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
+              <Button onClick={() => handleGenerate("standard")} disabled={loading || !canStandard} className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
                 <Sparkles className="h-4 w-4" />
                 {loading ? "Generating…" : "Generate (2 credits)"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleGenerate("pro")}
+                disabled={loading || (isPro && !canPro)}
+                className="border-primary/60 hover:bg-primary/10"
+              >
+                {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                Pro Studio (6 credits)
               </Button>
               <Button type="button" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
                 <Shuffle className="h-4 w-4" />
