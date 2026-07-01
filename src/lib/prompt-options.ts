@@ -107,6 +107,15 @@ export const SOUND_QUALITIES = [
   "Premium studio quality",
 ];
 
+export const AVOID_PRESETS = [
+  "Artist names", "Brand names", "Explicit language", "Political themes",
+  "Religious references", "Drug references", "Copyrighted lyrics",
+  "The word 'neon'", "The word 'shadow'", "The word 'echo'",
+] as const;
+
+export const PROMPT_MODES = ["standard", "pro"] as const;
+export type PromptMode = typeof PROMPT_MODES[number];
+
 export type PromptInputs = {
   title: string;
   promptType: string;
@@ -129,6 +138,7 @@ export type PromptInputs = {
   productionStyle: string;
   soundQuality: string;
   avoidWords: string;
+  avoidPresets: string[];
 };
 
 export const DEFAULT_INPUTS: PromptInputs = {
@@ -153,4 +163,5 @@ export const DEFAULT_INPUTS: PromptInputs = {
   productionStyle: "Clean radio-ready mix",
   soundQuality: "Radio-ready",
   avoidWords: "",
+  avoidPresets: [],
 };
