@@ -59,6 +59,27 @@ export type Database = {
         }
         Relationships: []
       }
+      generations_log: {
+        Row: {
+          created_at: string
+          id: string
+          mode: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

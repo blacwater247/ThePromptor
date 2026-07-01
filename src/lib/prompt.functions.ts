@@ -82,35 +82,53 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
     const cfg = MODE_CONFIG[data.mode];
 
-    // Server-side Pro gating: never trust the client
-    if (data.mode === "pro") {
-      const { data: sub } = await context.supabase
-        .from("subscriptions")
-        .select("status")
-        .eq("user_id", context.userId)
-        .maybeSingle();
-      const isPro = sub?.status === "active";
-      if (!isPro) {
-        throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
-      }
+    // Check active subscription — subscribers get unlimited (Standard + Pro)
+    const { data: sub } = await context.supabase
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    const isSubscriber = sub?.status === "active";
+
+    // Pro mode requires an active subscription
+    if (data.mode === "pro" && !isSubscriber) {
+      throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
     }
 
     const attemptRef = crypto.randomUUID();
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: newBalance, error: spendErr } = await supabaseAdmin.rpc("spend_credits", {
-      _user_id: context.userId,
-      _amount: cfg.credits,
-      _ref: attemptRef,
-    });
-    if (spendErr) {
-      const msg = (spendErr.message || "").toLowerCase();
-      if (msg.includes("insufficient_credits")) {
-        throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
+
+    // Rate-limit subscribers to prevent abuse: 60 generations / hour
+    if (isSubscriber) {
+      const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { count } = await supabaseAdmin
+        .from("generations_log")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", context.userId)
+        .gte("created_at", since);
+      if ((count ?? 0) >= 60) {
+        throw new Error("RATE_LIMITED: You've hit the hourly generation limit. Try again in a bit.");
       }
-      console.error("[prompt] spend_credits error", spendErr);
-      throw new Error("Could not deduct credits. Please try again.");
     }
+
+    let newBalance: number | null = null;
+    if (!isSubscriber) {
+      const { data: balAfter, error: spendErr } = await supabaseAdmin.rpc("spend_credits", {
+        _user_id: context.userId,
+        _amount: cfg.credits,
+        _ref: attemptRef,
+      });
+      if (spendErr) {
+        const msg = (spendErr.message || "").toLowerCase();
+        if (msg.includes("insufficient_credits")) {
+          throw new Error("INSUFFICIENT_CREDITS: You're out of credits. Buy more to keep generating.");
+        }
+        console.error("[prompt] spend_credits error", spendErr);
+        throw new Error("Could not deduct credits. Please try again.");
+      }
+      newBalance = balAfter as number;
+    }
+
 
     const { createOpenAI } = await import("@ai-sdk/openai");
     const openai = createOpenAI({ apiKey: openaiKey });
@@ -152,23 +170,36 @@ export const generatePrompt = createServerFn({ method: "POST" })
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
       });
-      return { prompt: sanitizeOutput(text), balance: newBalance as number, mode: data.mode };
-    } catch (err: unknown) {
+      // Log for rate-limit tracking (best-effort, non-blocking on failure)
       try {
-        await supabaseAdmin.rpc("refund_credits", {
-          _user_id: context.userId,
-          _amount: cfg.credits,
-          _ref: attemptRef,
+        await supabaseAdmin.from("generations_log").insert({
+          user_id: context.userId,
+          mode: data.mode,
         });
-      } catch (refundErr) {
-        console.error("[credits] refund failed for", attemptRef, refundErr);
+      } catch (logErr) {
+        console.error("[prompt] log insert failed", logErr);
+      }
+      return { prompt: sanitizeOutput(text), balance: newBalance, mode: data.mode, unlimited: isSubscriber };
+    } catch (err: unknown) {
+      if (!isSubscriber) {
+        try {
+          await supabaseAdmin.rpc("refund_credits", {
+            _user_id: context.userId,
+            _amount: cfg.credits,
+            _ref: attemptRef,
+          });
+        } catch (refundErr) {
+          console.error("[credits] refund failed for", attemptRef, refundErr);
+        }
       }
       const e = err as { statusCode?: number; status?: number; message?: string };
       const status = e.statusCode ?? e.status;
       console.error("[prompt] generation error", err);
-      if (status === 401) throw new Error("OpenAI API key is invalid. Your credits were refunded.");
-      if (status === 429) throw new Error("OpenAI rate limit reached. Please try again shortly. Your credits were refunded.");
-      if (status === 402 || /quota/i.test(e.message || "")) throw new Error("OpenAI quota exceeded. Your credits were refunded.");
-      throw new Error("Failed to generate prompt. Your credits were refunded.");
+      const suffix = isSubscriber ? "Please try again." : "Your credits were refunded.";
+      if (status === 401) throw new Error(`OpenAI API key is invalid. ${suffix}`);
+      if (status === 429) throw new Error(`OpenAI rate limit reached. Please try again shortly. ${suffix}`);
+      if (status === 402 || /quota/i.test(e.message || "")) throw new Error(`OpenAI quota exceeded. ${suffix}`);
+      throw new Error(`Failed to generate prompt. ${suffix}`);
     }
   });
+
