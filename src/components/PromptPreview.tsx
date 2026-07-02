@@ -75,7 +75,7 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
               <div className="h-3 rounded bg-secondary w-full" />
               <div className="h-3 rounded bg-secondary w-9/12" />
               <div className="h-3 rounded bg-secondary w-10/12" />
-              <p className="text-xs text-muted-foreground pt-3">Composing your Suno-ready prompt…</p>
+              <p className="text-xs text-muted-foreground pt-3">Composing your studio-ready prompt…</p>
             </div>
           ) : error ? (
             <p className="text-destructive">{error}</p>

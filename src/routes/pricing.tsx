@@ -8,7 +8,7 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — Blacure" },
-      { name: "description", content: "Simple, fair pricing for AI music prompts. Start free with 10 prompts, then $2 for 20 prompts or $19.99/month for 100 prompts." },
+      { name: "description", content: "Simple, fair pricing for AI music prompts. Start free with 10 prompts, then $2 for 20 prompts or $19.99/month for unlimited." },
       { property: "og:title", content: "Pricing — Blacure" },
       { property: "og:description", content: "Start with 10 free prompts. Pay-as-you-go or monthly subscription." },
       { property: "og:url", content: "https://thepromptor.life/pricing" },
@@ -113,11 +113,21 @@ function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to={t.ctaTo} className="block mt-6">
-                <Button className={`w-full ${t.highlight ? "brand-gradient text-black font-semibold border-0 hover:opacity-90" : ""}`} variant={t.highlight ? "default" : "outline"}>
-                  <Sparkles className="h-4 w-4" /> {t.cta}
+              {t.name === "Free" ? (
+                <Link to={t.ctaTo} className="block mt-6">
+                  <Button className={`w-full ${t.highlight ? "brand-gradient text-black font-semibold border-0 hover:opacity-90" : ""}`} variant={t.highlight ? "default" : "outline"}>
+                    <Sparkles className="h-4 w-4" /> {t.cta}
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  disabled
+                  className={`w-full mt-6 ${t.highlight ? "brand-gradient text-black font-semibold border-0 opacity-70" : ""}`}
+                  variant={t.highlight ? "default" : "outline"}
+                >
+                  Coming soon
                 </Button>
-              </Link>
+              )}
             </Card>
           ))}
         </div>
