@@ -46,6 +46,17 @@ function AccountPage() {
     queryFn: () => (env ? getMySubscription({ data: { environment: env } }) : Promise.resolve({ subscription: null })),
     enabled: !!env,
   });
+  const packsQ = useQuery({ queryKey: ["packs"], queryFn: () => listMyPacks() });
+
+  const handleDownloadPack = async (packSlug: string) => {
+    try {
+      const res = await getPackDownloadUrl({ data: { packSlug } });
+      if ("error" in res) throw new Error(res.error);
+      window.open(res.url, "_blank", "noopener");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start download");
+    }
+  };
 
   const sub = subQ.data?.subscription ?? null;
   const isPro = isSubscriptionActive(sub);
