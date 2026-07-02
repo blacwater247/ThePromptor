@@ -80,6 +80,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pack_purchases: {
+        Row: {
+          created_at: string
+          environment: string
+          id: string
+          pack_slug: string
+          stripe_session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          id?: string
+          pack_slug: string
+          stripe_session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          id?: string
+          pack_slug?: string
+          stripe_session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
