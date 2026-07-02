@@ -8,6 +8,7 @@ import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import packCoverV2 from "@/assets/blacure-pack-vol2.png.asset.json";
+import packCoverV3 from "@/assets/blacure-pack-vol3.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
@@ -62,7 +63,8 @@ function AppPage() {
   const canStandard = isPro || balance >= 2;
   const ownsPackV1 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol1");
   const ownsPackV2 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol2");
-  const [packCheckoutOpen, setPackCheckoutOpen] = useState<null | "prompt_pack_vol1" | "prompt_pack_vol2">(null);
+  const ownsPackV3 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol3");
+  const [packCheckoutOpen, setPackCheckoutOpen] = useState<null | "prompt_pack_vol1" | "prompt_pack_vol2" | "prompt_pack_vol3">(null);
   const configured = isPaymentsConfigured();
 
   const packReturnUrl =
@@ -70,7 +72,7 @@ function AppPage() {
       ? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`
       : "https://thepromptor.life/checkout/return?session_id={CHECKOUT_SESSION_ID}";
 
-  const handleDownloadPack = async (packSlug: "prompt_pack_vol1" | "prompt_pack_vol2") => {
+  const handleDownloadPack = async (packSlug: "prompt_pack_vol1" | "prompt_pack_vol2" | "prompt_pack_vol3") => {
     try {
       const res = await getPackDownloadUrl({ data: { packSlug } });
       if ("url" in res) {
