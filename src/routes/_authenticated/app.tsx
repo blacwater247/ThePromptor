@@ -14,6 +14,8 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePrompt } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { isSubscriptionActive } from "@/lib/subscription";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -44,10 +46,10 @@ function AppPage() {
   });
   const subQuery = useQuery({
     queryKey: ["subscription"],
-    queryFn: () => getMySubscription(),
+    queryFn: () => getMySubscription({ data: { environment: getStripeEnvironment() } }),
   });
   const balance = creditsQuery.data?.balance ?? 0;
-  const isPro = subQuery.data?.subscription?.status === "active";
+  const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
   const canStandard = isPro || balance >= 2;
 
 
@@ -168,7 +170,13 @@ function AppPage() {
               <Link to="/pricing">
                 <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
                   <CreditCard className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Buy credits</span>
+                  <span className="hidden sm:inline ml-1">{isPro ? "Plans" : "Buy credits"}</span>
+                </Button>
+              </Link>
+              <Link to="/account">
+                <Button size="sm" variant="ghost" aria-label="Account">
+                  <Crown className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Account</span>
                 </Button>
               </Link>
               <Button size="sm" variant="ghost" onClick={handleSignOut} aria-label="Sign out">
