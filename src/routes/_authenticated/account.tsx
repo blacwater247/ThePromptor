@@ -3,14 +3,16 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, CreditCard, LogOut, ExternalLink, Crown, Zap } from "lucide-react";
+import { ArrowLeft, CreditCard, LogOut, ExternalLink, Crown, Zap, Download } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
+import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyCredits, getMySubscription, getMyTransactions } from "@/lib/credits.functions";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
+import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -44,6 +46,17 @@ function AccountPage() {
     queryFn: () => (env ? getMySubscription({ data: { environment: env } }) : Promise.resolve({ subscription: null })),
     enabled: !!env,
   });
+  const packsQ = useQuery({ queryKey: ["packs"], queryFn: () => listMyPacks() });
+
+  const handleDownloadPack = async (packSlug: string) => {
+    try {
+      const res = await getPackDownloadUrl({ data: { packSlug } });
+      if ("error" in res) throw new Error(res.error);
+      window.open(res.url, "_blank", "noopener");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start download");
+    }
+  };
 
   const sub = subQ.data?.subscription ?? null;
   const isPro = isSubscriptionActive(sub);
@@ -148,6 +161,53 @@ function AccountPage() {
             </Link>
           </Card>
         </div>
+
+        <Card className="p-6 border-border/60 bg-card/70">
+          <h2 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
+            <Download className="h-4 w-4 brand-text" /> Downloads
+          </h2>
+          {packsQ.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (packsQ.data?.packs ?? []).length === 0 ? (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-muted-foreground">
+                You don't own any prompt packs yet. Grab Volume 1 for $2 — 12 studio-ready prompts, instant PDF.
+              </p>
+              <Link to="/pricing">
+                <Button variant="outline" className="border-primary/40 hover:bg-primary/10">
+                  View pack
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {packsQ.data!.packs.map((p) => (
+                <li
+                  key={p.pack_slug}
+                  className="flex items-center gap-4 rounded-lg border border-border/50 bg-background/40 p-3"
+                >
+                  <img
+                    src={packCover.url}
+                    alt="Blacure Prompt Pack Volume 1"
+                    className="h-16 w-16 rounded-md object-cover border border-primary/30 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium">Blacure Prompt Pack — Volume 1</p>
+                    <p className="text-xs text-muted-foreground">
+                      Purchased {new Date(p.created_at).toLocaleDateString()} · 12 prompts, PDF
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => handleDownloadPack(p.pack_slug)}
+                    className="brand-gradient text-black font-semibold border-0 hover:opacity-90"
+                  >
+                    <Download className="h-4 w-4" /> Download
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
 
         <Card className="p-6 border-border/60 bg-card/70">
           <h2 className="font-display text-lg font-semibold mb-3">Recent activity</h2>

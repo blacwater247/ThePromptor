@@ -15,9 +15,14 @@ function getSupabase() {
   return _supabase;
 }
 
-// Map of price lookup_key => credits to grant (one-time packs)
+// Map of price lookup_key => credits to grant (one-time credit packs)
 const CREDIT_PACKS: Record<string, number> = {
   credits_pack_20_onetime: 40, // 40 credits = 20 prompts (2 credits per prompt)
+};
+
+// Map of price lookup_key => downloadable pack slug
+const DOWNLOAD_PACKS: Record<string, string> = {
+  prompt_pack_vol1: "prompt_pack_vol1",
 };
 
 async function handleSubscriptionUpsert(subscription: any, env: StripeEnv) {
@@ -103,6 +108,23 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
     console.warn("[webhook] could not resolve price for session", session.id);
     return;
   }
+
+  // Downloadable pack? Insert an entitlement row (idempotent on session id).
+  const packSlug = DOWNLOAD_PACKS[priceLookupKey];
+  if (packSlug) {
+    const { error: packErr } = await getSupabase().from("pack_purchases").upsert(
+      {
+        user_id: userId,
+        pack_slug: packSlug,
+        stripe_session_id: session.id,
+        environment: env,
+      },
+      { onConflict: "stripe_session_id" },
+    );
+    if (packErr) console.error("[webhook] pack_purchases upsert error", packErr);
+    return;
+  }
+
   const credits = CREDIT_PACKS[priceLookupKey];
   if (!credits) {
     console.warn("[webhook] unknown pack lookup_key", priceLookupKey);
