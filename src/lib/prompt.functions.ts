@@ -96,13 +96,16 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
     const cfg = MODE_CONFIG[data.mode];
 
-    // Check active subscription — subscribers get unlimited (Standard + Pro)
-    const { data: sub } = await context.supabase
+    // Check active subscription — subscribers get unlimited (Standard + Pro).
+    // Honor Stripe grace period + trialing via the shared helper.
+    const { isSubscriptionActive } = await import("./subscription");
+    const { data: subRows } = await context.supabase
       .from("subscriptions")
-      .select("status")
+      .select("status, current_period_end, cancel_at_period_end")
       .eq("user_id", context.userId)
-      .maybeSingle();
-    const isSubscriber = sub?.status === "active";
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const isSubscriber = isSubscriptionActive(subRows?.[0]);
 
     // Pro mode requires an active subscription
     if (data.mode === "pro" && !isSubscriber) {
