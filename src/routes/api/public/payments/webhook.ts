@@ -24,6 +24,7 @@ const CREDIT_PACKS: Record<string, number> = {
 const DOWNLOAD_PACKS: Record<string, string> = {
   prompt_pack_vol1: "prompt_pack_vol1",
   prompt_pack_vol2: "prompt_pack_vol2",
+  prompt_pack_vol3: "prompt_pack_vol3",
 };
 
 async function handleSubscriptionUpsert(subscription: any, env: StripeEnv) {
