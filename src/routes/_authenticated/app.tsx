@@ -306,7 +306,79 @@ function AppPage() {
             onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
           />
         </div>
+
+        {/* Prompt Pack Vol. 1 — downloadable */}
+        <section className="mt-16" aria-labelledby="pack-vol1-heading">
+          <div className="text-center mb-8">
+            <p className="text-xs uppercase tracking-widest brand-text font-bold">Instant Download</p>
+            <h2 id="pack-vol1-heading" className="mt-2 font-display text-3xl sm:text-4xl font-bold">
+              Blacure Prompt Pack — Volume 1
+            </h2>
+            <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+              12 studio-ready prompts hand-crafted by Blacure. Delivered as a polished PDF you can paste into Suno, Udio, or any AI music engine.
+            </p>
+          </div>
+
+          {packCheckoutOpen ? (
+            <Card className="p-4 sm:p-6 border-border/60 bg-card/70 backdrop-blur max-w-3xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-xl font-bold">Complete your purchase</h3>
+                <Button variant="ghost" onClick={() => setPackCheckoutOpen(false)}>Cancel</Button>
+              </div>
+              <StripeEmbeddedCheckout priceId="prompt_pack_vol1" returnUrl={packReturnUrl} />
+            </Card>
+          ) : (
+            <Card className="p-6 sm:p-8 border-border/60 bg-card/70 backdrop-blur">
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <div className="rounded-xl overflow-hidden border border-primary/30 gold-glow">
+                  <img src={packCover.url} alt="Blacure Prompt Pack Volume 1 cover" className="w-full h-auto block" />
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-5xl font-bold">$2</span>
+                    <span className="text-sm text-muted-foreground">one-time</span>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm">
+                    {[
+                      "12 ready-to-paste music prompts",
+                      "Genres: trap-soul, gospel funk, phonk, dancehall, drill, cinematic & more",
+                      "Instant PDF download after purchase",
+                      "Yours forever — download any time from your account",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {ownsPackV1 ? (
+                    <Button
+                      onClick={handleDownloadPack}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download PDF
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setPackCheckoutOpen(true)}
+                      disabled={!configured}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      {!configured ? "Coming soon" : "Buy Pack — $2"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+        </section>
       </main>
+
+
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
         Blacure · The Promptor — prompts are AI-generated, always review before use.
