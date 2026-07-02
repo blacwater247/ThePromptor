@@ -15,9 +15,14 @@ function getSupabase() {
   return _supabase;
 }
 
-// Map of price lookup_key => credits to grant (one-time packs)
+// Map of price lookup_key => credits to grant (one-time credit packs)
 const CREDIT_PACKS: Record<string, number> = {
   credits_pack_20_onetime: 40, // 40 credits = 20 prompts (2 credits per prompt)
+};
+
+// Map of price lookup_key => downloadable pack slug
+const DOWNLOAD_PACKS: Record<string, string> = {
+  prompt_pack_vol1: "prompt_pack_vol1",
 };
 
 async function handleSubscriptionUpsert(subscription: any, env: StripeEnv) {
