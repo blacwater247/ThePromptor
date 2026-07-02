@@ -171,6 +171,56 @@ function Pricing() {
                 </Card>
               ))}
             </div>
+
+            {/* Downloadable Pack */}
+            <section className="mt-16">
+              <div className="text-center mb-8">
+                <p className="text-xs uppercase tracking-widest brand-text font-bold">Instant Download</p>
+                <h2 className="mt-2 font-display text-3xl sm:text-4xl font-bold">Blacure Prompt Pack — Volume 1</h2>
+                <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+                  12 studio-ready prompts hand-crafted by Blacure. Delivered as a polished PDF you can paste into Suno, Udio, or any AI music engine.
+                </p>
+              </div>
+              <Card className="p-6 sm:p-8 border-border/60 bg-card/70 backdrop-blur">
+                <div className="grid md:grid-cols-2 gap-6 items-center">
+                  <div className="rounded-xl overflow-hidden border border-primary/30 gold-glow">
+                    <img
+                      src={packCover.url}
+                      alt="Blacure Prompt Pack Volume 1 cover"
+                      className="w-full h-auto block"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display text-5xl font-bold">$2</span>
+                      <span className="text-sm text-muted-foreground">one-time</span>
+                    </div>
+                    <ul className="mt-4 space-y-2 text-sm">
+                      {[
+                        "12 ready-to-paste music prompts",
+                        "Genres: trap-soul, gospel funk, phonk, dancehall, drill, cinematic & more",
+                        "Instant PDF download after purchase",
+                        "Yours forever — download any time from your account",
+                      ].map((f) => (
+                        <li key={f} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      onClick={() => handleCheckout("prompt_pack_vol1")}
+                      disabled={loading || !configured}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      {!configured ? "Coming soon" : "Buy Pack — $2"}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </section>
           </>
         )}
       </main>
