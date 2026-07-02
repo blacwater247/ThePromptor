@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown, Lock } from "lucide-react";
+import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown, Lock, Download, Check } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
+import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
@@ -13,9 +14,12 @@ import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePrompt } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
+import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironment, isPaymentsConfigured } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
