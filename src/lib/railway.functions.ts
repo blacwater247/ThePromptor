@@ -55,7 +55,7 @@ export const pingRailway = createServerFn({ method: "GET" })
  */
 export const generatePromptRailway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { inputs: Record<string, unknown>; mode?: string }) => {
+  .inputValidator((data: { inputs: { [key: string]: JsonValue }; mode?: string }) => {
     if (!data || typeof data.inputs !== "object" || data.inputs === null) {
       throw new Error("inputs is required");
     }
