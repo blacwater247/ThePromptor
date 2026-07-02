@@ -7,6 +7,7 @@ import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
+import packCoverV2 from "@/assets/blacure-pack-vol2.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
@@ -60,7 +61,8 @@ function AppPage() {
   const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
   const canStandard = isPro || balance >= 2;
   const ownsPackV1 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol1");
-  const [packCheckoutOpen, setPackCheckoutOpen] = useState(false);
+  const ownsPackV2 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol2");
+  const [packCheckoutOpen, setPackCheckoutOpen] = useState<null | "prompt_pack_vol1" | "prompt_pack_vol2">(null);
   const configured = isPaymentsConfigured();
 
   const packReturnUrl =
@@ -68,9 +70,9 @@ function AppPage() {
       ? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`
       : "https://thepromptor.life/checkout/return?session_id={CHECKOUT_SESSION_ID}";
 
-  const handleDownloadPack = async () => {
+  const handleDownloadPack = async (packSlug: "prompt_pack_vol1" | "prompt_pack_vol2") => {
     try {
-      const res = await getPackDownloadUrl({ data: { packSlug: "prompt_pack_vol1" } });
+      const res = await getPackDownloadUrl({ data: { packSlug } });
       if ("url" in res) {
         window.open(res.url, "_blank", "noopener,noreferrer");
       } else {
@@ -319,11 +321,11 @@ function AppPage() {
             </p>
           </div>
 
-          {packCheckoutOpen ? (
+          {packCheckoutOpen === "prompt_pack_vol1" ? (
             <Card className="p-4 sm:p-6 border-border/60 bg-card/70 backdrop-blur max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display text-xl font-bold">Complete your purchase</h3>
-                <Button variant="ghost" onClick={() => setPackCheckoutOpen(false)}>Cancel</Button>
+                <Button variant="ghost" onClick={() => setPackCheckoutOpen(null)}>Cancel</Button>
               </div>
               <StripeEmbeddedCheckout priceId="prompt_pack_vol1" returnUrl={packReturnUrl} />
             </Card>
@@ -353,7 +355,7 @@ function AppPage() {
                   </ul>
                   {ownsPackV1 ? (
                     <Button
-                      onClick={handleDownloadPack}
+                      onClick={() => handleDownloadPack("prompt_pack_vol1")}
                       className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
                       size="lg"
                     >
@@ -362,7 +364,7 @@ function AppPage() {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => setPackCheckoutOpen(true)}
+                      onClick={() => setPackCheckoutOpen("prompt_pack_vol1")}
                       disabled={!configured}
                       className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
                       size="lg"
@@ -376,6 +378,78 @@ function AppPage() {
             </Card>
           )}
         </section>
+
+        {/* Prompt Pack Vol. 2 — Producer Edition */}
+        <section className="mt-16" aria-labelledby="pack-vol2-heading">
+          <div className="text-center mb-8">
+            <p className="text-xs uppercase tracking-widest brand-text font-bold">New · Producer Edition</p>
+            <h2 id="pack-vol2-heading" className="mt-2 font-display text-3xl sm:text-4xl font-bold">
+              Blacure Prompt Pack — Volume 2
+            </h2>
+            <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+              20 professional-level prompts with full mix-chain, arrangement structure, and sound-design parameters. Built for producers, engineers, and sound architects.
+            </p>
+          </div>
+
+          {packCheckoutOpen === "prompt_pack_vol2" ? (
+            <Card className="p-4 sm:p-6 border-border/60 bg-card/70 backdrop-blur max-w-3xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-xl font-bold">Complete your purchase</h3>
+                <Button variant="ghost" onClick={() => setPackCheckoutOpen(null)}>Cancel</Button>
+              </div>
+              <StripeEmbeddedCheckout priceId="prompt_pack_vol2" returnUrl={packReturnUrl} />
+            </Card>
+          ) : (
+            <Card className="p-6 sm:p-8 border-border/60 bg-card/70 backdrop-blur">
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <div className="rounded-xl overflow-hidden border border-primary/30 gold-glow">
+                  <img src={packCoverV2.url} alt="Blacure Prompt Pack Volume 2 — Producer Edition cover" className="w-full h-auto block" />
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-5xl font-bold">$2</span>
+                    <span className="text-sm text-muted-foreground">one-time</span>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm">
+                    {[
+                      "20 producer-grade prompts across 20 fusion genres",
+                      "Full mix-chain: compression, saturation, sidechain, EQ moves",
+                      "Arrangement structure + sound-design parameters per prompt",
+                      "Suno v3 · Udio Pro · DAW-ready (Ableton, FL Studio, Logic Pro)",
+                      "Instant PDF — yours forever",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {ownsPackV2 ? (
+                    <Button
+                      onClick={() => handleDownloadPack("prompt_pack_vol2")}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download PDF
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setPackCheckoutOpen("prompt_pack_vol2")}
+                      disabled={!configured}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      {!configured ? "Coming soon" : "Buy Pack — $2"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+        </section>
+
       </main>
 
 
