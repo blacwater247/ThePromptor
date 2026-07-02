@@ -42,17 +42,29 @@ export function createStripeClient(env: StripeEnv): Stripe {
 }
 
 export function getStripeErrorMessage(error: unknown): string {
+  // Never forward raw Stripe messages to the client — they can leak
+  // internal customer IDs, API key state, or configuration details.
+  // Log the raw error server-side and return a safe, generic message.
+  console.error("[stripe] error", error);
   if (error && typeof error === "object") {
-    const stripeError = error as {
-      message?: string;
+    const e = error as {
       type?: string;
       code?: string;
-      raw?: { message?: string; type?: string; code?: string };
+      statusCode?: number;
+      raw?: { type?: string; code?: string };
     };
-    const message = stripeError.raw?.message ?? stripeError.message;
-    if (message) return message;
+    const type = e.raw?.type ?? e.type;
+    const code = e.raw?.code ?? e.code;
+    if (type === "StripeAuthenticationError")
+      return "Payment service is misconfigured. Please contact support.";
+    if (type === "StripeCardError") return "Your card was declined. Please try another payment method.";
+    if (type === "StripeRateLimitError") return "Too many payment requests. Please try again shortly.";
+    if (type === "StripeInvalidRequestError" && code === "resource_missing")
+      return "Payment configuration not found. Please contact support.";
+    if (type === "StripeConnectionError" || type === "StripeAPIError")
+      return "Payment service is temporarily unavailable. Please try again.";
   }
-  return "Stripe request failed";
+  return "A payment error occurred. Please try again.";
 }
 
 export async function verifyWebhook(

@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiPublicPackDownloadRouteImport } from './routes/api/public/pack-download'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -58,6 +59,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicPackDownloadRoute = ApiPublicPackDownloadRouteImport.update({
+  id: '/api/public/pack-download',
+  path: '/api/public/pack-download',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/app'
     | '/checkout/return'
+    | '/api/public/pack-download'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/app'
     | '/checkout/return'
+    | '/api/public/pack-download'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/app'
     | '/checkout/return'
+    | '/api/public/pack-download'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -138,6 +150,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
+  ApiPublicPackDownloadRoute: typeof ApiPublicPackDownloadRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/pack-download': {
+      id: '/api/public/pack-download'
+      path: '/api/public/pack-download'
+      fullPath: '/api/public/pack-download'
+      preLoaderRoute: typeof ApiPublicPackDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -229,6 +249,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
+  ApiPublicPackDownloadRoute: ApiPublicPackDownloadRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
