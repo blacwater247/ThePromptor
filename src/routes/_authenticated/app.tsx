@@ -52,9 +52,35 @@ function AppPage() {
     queryKey: ["subscription"],
     queryFn: () => getMySubscription({ data: { environment: getStripeEnvironment() } }),
   });
+  const packsQuery = useQuery({
+    queryKey: ["packs", "mine"],
+    queryFn: () => listMyPacks(),
+  });
   const balance = creditsQuery.data?.balance ?? 0;
   const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
   const canStandard = isPro || balance >= 2;
+  const ownsPackV1 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol1");
+  const [packCheckoutOpen, setPackCheckoutOpen] = useState(false);
+  const configured = isPaymentsConfigured();
+
+  const packReturnUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`
+      : "https://thepromptor.life/checkout/return?session_id={CHECKOUT_SESSION_ID}";
+
+  const handleDownloadPack = async () => {
+    try {
+      const res = await getPackDownloadUrl({ data: { packSlug: "prompt_pack_vol1" } });
+      if ("url" in res) {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error(res.error);
+      }
+    } catch {
+      toast.error("Could not start download. Try again.");
+    }
+  };
+
 
 
   const handleGenerate = async (mode: PromptMode = "standard") => {
