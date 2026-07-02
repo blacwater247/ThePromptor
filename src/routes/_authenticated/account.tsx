@@ -8,10 +8,12 @@ import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import packCoverV2 from "@/assets/blacure-pack-vol2.png.asset.json";
+import packCoverV3 from "@/assets/blacure-pack-vol3.png.asset.json";
 
 const PACK_META: Record<string, { title: string; cover: string; blurb: string }> = {
   prompt_pack_vol1: { title: "Blacure Prompt Pack — Volume 1", cover: packCover.url, blurb: "12 prompts, PDF" },
   prompt_pack_vol2: { title: "Blacure Prompt Pack — Volume 2 (Producer Edition)", cover: packCoverV2.url, blurb: "20 producer prompts, PDF" },
+  prompt_pack_vol3: { title: "Blacure Prompt Pack — Volume 3 (R&B Edition)", cover: packCoverV3.url, blurb: "17 R&B prompts, PDF" },
 };
 import { supabase } from "@/integrations/supabase/client";
 import { getMyCredits, getMySubscription, getMyTransactions } from "@/lib/credits.functions";

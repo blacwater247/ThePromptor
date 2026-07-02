@@ -2,10 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import packAsset from "@/server-assets/blacure-prompt-pack-v1.pdf.asset.json";
 import packAssetV2 from "@/server-assets/blacure-prompt-pack-v2.pdf.asset.json";
+import packAssetV3 from "@/server-assets/blacure-prompt-pack-v3.pdf.asset.json";
 
 const PACK_ASSET_URLS: Record<string, string> = {
   prompt_pack_vol1: packAsset.url,
   prompt_pack_vol2: packAssetV2.url,
+  prompt_pack_vol3: packAssetV3.url,
 };
 
 type PackListResult = { packs: Array<{ pack_slug: string; created_at: string }> };

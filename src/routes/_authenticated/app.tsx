@@ -8,6 +8,7 @@ import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import packCoverV2 from "@/assets/blacure-pack-vol2.png.asset.json";
+import packCoverV3 from "@/assets/blacure-pack-vol3.png.asset.json";
 import { PromptBuilder } from "@/components/PromptBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
@@ -62,7 +63,8 @@ function AppPage() {
   const canStandard = isPro || balance >= 2;
   const ownsPackV1 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol1");
   const ownsPackV2 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol2");
-  const [packCheckoutOpen, setPackCheckoutOpen] = useState<null | "prompt_pack_vol1" | "prompt_pack_vol2">(null);
+  const ownsPackV3 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol3");
+  const [packCheckoutOpen, setPackCheckoutOpen] = useState<null | "prompt_pack_vol1" | "prompt_pack_vol2" | "prompt_pack_vol3">(null);
   const configured = isPaymentsConfigured();
 
   const packReturnUrl =
@@ -70,7 +72,7 @@ function AppPage() {
       ? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`
       : "https://thepromptor.life/checkout/return?session_id={CHECKOUT_SESSION_ID}";
 
-  const handleDownloadPack = async (packSlug: "prompt_pack_vol1" | "prompt_pack_vol2") => {
+  const handleDownloadPack = async (packSlug: "prompt_pack_vol1" | "prompt_pack_vol2" | "prompt_pack_vol3") => {
     try {
       const res = await getPackDownloadUrl({ data: { packSlug } });
       if ("url" in res) {
@@ -436,6 +438,77 @@ function AppPage() {
                   ) : (
                     <Button
                       onClick={() => setPackCheckoutOpen("prompt_pack_vol2")}
+                      disabled={!configured}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      {!configured ? "Coming soon" : "Buy Pack — $2"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+        </section>
+
+        {/* Prompt Pack Vol. 3 — R&B Edition */}
+        <section className="mt-16" aria-labelledby="pack-vol3-heading">
+          <div className="text-center mb-8">
+            <p className="text-xs uppercase tracking-widest brand-text font-bold">New · R&amp;B Edition</p>
+            <h2 id="pack-vol3-heading" className="mt-2 font-display text-3xl sm:text-4xl font-bold">
+              Blacure Prompt Pack — Volume 3
+            </h2>
+            <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+              17 studio-ready R&amp;B prompts across trap-soul, neo-soul, gospel, afrobeat fusion, jazz, dancehall and more. Male &amp; female vocal directions, BPM, key, and mix notes included.
+            </p>
+          </div>
+
+          {packCheckoutOpen === "prompt_pack_vol3" ? (
+            <Card className="p-4 sm:p-6 border-border/60 bg-card/70 backdrop-blur max-w-3xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-xl font-bold">Complete your purchase</h3>
+                <Button variant="ghost" onClick={() => setPackCheckoutOpen(null)}>Cancel</Button>
+              </div>
+              <StripeEmbeddedCheckout priceId="prompt_pack_vol3" returnUrl={packReturnUrl} />
+            </Card>
+          ) : (
+            <Card className="p-6 sm:p-8 border-border/60 bg-card/70 backdrop-blur">
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <div className="rounded-xl overflow-hidden border border-primary/30 gold-glow">
+                  <img src={packCoverV3.url} alt="Blacure Prompt Pack Volume 3 — R&B Edition cover" className="w-full h-auto block" />
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-5xl font-bold">$2</span>
+                    <span className="text-sm text-muted-foreground">one-time</span>
+                  </div>
+                  <ul className="mt-4 space-y-2 text-sm">
+                    {[
+                      "17 R&B prompts — trap-soul, neo-soul, gospel, afrobeat, jazz, dancehall",
+                      "Male & female vocal directions with BPM, key, and mood",
+                      "Full mix notes: 808s, plate reverb, tape saturation, stereo imaging",
+                      "Suno · Udio · any AI music engine",
+                      "Instant PDF — yours forever",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {ownsPackV3 ? (
+                    <Button
+                      onClick={() => handleDownloadPack("prompt_pack_vol3")}
+                      className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download PDF
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setPackCheckoutOpen("prompt_pack_vol3")}
                       disabled={!configured}
                       className="w-full sm:w-auto mt-6 brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
                       size="lg"
