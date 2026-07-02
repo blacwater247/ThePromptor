@@ -4,7 +4,15 @@ import { railwayFetch, type RailwayResult } from "@/lib/railway.server";
 
 // ---------- Types ----------
 
-export type GeneratePromptResponse = { prompt: string; meta?: Record<string, unknown> };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+export type GeneratePromptResponse = { prompt: string; meta?: { [key: string]: JsonValue } };
 export type SavePromptResponse = { id: string };
 export type ListPromptsResponse = {
   prompts: Array<{ id: string; prompt: string; created_at: string }>;
