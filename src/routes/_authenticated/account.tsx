@@ -163,6 +163,53 @@ function AccountPage() {
         </div>
 
         <Card className="p-6 border-border/60 bg-card/70">
+          <h2 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
+            <Download className="h-4 w-4 brand-text" /> Downloads
+          </h2>
+          {packsQ.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (packsQ.data?.packs ?? []).length === 0 ? (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-muted-foreground">
+                You don't own any prompt packs yet. Grab Volume 1 for $2 — 12 studio-ready prompts, instant PDF.
+              </p>
+              <Link to="/pricing">
+                <Button variant="outline" className="border-primary/40 hover:bg-primary/10">
+                  View pack
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {packsQ.data!.packs.map((p) => (
+                <li
+                  key={p.pack_slug}
+                  className="flex items-center gap-4 rounded-lg border border-border/50 bg-background/40 p-3"
+                >
+                  <img
+                    src={packCover.url}
+                    alt="Blacure Prompt Pack Volume 1"
+                    className="h-16 w-16 rounded-md object-cover border border-primary/30 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium">Blacure Prompt Pack — Volume 1</p>
+                    <p className="text-xs text-muted-foreground">
+                      Purchased {new Date(p.created_at).toLocaleDateString()} · 12 prompts, PDF
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => handleDownloadPack(p.pack_slug)}
+                    className="brand-gradient text-black font-semibold border-0 hover:opacity-90"
+                  >
+                    <Download className="h-4 w-4" /> Download
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="p-6 border-border/60 bg-card/70">
           <h2 className="font-display text-lg font-semibold mb-3">Recent activity</h2>
           {txQ.isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
