@@ -3,14 +3,16 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, CreditCard, LogOut, ExternalLink, Crown, Zap } from "lucide-react";
+import { ArrowLeft, CreditCard, LogOut, ExternalLink, Crown, Zap, Download } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
+import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyCredits, getMySubscription, getMyTransactions } from "@/lib/credits.functions";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
+import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
