@@ -14,6 +14,8 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePrompt } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { isSubscriptionActive } from "@/lib/subscription";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -44,10 +46,10 @@ function AppPage() {
   });
   const subQuery = useQuery({
     queryKey: ["subscription"],
-    queryFn: () => getMySubscription(),
+    queryFn: () => getMySubscription({ data: { environment: getStripeEnvironment() } }),
   });
   const balance = creditsQuery.data?.balance ?? 0;
-  const isPro = subQuery.data?.subscription?.status === "active";
+  const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
   const canStandard = isPro || balance >= 2;
 
 
