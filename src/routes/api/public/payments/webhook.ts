@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, verifyWebhook } from "@/lib/stripe.server";
+
 
 let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 function getSupabase() {
@@ -71,7 +72,7 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
   if (error) console.error("[webhook] subscription delete error", error);
 }
 
-async function handleCheckoutCompleted(session: any) {
+async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   // Only for one-time pack purchases; subscriptions go through customer.subscription.*
   if (session.mode !== "payment") return;
   const userId = session.metadata?.userId;
@@ -79,17 +80,27 @@ async function handleCheckoutCompleted(session: any) {
     console.error("[webhook] checkout.session.completed missing userId", session.id);
     return;
   }
-  // Look up price via line items
-  const lineItems = session.line_items?.data ?? [];
+
+  // Resolve lookup key. Stripe does NOT expand line_items in webhook payloads,
+  // so fetch them explicitly. Fall back to session.metadata.price_id which
+  // createCheckoutSession stamps for one-time payments.
   let priceLookupKey: string | undefined;
-  for (const li of lineItems) {
-    priceLookupKey =
-      li?.price?.lookup_key || li?.price?.metadata?.lovable_external_id;
-    if (priceLookupKey) break;
+  try {
+    const stripe = createStripeClient(env);
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+      expand: ["data.price"],
+      limit: 1,
+    });
+    const price = lineItems.data[0]?.price as any;
+    priceLookupKey = price?.lookup_key || price?.metadata?.lovable_external_id;
+  } catch (e) {
+    console.error("[webhook] listLineItems error", e);
   }
   if (!priceLookupKey) {
-    // line_items may not be expanded; fetch via API
-    console.warn("[webhook] no lookup_key on session line items", session.id);
+    priceLookupKey = session.metadata?.price_id;
+  }
+  if (!priceLookupKey) {
+    console.warn("[webhook] could not resolve price for session", session.id);
     return;
   }
   const credits = CREDIT_PACKS[priceLookupKey];
@@ -101,10 +112,11 @@ async function handleCheckoutCompleted(session: any) {
     _user_id: userId,
     _amount: credits,
     _reason: "purchase_pack",
-    _ref: `stripe:${session.id}`,
+    _ref: `stripe:cs:${session.id}`,
   });
   if (error) console.error("[webhook] grant_credits error", error);
 }
+
 
 async function handlePaymentIntentSucceeded(intent: any, env: StripeEnv) {
   const userId = intent.metadata?.userId;
