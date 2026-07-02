@@ -1,17 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import packAsset from "@/server-assets/blacure-prompt-pack-v1.pdf.asset.json";
-import packAssetV2 from "@/server-assets/blacure-prompt-pack-v2.pdf.asset.json";
-import packAssetV3 from "@/server-assets/blacure-prompt-pack-v3.pdf.asset.json";
-
-const PACK_ASSET_URLS: Record<string, string> = {
-  prompt_pack_vol1: packAsset.url,
-  prompt_pack_vol2: packAssetV2.url,
-  prompt_pack_vol3: packAssetV3.url,
-};
 
 type PackListResult = { packs: Array<{ pack_slug: string; created_at: string }> };
 type DownloadResult = { url: string } | { error: string };
+
+const KNOWN_PACKS = new Set(["prompt_pack_vol1", "prompt_pack_vol2", "prompt_pack_vol3"]);
 
 export const listMyPacks = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -22,7 +15,6 @@ export const listMyPacks = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) return { packs: [] };
-    // Dedupe by pack_slug — user may buy the same pack multiple times.
     const seen = new Set<string>();
     const packs: PackListResult["packs"] = [];
     for (const row of data ?? []) {
@@ -49,7 +41,9 @@ export const getPackDownloadUrl = createServerFn({ method: "POST" })
     if (error || !rows || rows.length === 0) {
       return { error: "You don't own this pack." };
     }
-    const url = PACK_ASSET_URLS[data.packSlug];
-    if (!url) return { error: "Pack not available." };
+    if (!KNOWN_PACKS.has(data.packSlug)) return { error: "Pack not available." };
+    const { signPackDownload } = await import("@/lib/pack-signing.server");
+    const { token } = await signPackDownload(data.packSlug, context.userId);
+    const url = `/api/public/pack-download?slug=${encodeURIComponent(data.packSlug)}&u=${encodeURIComponent(context.userId)}&t=${encodeURIComponent(token)}`;
     return { url };
   });
