@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { type StripeEnv } from "@/lib/stripe.server";
 
 export const getMyCredits = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -32,17 +33,26 @@ export const getMyTransactions = createServerFn({ method: "GET" })
     return { transactions: data ?? [] };
   });
 
-export const getMySubscription = createServerFn({ method: "GET" })
+export const getMySubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+  .inputValidator((data: { environment: StripeEnv }) => {
+    if (data.environment !== "sandbox" && data.environment !== "live") {
+      throw new Error("Invalid environment");
+    }
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", context.userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     if (error) {
       console.error("[credits] subscription query error", error);
       throw new Error("Failed to load your subscription. Please try again.");
     }
-    return { subscription: data ?? null };
+    return { subscription: row ?? null };
   });
