@@ -1,28 +1,39 @@
-# Make prompts honor selected instruments
+## Button audit — issues found
 
-Right now the model gets the instrument list in the user block, but nothing forces it to name each one — with the 90-word Standard cap it often drops or generalizes them ("live drums, warm keys" instead of the specific picks). Fix is server-side only, in `src/lib/prompt.functions.ts`.
+### 1. `src/routes/_authenticated/app.tsx` — Pro Studio button copy is misleading
+Both Pro Studio buttons (header + builder card) show "Pro Studio Prompt (6 credits)" when the user is not subscribed. Clicking triggers a "PRO subscription required" toast — the "6 credits" label implies credits can pay for it, which they can't.
 
-## Changes
+**Fix:** When `!isPro`, label the button "Unlock Pro Studio" (keep the Lock icon + PRO badge). Keep "Pro Studio Prompt" / "Pro Studio" wording when `isPro`.
 
-1. **System prompt (both modes)** — add a hard rule:
-   - Standard: "Every instrument listed under INSTRUMENTS must appear by name in the output. Same for DRUMS. Do not substitute, rename, or omit any."
-   - Pro: same rule, plus "distribute the listed instruments across [Intro]/[Verse]/[Hook]/[Bridge]/[Outro] and restate the full kit in [Production Notes]."
+### 2. `src/routes/pricing.tsx` — CTAs don't do what they say
+- "Buy 20 prompts" and "Subscribe monthly" both link to `/app`, not checkout. Since payments aren't wired yet, the labels overpromise.
+- Meta description still says "$19.99/month for 100 prompts" (outdated — it's unlimited now).
 
-2. **User block emphasis** — when `instruments.length > 0`, render them as a `REQUIRED INSTRUMENTS (name all):` line instead of the current soft `Instruments:` line, and repeat the list at the end of the block so it sits closest to the model's output. Same treatment for `drumStyle`.
+**Fix:**
+- Rename Pack CTA to "Coming soon" and Monthly CTA to "Coming soon" (disabled Button, no Link) until Paddle/Stripe is enabled. Keep Free tier CTA → `/auth`.
+- Update meta description to reflect "unlimited monthly".
+- Keep the existing footnote clarifying checkout is being set up.
 
-3. **Post-generation validation** — after `generateText`, check the output (case-insensitive) for each selected instrument + the drum style. If any are missing:
-   - retry once with a stricter reminder appended ("Previous attempt omitted: X, Y. Rewrite including every listed instrument by name.")
-   - if the retry still misses items, return the better of the two and log which were missing (no user-facing error, no extra credit charge — same `attemptRef`).
+### 3. `src/components/PromptPreview.tsx` — brand mismatch in loading text
+Line 78 says "Composing your Suno-ready prompt…" — the brand rule is no Suno references in UI.
 
-4. **Token budget** — bump Standard `maxTokens` from 220 → 320 so the paragraph has room to name a longer instrument list without truncation. Pro stays at 700.
+**Fix:** Change to "Composing your studio-ready prompt…".
 
-## Out of scope
+### 4. `src/routes/index.tsx` — "Sign in" link always points to `/auth`
+Signed-in users see "Sign in" even though they're authenticated. Low priority but worth fixing while we're here.
 
-- No UI changes, no schema changes, no credit/pricing changes.
-- No change to Avoid handling, tempo/key logic, or subscription gating.
+**Fix:** Use `useAuth` hook (already in project) — when there's a session, hide "Sign in" and change "Open Generator" behavior stays the same (goes to `/app`, which is auth-gated and redirects if needed). If unauthenticated, keep "Sign in" as is.
 
-## Technical notes
+### Buttons verified as correct (no change)
+- Landing hero buttons: "Launch The Promptor" → `/app`; "See how it works" → `#features` anchor. ✅
+- App header/builder: Generate (standard), Randomize Vibe, Clear Form, Buy credits, Sign out, Home. ✅
+- PromptPreview: Copy, Save (only shown when prompt exists), Delete/Copy per saved item, click-title to reuse. ✅
+- Pricing "Get started free" → `/auth`. ✅
 
-- All edits live in `src/lib/prompt.functions.ts`.
-- Matching uses simple normalized substring (lowercased, punctuation-stripped) — good enough for the fixed enum in `prompt-options.ts` (e.g. "808 bass", "Amapiano log drum").
-- Retry reuses the same OpenAI client and `attemptRef`; failures fall through to the existing catch/refund path unchanged.
+### Files to edit
+- `src/routes/_authenticated/app.tsx` — Pro Studio labels
+- `src/routes/pricing.tsx` — CTA disabled state + meta description
+- `src/components/PromptPreview.tsx` — loading text
+- `src/routes/index.tsx` — conditional Sign in link
+
+No backend / server function changes. Purely UI copy + interaction correctness.

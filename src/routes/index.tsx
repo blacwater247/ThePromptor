@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Wand2, Save, Music2, Mic2, Sliders, ArrowRight } from "lucide-react";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen text-foreground">
       {/* Nav */}
@@ -32,9 +34,11 @@ function Landing() {
           <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2">
             Pricing
           </Link>
-          <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2 hidden sm:inline">
-            Sign in
-          </Link>
+          {!user && (
+            <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2 hidden sm:inline">
+              Sign in
+            </Link>
+          )}
           <Link to="/app">
             <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
               Open Generator <ArrowRight className="h-4 w-4" />

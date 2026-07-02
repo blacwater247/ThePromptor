@@ -202,7 +202,7 @@ function AppPage() {
               title={isPro ? "Longer, structured studio prompt — unlimited" : "Unlock with Monthly plan"}
             >
               {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-              {isPro ? "Pro Studio Prompt" : "Pro Studio Prompt (6 credits)"}
+              {isPro ? "Pro Studio Prompt" : "Unlock Pro Studio"}
               <span className="ml-1 rounded bg-primary/20 brand-text text-[10px] font-bold px-1.5 py-0.5">PRO</span>
             </Button>
             <Button size="lg" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
@@ -244,7 +244,7 @@ function AppPage() {
                 className="border-primary/60 hover:bg-primary/10"
               >
                 {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                {isPro ? "Pro Studio" : "Pro Studio (6 credits)"}
+                {isPro ? "Pro Studio" : "Unlock Pro Studio"}
               </Button>
 
               <Button type="button" variant="outline" onClick={handleRandomize} className="border-primary/40 hover:bg-primary/10">
