@@ -21,8 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment, isPaymentsConfigured } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
-import { SavedPromptsPanel } from "@/components/SavedPromptsPanel";
-import { RailwayActions } from "@/components/RailwayActions";
 
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -525,21 +523,7 @@ function AppPage() {
           )}
         </section>
 
-        {/* Railway integrations — Suno / Udio / Save */}
-        <section className="mt-16" aria-labelledby="railway-heading">
-          <div className="text-center mb-6">
-            <h2 id="railway-heading" className="font-display text-2xl sm:text-3xl font-bold">
-              Send to your music engines
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto">
-              Push the current prompt to Suno or Udio, or save it to your cloud library.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <RailwayActions prompt={prompt} />
-            <SavedPromptsPanel />
-          </div>
-        </section>
+
 
       </main>
 
