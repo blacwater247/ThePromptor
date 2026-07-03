@@ -3,20 +3,28 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, Radio, Save, Loader2 } from "lucide-react";
+import { Music, Radio, Save, Loader2, Activity } from "lucide-react";
 import { toast } from "sonner";
-import { savePromptRailway, sunoGenerate, udioGenerate } from "@/lib/railway.functions";
+import {
+  savePromptRailway,
+  sunoGenerate,
+  udioGenerate,
+  testBackendRailway,
+} from "@/lib/railway.functions";
 
 interface Props {
   prompt: string;
 }
 
-type Busy = null | "suno" | "udio" | "save";
+type Busy = null | "suno" | "udio" | "save" | "test";
 
 export function RailwayActions({ prompt }: Props) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
+  const [testResult, setTestResult] = useState<{ status: number; url: string; body: string; error?: string } | null>(null);
+
+
 
   const hasPrompt = prompt.trim().length > 0;
 
@@ -108,6 +116,60 @@ export function RailwayActions({ prompt }: Props) {
           {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save prompt
         </Button>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-white/10">
+        <Button
+          onClick={async () => {
+            setBusy("test");
+            setTestResult(null);
+            try {
+              const res = await testBackendRailway();
+              setTestResult(res);
+              if (res.error) toast.error(res.error);
+              else toast.success(`Backend responded ${res.status}`);
+            } catch (err) {
+              const message = err instanceof Error ? err.message : String(err);
+              setTestResult({ status: 0, url: "", body: "", error: message });
+              toast.error(message);
+            } finally {
+              setBusy(null);
+            }
+          }}
+          disabled={busy !== null}
+          variant="ghost"
+          size="sm"
+          className="text-white/70 hover:text-white"
+        >
+          {busy === "test" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
+          Test backend
+        </Button>
+
+        {testResult && (
+          <div className="mt-3 rounded-md border border-white/10 bg-black/60 p-3 font-mono text-xs">
+            <div className="text-white/60">
+              POST <span className="text-white/90">{testResult.url || "(no URL)"}</span>
+            </div>
+            <div className="mt-1">
+              Status:{" "}
+              <span
+                className={
+                  testResult.status >= 200 && testResult.status < 300
+                    ? "text-emerald-400"
+                    : testResult.status === 0
+                      ? "text-red-400"
+                      : "text-amber-400"
+                }
+              >
+                {testResult.status || "network error"}
+              </span>
+            </div>
+            {testResult.error && <div className="mt-1 text-red-400">{testResult.error}</div>}
+            {testResult.body && (
+              <pre className="mt-2 whitespace-pre-wrap break-all text-white/80">{testResult.body}</pre>
+            )}
+          </div>
+        )}
       </div>
 
       {!hasPrompt && (
