@@ -1,35 +1,46 @@
-## Changes
+## Root cause
 
-### 1. `src/routes/_authenticated/app.tsx` — route Generate to Railway
-Swap the `generatePrompt` call in `handleGenerate` for `generatePromptRailway` from `src/lib/railway.functions.ts`.
+The credit-check on the server disagrees with the credit UI on the client about whether a user has an active subscription.
 
-- New import: `import { generatePromptRailway } from "@/lib/railway.functions";`
-- Drop the AI-gateway import.
-- Call shape:
-  ```ts
-  const res = await generatePromptRailway({ data: { inputs, mode } });
-  if ("error" in res) { toast.error(res.error); setError(res.error); return; }
-  setPrompt(res.data.prompt);
-  ```
-- Keep the existing client-side gating (`isPro`, `balance >= cost`) so non-subscribers with 0 credits still get blocked before the call.
+- UI (`src/routes/_authenticated/app.tsx` → `getMySubscription`) filters `subscriptions` by the **client** Stripe environment (`getStripeEnvironment()` — derived from `VITE_PAYMENTS_CLIENT_TOKEN`, i.e. `pk_test_*` → `sandbox`, `pk_live_*` → `live`).
+- Server (`src/lib/prompt.functions.ts`) queries `subscriptions` for the user with **no environment filter** — it just takes the latest row.
 
-### 2. `src/lib/railway.functions.ts` — fix Test backend endpoint
-In `testBackendRailway`, change `/api/suno/generate` → `/suno/generate` to match the real Railway route.
+The one subscriber in the DB has `environment = 'sandbox'` and `status = 'active'`. If that same account is used on a build where the client resolves to `live` (or the two ever diverge), the client shows the "credits" chip and calls Generate, while the server sees an active sandbox sub and takes the "subscriber = unlimited" branch:
 
-## Credit-deduction tradeoff (call out)
+```ts
+// prompt.functions.ts (current)
+const { data: subRows } = await context.supabase
+  .from("subscriptions")
+  .select("status, current_period_end, cancel_at_period_end")
+  .eq("user_id", context.userId)
+  .order("created_at", { ascending: false })
+  .limit(1);
+const isSubscriber = isSubscriptionActive(subRows?.[0]);
+// ...
+if (!isSubscriber) { spend_credits(...) }  // never runs → balance never moves
+```
 
-The current AI-gateway `generatePrompt` also spent credits server-side and returned the new balance. Railway's `/generate-prompt` doesn't. After this switch:
-- Non-subscribers can still generate as long as their **cached** balance ≥ cost (client-side check), but nothing decrements the DB balance.
-- Effectively, credits become a soft cap that never depletes.
+That matches exactly what the logs show for user `7522002e…`: many `generations_log` rows after `2026-07-03 16:02`, zero matching `credit_transactions` in that same window, balance frozen at 82.
 
-If that's not desired, next step (out of scope for this turn) would be either:
-- Have Railway call back to spend credits, or
-- Keep a thin `spendCredits` server function and call it alongside `generatePromptRailway`.
+## Fix
 
-Confirming the swap either way — just flagging.
+Align the server's subscription check with the client's:
 
-## Not changed
+1. **`src/lib/prompt.functions.ts`**
+   - Add `environment: "sandbox" | "live"` to the `InputSchema` (required).
+   - In the subscription query, add `.eq("environment", data.environment)` so only the same-env sub counts as "unlimited".
 
-- `savePromptRailway`, `listMyPromptsRailway`, `sunoGenerate`, `udioGenerate` already hit the correct Railway paths via `API_BASE_URL`.
-- `user_id` stays as the authenticated Supabase user id (not the hardcoded `"blac"` from your example).
-- No UI changes, no new secrets.
+2. **`src/routes/_authenticated/app.tsx`**
+   - In `handleGenerate`, pass `environment: getStripeEnvironment()` in the `generatePrompt({ data: { ... } })` call so client and server agree.
+
+3. No DB migration, no UI redesign, no other files changed.
+
+## Result
+
+- Subscriber whose sub matches the current environment: still unlimited, no deduction (unchanged).
+- Non-subscriber (or subscriber viewing the other environment's app): server hits `spend_credits`, balance drops by 2 per Standard prompt, UI updates from the returned `balance`. The "prompts" counter (`Math.floor(balance / 2)`) then decreases as expected.
+
+## Out of scope
+
+- Refactoring `getStripeEnvironment()` or the sandbox/live split.
+- Any change to Pro Studio gating, refund path, or rate limit.

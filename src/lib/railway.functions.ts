@@ -60,7 +60,7 @@ export const testBackendRailway = createServerFn({ method: "GET" })
     if (!baseUrl) {
       return { status: 0, url: "", body: "", error: "API_BASE_URL is not configured" };
     }
-    const url = `${baseUrl.replace(/\/+$/, "")}/suno/generate`;
+    const url = `${baseUrl.replace(/\/+$/, "")}/api/suno/generate`;
     try {
       const res = await fetch(url, {
         method: "POST",

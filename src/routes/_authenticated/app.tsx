@@ -14,7 +14,7 @@ import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
 import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { generatePromptRailway } from "@/lib/railway.functions";
+import { generatePrompt } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,17 +107,30 @@ function AppPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await generatePromptRailway({ data: { inputs: inputs as unknown as Record<string, never>, mode } });
-      if ("error" in res) {
-        setError(res.error);
-        toast.error(res.error);
-        return;
+      const res = await generatePrompt({ data: { ...inputs, mode, environment: getStripeEnvironment() } });
+      setPrompt(res.prompt);
+      if (typeof res.balance === "number") {
+        queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
       }
-      setPrompt(res.data.prompt);
+
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
-      setError(msg);
-      toast.error(msg);
+      if (msg.startsWith("INSUFFICIENT_CREDITS")) {
+        setError("You're out of credits. Buy more to keep generating.");
+        toast.error("Out of credits", {
+          description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits.`,
+          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else if (msg.startsWith("PRO_REQUIRED")) {
+        toast.error("Pro Studio Prompt requires a subscription", {
+          description: "Upgrade to the Monthly plan to unlock.",
+          action: { label: "Upgrade", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else {
+        setError(msg);
+        toast.error(msg);
+      }
+      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
     } finally {
       setLoading(false);
     }
