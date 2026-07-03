@@ -96,6 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
       { property: "og:description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
       { name: "twitter:description", content: "AI Song Prompt Generator creates polished music prompts from user-defined parameters." },
+      { name: "google-site-verification", content: "z65q7A_zRAOFI5qdbNIFaGWjuqAHfwL5pHmQ-xKrERg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
