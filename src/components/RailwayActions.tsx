@@ -3,20 +3,28 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, Radio, Save, Loader2 } from "lucide-react";
+import { Music, Radio, Save, Loader2, Activity } from "lucide-react";
 import { toast } from "sonner";
-import { savePromptRailway, sunoGenerate, udioGenerate } from "@/lib/railway.functions";
+import {
+  savePromptRailway,
+  sunoGenerate,
+  udioGenerate,
+  testBackendRailway,
+} from "@/lib/railway.functions";
 
 interface Props {
   prompt: string;
 }
 
-type Busy = null | "suno" | "udio" | "save";
+type Busy = null | "suno" | "udio" | "save" | "test";
 
 export function RailwayActions({ prompt }: Props) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
+  const [testResult, setTestResult] = useState<{ status: number; url: string; body: string; error?: string } | null>(null);
+
+
 
   const hasPrompt = prompt.trim().length > 0;
 
