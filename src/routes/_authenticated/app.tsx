@@ -107,7 +107,7 @@ function AppPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await generatePrompt({ data: { ...inputs, mode } });
+      const res = await generatePrompt({ data: { ...inputs, mode, environment: getStripeEnvironment() } });
       setPrompt(res.prompt);
       if (typeof res.balance === "number") {
         queryClient.setQueryData(["credits", "balance"], { balance: res.balance });

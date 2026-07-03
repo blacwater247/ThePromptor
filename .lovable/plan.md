@@ -1,30 +1,46 @@
-## Context
+## Root cause
 
-Backend at `the-promptor-production.up.railway.app` now has:
-- `/prompts/*` endpoints (PR #1)
-- `/api/prompts/*` variants (PR #2)
-- `/api/suno/generate` and `/api/udio/generate` variants (PR #3)
+The credit-check on the server disagrees with the credit UI on the client about whether a user has an active subscription.
 
-Current frontend calls unprefixed paths (`/suno/generate`, `/udio/generate`, `/save-prompt`, `/prompts/:userId`, `/generate-prompt`, `/health`) via `src/lib/railway.functions.ts` → `railwayFetch`. Earlier probes to `/` and `/health` returned Railway's edge 404 ("Application not found") — need to re-verify now that PRs are deployed.
+- UI (`src/routes/_authenticated/app.tsx` → `getMySubscription`) filters `subscriptions` by the **client** Stripe environment (`getStripeEnvironment()` — derived from `VITE_PAYMENTS_CLIENT_TOKEN`, i.e. `pk_test_*` → `sandbox`, `pk_live_*` → `live`).
+- Server (`src/lib/prompt.functions.ts`) queries `subscriptions` for the user with **no environment filter** — it just takes the latest row.
 
-## Plan
+The one subscriber in the DB has `environment = 'sandbox'` and `status = 'active'`. If that same account is used on a build where the client resolves to `live` (or the two ever diverge), the client shows the "credits" chip and calls Generate, while the server sees an active sandbox sub and takes the "subscriber = unlimited" branch:
 
-1. **Verify backend is live** — curl `/health`, `/api/suno/generate` (with a minimal body), and `/api/prompts/{fake-id}` to confirm the service responds (any status other than the Railway edge 404 means the app is up).
-2. **Switch all frontend paths to `/api/*`** in `src/lib/railway.functions.ts`:
-   - `/health` → keep as-is (or `/api/health` if backend exposes it — will check in step 1)
-   - `/generate-prompt` → `/api/generate-prompt`
-   - `/save-prompt` → `/api/save-prompt`
-   - `/prompts/{userId}` → `/api/prompts/{userId}`
-   - `/suno/generate` → `/api/suno/generate`
-   - `/udio/generate` → `/api/udio/generate`
-3. **Improve Suno button feedback** in `src/components/RailwayActions.tsx`:
-   - Add an optional "Tags / style" input (wired to the existing `tags` field in `sunoGenerate`).
-   - After a successful call, render an inline result block showing `job_id`, `status`, and an "Open track" link when `url` is present.
-   - Surface the sanitized upstream error message in the toast instead of the generic "Request failed."
-4. **Verify** — from the live preview, click **Send to Suno** with a generated prompt, confirm the network call hits `/api/suno/generate` on Railway, and confirm the result block renders.
+```ts
+// prompt.functions.ts (current)
+const { data: subRows } = await context.supabase
+  .from("subscriptions")
+  .select("status, current_period_end, cancel_at_period_end")
+  .eq("user_id", context.userId)
+  .order("created_at", { ascending: false })
+  .limit(1);
+const isSubscriber = isSubscriptionActive(subRows?.[0]);
+// ...
+if (!isSubscriber) { spend_credits(...) }  // never runs → balance never moves
+```
 
-## Technical notes
+That matches exactly what the logs show for user `7522002e…`: many `generations_log` rows after `2026-07-03 16:02`, zero matching `credit_transactions` in that same window, balance frozen at 82.
 
-- `railwayFetch` reads `API_BASE_URL` / `API_KEY` at request time from Cloudflare env; no restart or secret change needed.
-- Only `src/lib/railway.functions.ts` and `src/components/RailwayActions.tsx` change. Server helper, auth middleware, and secrets stay untouched.
-- If step 1 shows the backend still 404s at the edge, I'll stop and report back — no frontend change fixes an undeployed backend.
+## Fix
+
+Align the server's subscription check with the client's:
+
+1. **`src/lib/prompt.functions.ts`**
+   - Add `environment: "sandbox" | "live"` to the `InputSchema` (required).
+   - In the subscription query, add `.eq("environment", data.environment)` so only the same-env sub counts as "unlimited".
+
+2. **`src/routes/_authenticated/app.tsx`**
+   - In `handleGenerate`, pass `environment: getStripeEnvironment()` in the `generatePrompt({ data: { ... } })` call so client and server agree.
+
+3. No DB migration, no UI redesign, no other files changed.
+
+## Result
+
+- Subscriber whose sub matches the current environment: still unlimited, no deduction (unchanged).
+- Non-subscriber (or subscriber viewing the other environment's app): server hits `spend_credits`, balance drops by 2 per Standard prompt, UI updates from the returned `balance`. The "prompts" counter (`Math.floor(balance / 2)`) then decreases as expected.
+
+## Out of scope
+
+- Refactoring `getStripeEnvironment()` or the sandbox/live split.
+- Any change to Pro Studio gating, refund path, or rate limit.
