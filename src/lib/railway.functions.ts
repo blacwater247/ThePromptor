@@ -56,9 +56,43 @@ export const pingRailway = createServerFn({ method: "GET" })
 export const generatePromptRailway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { inputs: { [key: string]: JsonValue }; mode?: string }) => {
-    if (!data || typeof data.inputs !== "object" || data.inputs === null) {
+    if (!data || typeof data.inputs !== "object" || data.inputs === null || Array.isArray(data.inputs)) {
       throw new Error("inputs is required");
     }
+    // Enforce byte budget to prevent oversized payloads from being forwarded upstream.
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(data.inputs);
+    } catch {
+      throw new Error("inputs is not serializable");
+    }
+    if (serialized.length > 32_000) {
+      throw new Error("inputs payload too large");
+    }
+    // Enforce max key count and max nesting depth via recursive walk.
+    const MAX_KEYS = 200;
+    const MAX_DEPTH = 8;
+    const MAX_STRING = 8_000;
+    let keyCount = 0;
+    const walk = (v: JsonValue, depth: number): void => {
+      if (depth > MAX_DEPTH) throw new Error("inputs nested too deeply");
+      if (typeof v === "string") {
+        if (v.length > MAX_STRING) throw new Error("inputs string value too long");
+        return;
+      }
+      if (Array.isArray(v)) {
+        if (v.length > MAX_KEYS) throw new Error("inputs array too large");
+        for (const item of v) walk(item, depth + 1);
+        return;
+      }
+      if (v && typeof v === "object") {
+        const keys = Object.keys(v);
+        keyCount += keys.length;
+        if (keyCount > MAX_KEYS) throw new Error("inputs has too many keys");
+        for (const k of keys) walk((v as { [key: string]: JsonValue })[k], depth + 1);
+      }
+    };
+    walk(data.inputs as JsonValue, 0);
     return { inputs: data.inputs, mode: optionalString(data.mode, "mode") };
   })
   .handler(async ({ data, context }): Promise<RailwayResult<GeneratePromptResponse>> => {
