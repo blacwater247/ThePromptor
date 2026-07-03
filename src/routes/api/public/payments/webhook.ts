@@ -142,20 +142,6 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
 }
 
 
-async function handlePaymentIntentSucceeded(intent: any, env: StripeEnv) {
-  const userId = intent.metadata?.userId;
-  const priceId = intent.metadata?.price_id;
-  if (!userId || !priceId) return;
-  const credits = CREDIT_PACKS[priceId];
-  if (!credits) return;
-  const { error } = await getSupabase().rpc("grant_credits", {
-    _user_id: userId,
-    _amount: credits,
-    _reason: "purchase_pack",
-    _ref: `stripe:${env}:${intent.id}`,
-  });
-  if (error) console.error("[webhook] grant_credits (pi) error", error);
-}
 
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
