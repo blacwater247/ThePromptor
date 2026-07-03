@@ -21,8 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment, isPaymentsConfigured } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
-import { SavedPromptsPanel } from "@/components/SavedPromptsPanel";
-import { RailwayActions } from "@/components/RailwayActions";
 
 
 export const Route = createFileRoute("/_authenticated/app")({
