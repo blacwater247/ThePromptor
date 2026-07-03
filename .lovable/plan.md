@@ -1,31 +1,35 @@
-## Goal
+## Changes
 
-Wire the Railway backend (`https://the-promptor-production.up.railway.app`) and its bearer token (`BLACURE_API_KEY_001`) into the app so `savePromptRailway`, `listMyPromptsRailway`, `sunoGenerate`, `udioGenerate`, and `testBackendRailway` actually hit it.
+### 1. `src/routes/_authenticated/app.tsx` — route Generate to Railway
+Swap the `generatePrompt` call in `handleGenerate` for `generatePromptRailway` from `src/lib/railway.functions.ts`.
 
-## What's already in place
+- New import: `import { generatePromptRailway } from "@/lib/railway.functions";`
+- Drop the AI-gateway import.
+- Call shape:
+  ```ts
+  const res = await generatePromptRailway({ data: { inputs, mode } });
+  if ("error" in res) { toast.error(res.error); setError(res.error); return; }
+  setPrompt(res.data.prompt);
+  ```
+- Keep the existing client-side gating (`isPro`, `balance >= cost`) so non-subscribers with 0 credits still get blocked before the call.
 
-`src/lib/railway.server.ts` already reads `process.env.API_BASE_URL` and `process.env.API_KEY` and sends `Authorization: Bearer <API_KEY>`. All server functions in `src/lib/railway.functions.ts` already route through it. So no code changes are needed — just secrets.
+### 2. `src/lib/railway.functions.ts` — fix Test backend endpoint
+In `testBackendRailway`, change `/api/suno/generate` → `/suno/generate` to match the real Railway route.
 
-The reason "My Saved Prompts · Cloud" shows **Not found** today is `API_BASE_URL` isn't set, so `railwayFetch` short-circuits with an error.
+## Credit-deduction tradeoff (call out)
 
-## Plan
+The current AI-gateway `generatePrompt` also spent credits server-side and returned the new balance. Railway's `/generate-prompt` doesn't. After this switch:
+- Non-subscribers can still generate as long as their **cached** balance ≥ cost (client-side check), but nothing decrements the DB balance.
+- Effectively, credits become a soft cap that never depletes.
 
-1. Store `API_BASE_URL = https://the-promptor-production.up.railway.app` as a runtime secret (via `set_secret`).
-2. Store `API_KEY = BLACURE_API_KEY_001` as a runtime secret (via `set_secret`).
-3. No file edits. No new dependencies.
+If that's not desired, next step (out of scope for this turn) would be either:
+- Have Railway call back to spend credits, or
+- Keep a thin `spendCredits` server function and call it alongside `generatePromptRailway`.
 
-## Verification
+Confirming the swap either way — just flagging.
 
-After secrets land, in the app:
-- Click **Test backend** → expect a 2xx status and JSON body from `/api/suno/generate` (or a real upstream error instead of "API_BASE_URL is not configured").
-- Click **Save prompt** on a generated prompt, then refresh **My Saved Prompts · Cloud** → the new prompt should appear.
+## Not changed
 
-## Note on `user_id`
-
-The example uses `user_id: "blac"` hardcoded. The current server functions send the authenticated Supabase `userId` instead, which is safer (each signed-in user sees only their own saved prompts). I'll keep that behavior unless you want every user to share the `"blac"` bucket.
-
-## Out of scope
-
-- Changing the auth model to a shared `user_id`.
-- Any UI changes.
-- Rotating the API key or moving it to a per-user token.
+- `savePromptRailway`, `listMyPromptsRailway`, `sunoGenerate`, `udioGenerate` already hit the correct Railway paths via `API_BASE_URL`.
+- `user_id` stays as the authenticated Supabase user id (not the hardcoded `"blac"` from your example).
+- No UI changes, no new secrets.
