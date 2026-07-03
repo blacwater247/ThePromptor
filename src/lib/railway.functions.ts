@@ -50,6 +50,39 @@ export const pingRailway = createServerFn({ method: "GET" })
   });
 
 /**
+ * Raw probe of the generation endpoint — returns HTTP status + response text
+ * without sanitizing. For the "Test backend" button in the UI.
+ */
+export const testBackendRailway = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (): Promise<{ status: number; url: string; body: string; error?: string }> => {
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      return { status: 0, url: "", body: "", error: "API_BASE_URL is not configured" };
+    }
+    const url = `${baseUrl.replace(/\/+$/, "")}/api/suno/generate`;
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(process.env.API_KEY ? { Authorization: `Bearer ${process.env.API_KEY}` } : {}),
+        },
+        body: JSON.stringify({ prompt: "ping", user_id: "test" }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const body = await res.text().catch(() => "");
+      return { status: res.status, url, body: body.slice(0, 2000) };
+    } catch (err) {
+      const name = err instanceof Error ? err.name : "unknown";
+      const message = err instanceof Error ? err.message : String(err);
+      return { status: 0, url, body: "", error: `${name}: ${message}` };
+    }
+  });
+
+
+/**
  * POST /generate-prompt — server-side prompt generation via Railway.
  * Accepts an arbitrary `inputs` object; the FastAPI side owns its schema.
  */
