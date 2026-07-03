@@ -1,9 +1,7 @@
-The user wants to switch their backend from the old Railway URL to the new one: `the-promptor.up.railway.app`.
+Update the `API_BASE_URL` runtime secret to `https://the-promptor-production.up.railway.app`.
 
-Current state: The backend URL is stored as the `API_BASE_URL` runtime secret. The application reads this secret at runtime; there is no hardcoded URL in the codebase.
+No code changes are needed — server-side `railwayFetch` reads `process.env.API_BASE_URL` at request time, so the new backend takes effect immediately after the secret update.
 
-Plan:
-1. Update the `API_BASE_URL` secret to `https://the-promptor.up.railway.app`.
-2. Verify the app can reach the new backend by checking the live preview.
-
-That's it — a single secret update. No code changes are required.
+Steps:
+1. Update the `API_BASE_URL` secret to `https://the-promptor-production.up.railway.app`.
+2. Verify the app can reach the new backend from the live preview.
