@@ -38,6 +38,7 @@ const InputSchema = z.object({
   soundQuality: enumOf(SOUND_QUALITIES),
   avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
   avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
+  environment: z.enum(["sandbox", "live"]),
 });
 
 const MODE_CONFIG = {
