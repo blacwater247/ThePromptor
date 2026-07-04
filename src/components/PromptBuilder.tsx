@@ -187,8 +187,10 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               value={value.subgenre}
               onChange={(v) => set("subgenre", v)}
               standard={subgenreOptions}
-              disabled={!isPro || subgenreOptions.length <= 1}
-              placeholder={isPro ? (subgenreOptions.length > 1 ? "Optional — pick a subgenre" : "No subgenres for this genre") : "Pro only"}
+              allowNone
+              disabled={!isPro || subgenreOptions.length === 0}
+              placeholder={isPro ? (subgenreOptions.length > 0 ? "Optional — pick a subgenre" : "No subgenres for this genre") : "Pro only"}
+
             />
           </Field>
           <Field label="Fusion genre"><Dropdown value={value.fusionGenre} onChange={(v) => set("fusionGenre", v)} standard={FUSION_GENRES} /></Field>
