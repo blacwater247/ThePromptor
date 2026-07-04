@@ -25,25 +25,27 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
   const [copied, setCopied] = useState(false);
   return (
     <Button
-      variant="secondary"
+      variant={copied ? "default" : "secondary"}
       size="sm"
       aria-label={ariaLabel ?? (label ? undefined : "Copy prompt")}
+      className={copied ? "bg-emerald-600 hover:bg-emerald-600 text-white border-0 transition-colors" : "transition-colors"}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
           setCopied(true);
           toast.success("Copied to clipboard");
-          setTimeout(() => setCopied(false), 1500);
+          setTimeout(() => setCopied(false), 2000);
         } catch {
           toast.error("Copy failed");
         }
       }}
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      {(label || copied) && <span className="ml-1.5">{copied ? "Copied" : label}</span>}
+      {(label || copied) && <span className="ml-1.5">{copied ? "Copied!" : label}</span>}
     </Button>
   );
 }
+
 
 export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete, onUseSaved }: Props) {
   return (
