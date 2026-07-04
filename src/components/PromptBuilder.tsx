@@ -144,13 +144,14 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
   const [showAdvMoods, setShowAdvMoods] = useState(false);
 
   const subgenreOptions = useMemo(
-    () => ["", ...(SUBGENRES[value.mainGenre] ?? [])],
+    () => SUBGENRES[value.mainGenre] ?? [],
     [value.mainGenre],
   );
   const moodColorOptions = useMemo(() => {
     const firstMood = value.moods[0];
-    return ["", ...(firstMood ? MOOD_COLORS[firstMood] ?? [] : [])];
+    return firstMood ? MOOD_COLORS[firstMood] ?? [] : [];
   }, [value.moods]);
+
 
   return (
     <Accordion type="multiple" defaultValue={["basics", "genre", "vocals", "mood", "topic", "instruments", "tempo", "style"]} className="w-full">
