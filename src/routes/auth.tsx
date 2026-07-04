@@ -81,6 +81,20 @@ function AuthPage() {
     navigate({ to: "/app" });
   };
 
+  const apple = async () => {
+    setBusy(true);
+    const result = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setBusy(false);
+      toast.error(result.error.message || "Apple sign-in failed");
+      return;
+    }
+    if (result.redirected) return;
+    navigate({ to: "/app" });
+  };
+
   return (
     <div className="min-h-screen text-foreground flex flex-col">
       <Toaster theme="dark" position="top-center" richColors />
@@ -101,9 +115,15 @@ function AuthPage() {
             <p className="text-sm text-muted-foreground mt-1">Get 10 free prompts on signup.</p>
           </div>
 
-          <Button onClick={google} disabled={busy} variant="outline" className="w-full mb-4 border-primary/40 hover:bg-primary/10">
-            Continue with Google
-          </Button>
+          <div className="space-y-2 mb-4">
+            <Button onClick={google} disabled={busy} variant="outline" className="w-full border-primary/40 hover:bg-primary/10">
+              Continue with Google
+            </Button>
+            <Button onClick={apple} disabled={busy} variant="outline" className="w-full bg-black text-white border-white/20 hover:bg-black/90 hover:text-white">
+               Continue with Apple
+            </Button>
+          </div>
+
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
             <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">or with email</span></div>
