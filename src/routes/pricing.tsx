@@ -153,9 +153,9 @@ function Pricing() {
                     ))}
                   </ul>
                   {t.name === "Free" ? (
-                    <Link to={user ? "/app" : "/auth"} className="block mt-6">
+                    <Link to="/app" className="block mt-6">
                       <Button className="w-full" variant="outline">
-                        <Sparkles className="h-4 w-4" /> {user ? "Open the app" : t.cta}
+                        <Sparkles className="h-4 w-4" /> {t.cta}
                       </Button>
                     </Link>
                   ) : (
