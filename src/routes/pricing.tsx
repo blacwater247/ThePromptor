@@ -39,10 +39,10 @@ const TIERS: Tier[] = [
   {
     name: "Free",
     price: "$0",
-    cadence: "forever",
-    prompts: "10 prompts on signup",
-    cta: "Get started free",
-    features: ["10 free prompts", "Every genre & vocal style", "Randomize Vibe", "Save prompts locally"],
+    cadence: "no signup",
+    prompts: "10 prompts — no account needed",
+    cta: "Try it now",
+    features: ["10 free prompts, no signup", "Every genre & vocal style", "Randomize Vibe", "Save prompts locally"],
   },
   {
     name: "Pack",
