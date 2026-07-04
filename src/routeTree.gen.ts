@@ -20,6 +20,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicPackDownloadRouteImport } from './routes/api/public/pack-download'
+import { Route as ApiPublicCommentRouteImport } from './routes/api/public/comment'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -79,6 +80,11 @@ const ApiPublicPackDownloadRoute = ApiPublicPackDownloadRouteImport.update({
   path: '/api/public/pack-download',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCommentRoute = ApiPublicCommentRouteImport.update({
+  id: '/api/public/comment',
+  path: '/api/public/comment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
     | '/api/public/payments/webhook'
@@ -214,6 +226,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ApiPublicCommentRoute: typeof ApiPublicCommentRoute
   ApiPublicPackDownloadRoute: typeof ApiPublicPackDownloadRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackDownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/comment': {
+      id: '/api/public/comment'
+      path: '/api/public/comment'
+      fullPath: '/api/public/comment'
+      preLoaderRoute: typeof ApiPublicCommentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -353,6 +373,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ApiPublicCommentRoute: ApiPublicCommentRoute,
   ApiPublicPackDownloadRoute: ApiPublicPackDownloadRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
