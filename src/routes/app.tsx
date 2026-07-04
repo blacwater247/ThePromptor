@@ -347,6 +347,14 @@ function AppPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 lg:py-10">
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <Info className="h-4 w-4 mt-0.5 brand-text shrink-0" />
+          <p className="text-muted-foreground">
+            <span className="text-foreground font-semibold">The Promptor writes prompts — not songs.</span>{" "}
+            Copy the output into Suno, Udio, or any AI music tool to generate the actual audio.
+          </p>
+        </div>
+
         {showSignupWall && isGuest && (
           <Card className="mb-8 p-6 border-primary/50 bg-card/80 backdrop-blur gold-glow">
             <h2 className="font-display text-2xl font-bold">You've used your 10 free prompts</h2>
