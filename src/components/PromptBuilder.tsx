@@ -244,8 +244,10 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               value={value.moodColor}
               onChange={(v) => set("moodColor", v)}
               standard={moodColorOptions}
-              disabled={!isPro || moodColorOptions.length <= 1}
-              placeholder={isPro ? (moodColorOptions.length > 1 ? "Pick an emotional color" : "Pick a mood first") : "Pro only"}
+              allowNone
+              disabled={!isPro || moodColorOptions.length === 0}
+              placeholder={isPro ? (moodColorOptions.length > 0 ? "Pick an emotional color" : "Pick a mood first") : "Pro only"}
+
             />
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
