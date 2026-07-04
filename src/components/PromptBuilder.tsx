@@ -76,8 +76,10 @@ function Field({ label, children, pro }: { label: string; children: React.ReactN
   );
 }
 
+const NONE_VALUE = "__none__";
+
 function Dropdown({
-  value, onChange, standard, pro = [], isPro = false, placeholder, disabled,
+  value, onChange, standard, pro = [], isPro = false, placeholder, disabled, allowNone = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -86,16 +88,24 @@ function Dropdown({
   isPro?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  allowNone?: boolean;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const options = showAdvanced && isPro ? [...standard, ...pro] : standard;
+  const base = showAdvanced && isPro ? [...standard, ...pro] : standard;
+  const options = base.filter((o) => o !== "");
+  const selectValue = value === "" ? (allowNone ? NONE_VALUE : undefined) : value;
   return (
     <div className="space-y-1">
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <Select
+        value={selectValue}
+        onValueChange={(v) => onChange(v === NONE_VALUE ? "" : v)}
+        disabled={disabled}
+      >
         <SelectTrigger className="bg-secondary/40 border-border">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent className="max-h-72">
+          {allowNone && <SelectItem value={NONE_VALUE}>None</SelectItem>}
           {options.map((o) => (
             <SelectItem key={o} value={o}>{o}</SelectItem>
           ))}
@@ -119,6 +129,7 @@ function Dropdown({
     </div>
   );
 }
+
 
 export function PromptBuilder({ value, onChange, isPro = false }: Props) {
   const set = <K extends keyof PromptInputs>(k: K, v: PromptInputs[K]) => onChange({ ...value, [k]: v });
