@@ -292,9 +292,12 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
 export const generatePromptGuest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => GuestInputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data: raw }) => {
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) throw new Error("Generator is not configured. Please try again later.");
+
+    // Guest users only get Standard presets — always sanitize.
+    const data = { ...raw, ...sanitizeToStandard(raw as unknown as PromptInputs) };
 
     const cfg = MODE_CONFIG.standard;
     const { createOpenAI } = await import("@ai-sdk/openai");
@@ -333,6 +336,7 @@ export const generatePromptGuest = createServerFn({ method: "POST" })
       `Production: ${data.productionStyle} · ${data.soundQuality}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
     ].filter(Boolean).join("\n");
+
 
     try {
       const first = await generateText({
