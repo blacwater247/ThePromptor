@@ -278,3 +278,67 @@ export const generatePrompt = createServerFn({ method: "POST" })
     }
   });
 
+export const generatePromptGuest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => GuestInputSchema.parse(input))
+  .handler(async ({ data }) => {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) throw new Error("Generator is not configured. Please try again later.");
+
+    const cfg = MODE_CONFIG.standard;
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const openai = createOpenAI({ apiKey: openaiKey });
+
+    const tempoLine = data.tempo === "Custom BPM" && data.customBpm
+      ? `Tempo: ${data.customBpm} BPM`
+      : `Tempo: ${data.tempo}`;
+
+    const avoidCombined = [
+      ...(data.avoidPresets ?? []),
+      data.avoidWords,
+    ].filter(Boolean).join(", ");
+
+    const requiredInstruments = data.instruments.slice();
+    const instrumentsLine = requiredInstruments.length
+      ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
+      : "";
+
+    const userBlock = [
+      data.title && `Title: "${data.title}"`,
+      `Prompt type: ${data.promptType}`,
+      `Length/structure: ${data.songLength}`,
+      `Main genre: ${data.mainGenre}`,
+      data.fusionGenre !== "None" && `Fusion: ${data.fusionGenre}`,
+      `Vocals: ${data.vocalType} — ${data.vocalPerformance}`,
+      data.vocalExtras.length && `Vocal extras: ${data.vocalExtras.join(", ")}`,
+      data.moods.length && `Mood: ${data.moods.join(", ")}`,
+      `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
+      `Theme: ${data.themePreset}`,
+      data.topic && `Story/topic: ${data.topic}`,
+      instrumentsLine,
+      `DRUMS (name exactly): ${data.drumStyle}`,
+      tempoLine,
+      `Key: ${data.key}`,
+      `Production: ${data.productionStyle} · ${data.soundQuality}`,
+      avoidCombined && `AVOID: ${avoidCombined}`,
+    ].filter(Boolean).join("\n");
+
+    try {
+      const first = await generateText({
+        model: openai("gpt-4.1-mini"),
+        system: cfg.system,
+        prompt: userBlock,
+        temperature: cfg.temperature,
+        maxOutputTokens: cfg.maxTokens,
+      });
+      return { prompt: sanitizeOutput(first.text) };
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; status?: number; message?: string };
+      const status = e.statusCode ?? e.status;
+      console.error("[prompt guest] generation error", err);
+      if (status === 401) throw new Error("Generator is misconfigured. Please try again later.");
+      if (status === 429) throw new Error("The generator is busy. Please try again in a moment.");
+      throw new Error("Failed to generate prompt. Please try again.");
+    }
+  });
+
+
