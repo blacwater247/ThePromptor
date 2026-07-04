@@ -46,12 +46,12 @@ const TIERS: Tier[] = [
   },
   {
     name: "Pack",
-    price: "$2",
+    price: "$5",
     cadence: "one-time",
     prompts: "20 prompts (40 credits)",
     cta: "Buy 20 prompts",
     priceId: "credits_pack_20_onetime",
-    features: ["Top up any time", "Never expires", "All Blacure features", "Same studio-grade prompts"],
+    features: ["Top up any time", "Never expires", "Same studio-grade prompts"],
   },
   {
     name: "Monthly",
