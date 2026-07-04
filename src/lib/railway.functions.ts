@@ -17,7 +17,6 @@ export type SavePromptResponse = { id: string };
 export type ListPromptsResponse = {
   prompts: Array<{ id: string; prompt: string; created_at: string }>;
 };
-export type MusicJobResponse = { job_id: string; status: string; url?: string };
 export type PingResponse = { ok: boolean; status?: string };
 
 // ---------- Validators (kept tiny; upstream owns full schema) ----------
