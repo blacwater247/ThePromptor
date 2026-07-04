@@ -14,6 +14,31 @@ const enumOf = (values: readonly string[]) =>
 
 const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
+const GuestInputSchema = z.object({
+  title: z.string().max(80).optional().default("").transform(stripNewlines),
+  promptType: enumOf(PROMPT_TYPES),
+  songLength: enumOf(SONG_LENGTHS),
+  mainGenre: enumOf(MAIN_GENRES),
+  fusionGenre: enumOf(FUSION_GENRES),
+  vocalType: enumOf(VOCAL_TYPES),
+  vocalPerformance: enumOf(VOCAL_PERFORMANCES),
+  vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
+  moods: z.array(enumOf(MOODS)).max(20),
+  energy: enumOf(ENERGY_LEVELS),
+  emotionDepth: enumOf(EMOTION_DEPTHS),
+  themePreset: enumOf(THEME_PRESETS),
+  topic: z.string().max(200).optional().default("").transform(stripNewlines),
+  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
+  drumStyle: enumOf(DRUM_STYLES),
+  tempo: enumOf(TEMPOS),
+  customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
+  key: enumOf(KEYS),
+  productionStyle: enumOf(PRODUCTION_STYLES),
+  soundQuality: enumOf(SOUND_QUALITIES),
+  avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
+  avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
+});
+
 const InputSchema = z.object({
   mode: z.enum(PROMPT_MODES).default("standard"),
   title: z.string().max(80).optional().default("").transform(stripNewlines),
