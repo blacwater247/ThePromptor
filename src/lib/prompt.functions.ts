@@ -140,6 +140,9 @@ export const generatePrompt = createServerFn({ method: "POST" })
       throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
     }
 
+    // Non-subscribers can't use Pro-only preset values even if the UI is bypassed.
+    const sanitized = isSubscriber ? data : { ...data, ...sanitizeToStandard(data as unknown as PromptInputs) };
+
     const attemptRef = crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -178,42 +181,50 @@ export const generatePrompt = createServerFn({ method: "POST" })
     const { createOpenAI } = await import("@ai-sdk/openai");
     const openai = createOpenAI({ apiKey: openaiKey });
 
-    const tempoLine = data.tempo === "Custom BPM" && data.customBpm
-      ? `Tempo: ${data.customBpm} BPM`
-      : `Tempo: ${data.tempo}`;
+    const tempoLine = sanitized.tempo === "Custom BPM" && sanitized.customBpm
+      ? `Tempo: ${sanitized.customBpm} BPM`
+      : `Tempo: ${sanitized.tempo}`;
 
     const avoidCombined = [
-      ...(data.avoidPresets ?? []),
-      data.avoidWords,
+      ...(sanitized.avoidPresets ?? []),
+      sanitized.avoidWords,
     ].filter(Boolean).join(", ");
 
-    const requiredInstruments = data.instruments.slice();
+    const requiredInstruments = sanitized.instruments.slice();
     const instrumentsLine = requiredInstruments.length
       ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
       : "";
 
     const userBlock = [
-      data.title && `Title: "${data.title}"`,
-      `Prompt type: ${data.promptType}`,
-      `Length/structure: ${data.songLength}`,
-      `Main genre: ${data.mainGenre}`,
-      data.fusionGenre !== "None" && `Fusion: ${data.fusionGenre}`,
-      `Vocals: ${data.vocalType} — ${data.vocalPerformance}`,
-      data.vocalExtras.length && `Vocal extras: ${data.vocalExtras.join(", ")}`,
-      data.moods.length && `Mood: ${data.moods.join(", ")}`,
-      `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
-      `Theme: ${data.themePreset}`,
-      data.topic && `Story/topic: ${data.topic}`,
+      sanitized.title && `Title: "${sanitized.title}"`,
+      `Prompt type: ${sanitized.promptType}`,
+      `Length/structure: ${sanitized.songLength}`,
+      `Main genre: ${sanitized.mainGenre}${sanitized.subgenre ? ` (subgenre: ${sanitized.subgenre})` : ""}`,
+      sanitized.fusionGenre !== "None" && `Fusion: ${sanitized.fusionGenre}`,
+      `Vocals: ${sanitized.vocalType} — ${sanitized.vocalPerformance}`,
+      sanitized.vocalExtras.length && `Vocal extras: ${sanitized.vocalExtras.join(", ")}`,
+      sanitized.moods.length && `Mood: ${sanitized.moods.join(", ")}${sanitized.moodColor ? ` — emotional color: ${sanitized.moodColor}` : ""}`,
+      `Energy: ${sanitized.energy} · Emotion depth: ${sanitized.emotionDepth}`,
+      `Theme: ${sanitized.themePreset}`,
+      sanitized.topic && `Story/topic: ${sanitized.topic}`,
       instrumentsLine,
-      `DRUMS (name exactly): ${data.drumStyle}`,
+      `DRUMS (name exactly): ${sanitized.drumStyle}${sanitized.rhythmPattern ? ` — pattern: ${sanitized.rhythmPattern}` : ""}`,
+      sanitized.bassline && sanitized.bassline !== "None" && `Bassline: ${sanitized.bassline}`,
       tempoLine,
-      `Key: ${data.key}`,
-      `Production: ${data.productionStyle} · ${data.soundQuality}`,
+      `Key: ${sanitized.key}`,
+      `Production: ${sanitized.productionStyle} · ${sanitized.soundQuality}${sanitized.arrangement ? ` · arrangement: ${sanitized.arrangement}` : ""}`,
+      sanitized.mixingStyle && sanitized.mixingStyle !== "None" && `Mixing: ${sanitized.mixingStyle}${sanitized.sonicFinish ? ` — finish: ${sanitized.sonicFinish}` : ""}`,
+      sanitized.hookType && sanitized.hookType !== "None" && `Hook: ${sanitized.hookType}${sanitized.vocalFormat ? ` — format: ${sanitized.vocalFormat}` : ""}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
-      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${data.drumStyle}".`,
+      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${sanitized.drumStyle}".`,
     ].filter(Boolean).join("\n");
 
-    const requiredForCheck = [...requiredInstruments, data.drumStyle];
+    const requiredForCheck = [...requiredInstruments, sanitized.drumStyle];
+
+    // Alias for the remainder of the handler.
+    const data2 = sanitized;
+    void data2;
+
 
     try {
       const first = await generateText({
