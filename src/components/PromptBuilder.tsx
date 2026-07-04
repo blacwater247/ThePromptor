@@ -304,7 +304,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               <Dropdown
                 value={value.arrangement}
                 onChange={(v) => set("arrangement", v)}
-                standard={["", ...ARRANGEMENTS]}
+                standard={ARRANGEMENTS} allowNone
                 disabled={!isPro}
                 placeholder={isPro ? "Optional arrangement direction" : "Pro only"}
               />
@@ -338,7 +338,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.rhythmPattern}
               onChange={(v) => set("rhythmPattern", v)}
-              standard={["", ...RHYTHM_PATTERNS]}
+              standard={RHYTHM_PATTERNS} allowNone
               disabled={!isPro}
               placeholder={isPro ? "Pick a rhythm pattern" : "Pro only"}
             />
@@ -377,7 +377,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.sonicFinish}
               onChange={(v) => set("sonicFinish", v)}
-              standard={["", ...SONIC_FINISHES]}
+              standard={SONIC_FINISHES} allowNone
               disabled={!isPro || !value.mixingStyle || value.mixingStyle === "None"}
               placeholder={isPro ? (value.mixingStyle && value.mixingStyle !== "None" ? "Pick a finish" : "Pick a mix first") : "Pro only"}
             />
@@ -401,7 +401,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.vocalFormat}
               onChange={(v) => set("vocalFormat", v)}
-              standard={["", ...VOCAL_FORMATS]}
+              standard={VOCAL_FORMATS} allowNone
               disabled={!isPro || !value.hookType || value.hookType === "None"}
               placeholder={isPro ? (value.hookType && value.hookType !== "None" ? "Pick a format" : "Pick a hook first") : "Pro only"}
             />
