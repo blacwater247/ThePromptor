@@ -59,7 +59,10 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      console.error("Sign-up error:", error);
+      return toast.error("Could not create account. Please try again.");
+    }
     toast.success("Account created — you have 10 free prompts!");
     navigate({ to: "/app" });
   };
