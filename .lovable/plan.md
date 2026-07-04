@@ -1,100 +1,85 @@
+
 ## Goal
 
-1. First 10 prompts are free with **no signup** — tracked in the browser.
-2. On the 11th attempt, show a wall asking the user to sign up. After they sign up, the existing $5 pack kicks in as the next paid step (existing paywall in the authenticated app already handles this).
-3. Tighten mobile layout on the landing page and the app header.
+Turn the Promptor into a professional tiered-preset builder with a Free/Pack layer and a Pro (monthly) layer, add Apple sign-in, a clear "prompts only" disclaimer, and a reliable "Copied ✓" confirmation.
 
-## Scope
+## 1. Apple login
 
-### 1. Public generator (no signup for the first 10)
+- Call `supabase--configure_social_auth` with `providers: ["google","apple"]` (keep email).
+- Add an "Continue with Apple" button on `src/routes/auth.tsx` using `lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin })`, mirroring the existing Google button.
 
-- Move the generator UI out from behind auth so signed-out users can use it.
-  - New route: `src/routes/app.tsx` (public) renders the generator.
-  - Keep `src/routes/_authenticated/app.tsx` for authenticated flows (credits, packs, Pro Studio). Public route shares the same `PromptBuilder` + `PromptPreview` components but with signed-out-specific logic.
-  - Alternative (simpler): keep one route, remove the `_authenticated` gate for `/app`, branch behavior in-component based on `useAuth().user`. We'll use this simpler approach and delete `src/routes/_authenticated/app.tsx` after moving its content to `src/routes/app.tsx`.
+## 2. Disclaimer
 
-- Signed-out behavior:
-  - Track free-prompt usage in `localStorage` under `blacure.freePrompts.v1` = `{ used: number }`. Limit = 10.
-  - Standard "Generate" is enabled while `used < 10`. Pro Studio stays locked (requires signup + Monthly).
-  - Randomize / Clear / Save-locally all work without an account.
-  - After each successful generation, increment `used`.
-  - Header credit chip becomes "X of 10 free prompts left" for guests; "Sign in" button replaces Account/Sign-out.
+- Add a persistent notice at the top of `src/routes/app.tsx` (and small footnote under the hero on `src/routes/index.tsx`):
+  > "This tool creates prompts. It does not generate songs — only prompts you can paste into Suno, Udio, or any AI music tool."
+- Style as a subtle info banner (muted background, `Info` icon), not a modal.
 
-- Signed-in behavior: unchanged (credits, subscription, packs).
+## 3. Copy feedback
 
-- Server function `generatePrompt` currently requires auth (uses `requireSupabaseAuth` for credit debit). Add a sibling `generatePromptGuest` server function with **no** auth middleware that:
-  - Accepts the same inputs (minus `mode` — guests are Standard only).
-  - Rate-limits by IP (simple in-memory or DB table `guest_prompt_usage(ip, count, day)`) to prevent abuse: max 15/day/IP as a soft cap on top of the browser 10-limit.
-  - Calls the same AI generation code path, returns `{ prompt }` with no `balance`.
-  - Never debits credits.
-  - Rejects `mode: "pro"`.
-  - Public route calls `generatePromptGuest`; authenticated route keeps calling `generatePrompt`.
+- In `src/components/PromptPreview.tsx` (and any other copy button), change the copy handler to set `copied=true` for 2s, swap the button label/icon to `Check` + "Copied", and keep the existing toast as backup.
 
-### 2. Signup wall after 10
+## 4. Expanded preset libraries + tiered structure
 
-- When guest hits limit, show a modal / inline card in the generator:
-  - Title: "You've used your 10 free prompts"
-  - Body: "Create a free account to keep going. After that, top up 20 more for $5 or go unlimited monthly."
-  - Buttons: "Create account" → `/auth`, "See pricing" → `/pricing`.
-- Existing paid flow ($5 Pack via `credits_pack_20_onetime`) is unchanged and takes over automatically once signed in.
+Extend `src/lib/prompt-options.ts` with the full lists the user provided, split into **Standard** (first ~20 per category, shown to everyone) and **Pro** (the full expanded library, gated).
 
-### 3. Pricing copy
+New/expanded categories:
+- `MAIN_GENRES` + `SUBGENRES` map (Genre → Subgenres)
+- `MOODS` + `MOOD_COLORS` map (Mood → emotional colors)
+- `STYLES` + `ARRANGEMENTS` map
+- `DRUM_FEELS` + `RHYTHM_PATTERNS` map
+- `MIXING_STYLES` + `SONIC_FINISHES` map
+- `HOOK_TYPES` + `VOCAL_FORMATS` map
+- `BASSLINES` (new top-level, Pro)
+- `INSTRUMENTS` (expanded, multi-select, shown last)
 
-`src/routes/pricing.tsx` Free tier:
-- `prompts`: "10 prompts — no signup"
-- `features[0]`: "10 free prompts, no account needed"
-- CTA for Free tier links to `/app` (not `/auth`).
+Each list exports `{ standard: string[], pro: string[] }`. Standard shows 15–25 presets; an **"Advanced ▾"** toggle reveals the Pro list. Non-Pro users see Pro chips as locked (with a small lock icon + tooltip "Pro plan").
 
-Landing hero (`src/routes/index.tsx`) already says "no card required" — change to "no signup, no card required".
+## 5. Tiered UX in PromptBuilder
 
-### 4. Mobile layout tightening
+Rewrite `src/components/PromptBuilder.tsx` sections to cascade:
 
-Audited pages: `/`, `/app`, `/pricing`.
+```text
+Genre ──► Subgenre (filtered by Genre)
+Mood ──► Emotional Color (filtered by Mood)
+Style ──► Arrangement / Production
+Drum Feel ──► Rhythm Pattern
+Mixing Style ──► Sonic Finish
+Hook Type ──► Vocal Format
+Instruments (multi-select, last)
+```
 
-- **Landing (`src/routes/index.tsx`)**
-  - Nav: hide "Pricing" text link on very small screens if it wraps, or shrink to icon. Currently `sm:inline` already hides Sign-in — keep, but reduce nav `py-5` → `py-4` on mobile so hero moves up.
-  - Hero: reduce mobile heading from `text-5xl` → `text-4xl` on `<sm`; reduce logo from `h-32 w-32` → `h-24 w-24` on `<sm`; reduce hero vertical padding `py-16` → `py-10` on mobile.
-  - CTAs stack full-width on mobile (`w-full sm:w-auto` on both buttons).
-  - Feature grid already responsive — leave.
+- Parent dropdown shows Standard by default with "Advanced" button to expand.
+- Child dropdown auto-filters via the mapping tables; disabled until parent chosen.
+- Add new sections: **Bassline**, **Mixing Style**, **Hook Type**, **Drum Feel** (dedicated).
+- Order in UI: Basics → Genre → Vocals → Mood → Topic → Instruments → Tempo → Style → Drum Feel → Bassline → Mixing → Hook.
 
-- **App page (`src/routes/app.tsx`)**
-  - Header action row wraps awkwardly on ~360–400px widths (credits chip + 4 buttons). Group buttons into a right-side flex that wraps to a second row cleanly, and drop the second-row icon-only Sign-out into the Account menu on `<sm` (or keep but ensure `gap-1.5` and `flex-wrap` so nothing overflows).
-  - Reduce H1 from `text-3xl sm:text-5xl` → `text-2xl sm:text-5xl` on mobile.
-  - Generate button row: add `w-full sm:w-auto` to primary + Pro Studio buttons on `<sm` so they stack instead of squishing.
+## 6. Free / Pack / Pro gating
 
-- **Pricing (`src/routes/pricing.tsx`)** — already single-column on mobile, no changes needed beyond Free tier copy.
+Three tiers surfaced in the UI, in this order at the top of `/app`:
+
+1. **Free** — 10 guest prompts (existing localStorage flow), Standard presets only.
+2. **$5 Prompt Packs** — one-time PDF packs (existing `packs.functions.ts`), Standard presets + access to premium theme packs.
+3. **Pro Monthly** — unlocks all Pro presets, the Advanced toggle, cascading child dropdowns, Bassline/Mixing/Hook categories, unlimited generations.
+
+- Add a `useTier()` hook that returns `"guest" | "free" | "pack" | "pro"` based on `useAuth()` + a query against `subscriptions` (status `active` + `price_id` in Pro price list).
+- Gate Pro options in `PromptBuilder`: locked chips show upgrade tooltip → CTA opens `/pricing`.
+- On `src/routes/pricing.tsx`: reorder tier cards to Free → Pack → Pro; make Pro card visually primary (brand gradient, "Pro" badge), copy "Unlock the full pro prompt library".
+
+## 7. Generate flow
+
+- `generatePromptGuest` remains Standard-only.
+- Authenticated `generatePrompt` accepts new fields (bassline, mixing, hook, subgenre, etc.); if user isn't Pro, server-side sanitize any Pro-only values back to Standard defaults so client-side gating can't be bypassed.
 
 ## Technical notes
 
-- Auth-gated routes stay under `_authenticated/` (account, subscription). Only `/app` moves out.
-- `generatePromptGuest` server function lives in `src/lib/prompt.functions.ts` next to existing `generatePrompt`. No middleware, `.inputValidator()` enforces Standard mode.
-- Guest rate-limit table (optional but recommended):
-  ```sql
-  create table public.guest_prompt_usage (
-    ip inet not null,
-    day date not null default current_date,
-    count int not null default 0,
-    primary key (ip, day)
-  );
-  grant select, insert, update on public.guest_prompt_usage to service_role;
-  alter table public.guest_prompt_usage enable row level security;
-  -- no policies: only the server function (service_role) writes it
-  ```
-  Server function loads `supabaseAdmin` inside the handler to bump the counter.
-- `client_state` shows viewport 1174 wide — no live mobile screenshot to diff against. We'll drive Playwright at 390×844 after implementation to verify the mobile layout claims.
-- No changes to Stripe products or webhooks.
+- `src/lib/prompt-options.ts`: extend `PromptInputs` with `subgenre`, `moodColor`, `arrangement`, `rhythmPattern`, `sonicFinish`, `vocalFormat`, `bassline`, `mixingStyle`, `hookType`. Update `DEFAULT_INPUTS`.
+- `src/lib/generatePrompt.ts` + `src/lib/prompt.functions.ts` (`PromptInputSchema` / `GuestInputSchema`): add optional fields; guest schema rejects Pro fields.
+- Subscription check: reuse `src/lib/subscription.ts` (already present) — add `isPro(user)` helper querying `subscriptions` for active monthly.
+- `PromptPreview.tsx`: `const [copied,setCopied]=useState(false)` + `setTimeout(()=>setCopied(false),2000)`.
+- Apple provider requires `supabase--configure_social_auth` tool call (build mode).
+- No DB migrations needed — Pro detection uses existing `subscriptions` table.
 
-## Files touched
+## Out of scope
 
-- `src/routes/app.tsx` — new public generator page (or move from `_authenticated/app.tsx`).
-- `src/routes/_authenticated/app.tsx` — delete (contents merged into public with auth branching).
-- `src/lib/prompt.functions.ts` — add `generatePromptGuest`.
-- `src/routes/index.tsx` — hero + nav mobile tweaks, copy tweak.
-- `src/routes/pricing.tsx` — Free tier copy + CTA target.
-- `supabase/migrations/<ts>_guest_prompt_usage.sql` — rate-limit table (with GRANT + RLS enable).
-
-## Verification
-
-- `bun add`-free change; typecheck must pass.
-- Playwright at 390×844: load `/`, `/app`, `/pricing`, screenshot each — confirm no horizontal overflow and CTAs stack.
-- Manual: use `/app` while signed out, generate 10 times, confirm wall appears on 11th and points to `/auth`.
+- New Pro pricing/product creation (assume existing monthly product; if none, ask in build mode before wiring the price).
+- Redesign of pricing page beyond tier reordering and Pro emphasis.
