@@ -377,7 +377,7 @@ function AppPage() {
               <h2 className="font-display text-lg font-semibold">Prompt Builder</h2>
               <span className="text-xs text-muted-foreground hidden sm:block">All sections feed the AI</span>
             </div>
-            <PromptBuilder value={inputs} onChange={setInputs} />
+            <PromptBuilder value={inputs} onChange={setInputs} isPro={isPro} />
             <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
               <Button
                 onClick={() => handleGenerate("standard")}
