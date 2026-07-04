@@ -7,64 +7,65 @@ import {
   VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
   THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
   SOUND_QUALITIES, AVOID_PRESETS, PROMPT_MODES,
+  ARRANGEMENTS, MIXING_STYLES, SONIC_FINISHES, HOOK_TYPES, VOCAL_FORMATS,
+  BASSLINES, RHYTHM_PATTERNS, MOOD_COLORS, SUBGENRES,
+  sanitizeToStandard, type PromptInputs,
 } from "./prompt-options";
 
 const enumOf = (values: readonly string[]) =>
   z.string().refine((v) => values.includes(v), { message: "Invalid value" });
 
+const optionalEnum = (values: readonly string[]) =>
+  z.string().refine((v) => v === "" || values.includes(v), { message: "Invalid value" }).optional().default("");
+
 const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
-const GuestInputSchema = z.object({
+// Flatten MOOD_COLORS + SUBGENRES for validation.
+const ALL_MOOD_COLORS = Array.from(new Set(Object.values(MOOD_COLORS).flat()));
+const ALL_SUBGENRES = Array.from(new Set(Object.values(SUBGENRES).flat()));
+
+const baseFields = {
   title: z.string().max(80).optional().default("").transform(stripNewlines),
   promptType: enumOf(PROMPT_TYPES),
   songLength: enumOf(SONG_LENGTHS),
   mainGenre: enumOf(MAIN_GENRES),
+  subgenre: optionalEnum(ALL_SUBGENRES),
   fusionGenre: enumOf(FUSION_GENRES),
   vocalType: enumOf(VOCAL_TYPES),
   vocalPerformance: enumOf(VOCAL_PERFORMANCES),
   vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
   moods: z.array(enumOf(MOODS)).max(20),
+  moodColor: optionalEnum(ALL_MOOD_COLORS),
   energy: enumOf(ENERGY_LEVELS),
   emotionDepth: enumOf(EMOTION_DEPTHS),
   themePreset: enumOf(THEME_PRESETS),
   topic: z.string().max(200).optional().default("").transform(stripNewlines),
-  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
+  instruments: z.array(enumOf(INSTRUMENTS)).max(60),
   drumStyle: enumOf(DRUM_STYLES),
+  rhythmPattern: optionalEnum(RHYTHM_PATTERNS),
   tempo: enumOf(TEMPOS),
   customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
   key: enumOf(KEYS),
   productionStyle: enumOf(PRODUCTION_STYLES),
+  arrangement: optionalEnum(ARRANGEMENTS),
+  mixingStyle: enumOf(MIXING_STYLES).optional().default("None"),
+  sonicFinish: optionalEnum(SONIC_FINISHES),
+  hookType: enumOf(HOOK_TYPES).optional().default("None"),
+  vocalFormat: optionalEnum(VOCAL_FORMATS),
+  bassline: enumOf(BASSLINES).optional().default("None"),
   soundQuality: enumOf(SOUND_QUALITIES),
   avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
   avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
-});
+};
+
+const GuestInputSchema = z.object(baseFields);
 
 const InputSchema = z.object({
   mode: z.enum(PROMPT_MODES).default("standard"),
-  title: z.string().max(80).optional().default("").transform(stripNewlines),
-  promptType: enumOf(PROMPT_TYPES),
-  songLength: enumOf(SONG_LENGTHS),
-  mainGenre: enumOf(MAIN_GENRES),
-  fusionGenre: enumOf(FUSION_GENRES),
-  vocalType: enumOf(VOCAL_TYPES),
-  vocalPerformance: enumOf(VOCAL_PERFORMANCES),
-  vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
-  moods: z.array(enumOf(MOODS)).max(20),
-  energy: enumOf(ENERGY_LEVELS),
-  emotionDepth: enumOf(EMOTION_DEPTHS),
-  themePreset: enumOf(THEME_PRESETS),
-  topic: z.string().max(200).optional().default("").transform(stripNewlines),
-  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
-  drumStyle: enumOf(DRUM_STYLES),
-  tempo: enumOf(TEMPOS),
-  customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
-  key: enumOf(KEYS),
-  productionStyle: enumOf(PRODUCTION_STYLES),
-  soundQuality: enumOf(SOUND_QUALITIES),
-  avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
-  avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
+  ...baseFields,
   environment: z.enum(["sandbox", "live"]),
 });
+
 
 const MODE_CONFIG = {
   standard: {
@@ -139,6 +140,9 @@ export const generatePrompt = createServerFn({ method: "POST" })
       throw new Error("PRO_REQUIRED: Pro Studio Prompt is a subscriber feature. Upgrade to unlock.");
     }
 
+    // Non-subscribers can't use Pro-only preset values even if the UI is bypassed.
+    const sanitized = isSubscriber ? data : { ...data, ...sanitizeToStandard(data as unknown as PromptInputs) };
+
     const attemptRef = crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -177,42 +181,50 @@ export const generatePrompt = createServerFn({ method: "POST" })
     const { createOpenAI } = await import("@ai-sdk/openai");
     const openai = createOpenAI({ apiKey: openaiKey });
 
-    const tempoLine = data.tempo === "Custom BPM" && data.customBpm
-      ? `Tempo: ${data.customBpm} BPM`
-      : `Tempo: ${data.tempo}`;
+    const tempoLine = sanitized.tempo === "Custom BPM" && sanitized.customBpm
+      ? `Tempo: ${sanitized.customBpm} BPM`
+      : `Tempo: ${sanitized.tempo}`;
 
     const avoidCombined = [
-      ...(data.avoidPresets ?? []),
-      data.avoidWords,
+      ...(sanitized.avoidPresets ?? []),
+      sanitized.avoidWords,
     ].filter(Boolean).join(", ");
 
-    const requiredInstruments = data.instruments.slice();
+    const requiredInstruments = sanitized.instruments.slice();
     const instrumentsLine = requiredInstruments.length
       ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
       : "";
 
     const userBlock = [
-      data.title && `Title: "${data.title}"`,
-      `Prompt type: ${data.promptType}`,
-      `Length/structure: ${data.songLength}`,
-      `Main genre: ${data.mainGenre}`,
-      data.fusionGenre !== "None" && `Fusion: ${data.fusionGenre}`,
-      `Vocals: ${data.vocalType} — ${data.vocalPerformance}`,
-      data.vocalExtras.length && `Vocal extras: ${data.vocalExtras.join(", ")}`,
-      data.moods.length && `Mood: ${data.moods.join(", ")}`,
-      `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
-      `Theme: ${data.themePreset}`,
-      data.topic && `Story/topic: ${data.topic}`,
+      sanitized.title && `Title: "${sanitized.title}"`,
+      `Prompt type: ${sanitized.promptType}`,
+      `Length/structure: ${sanitized.songLength}`,
+      `Main genre: ${sanitized.mainGenre}${sanitized.subgenre ? ` (subgenre: ${sanitized.subgenre})` : ""}`,
+      sanitized.fusionGenre !== "None" && `Fusion: ${sanitized.fusionGenre}`,
+      `Vocals: ${sanitized.vocalType} — ${sanitized.vocalPerformance}`,
+      sanitized.vocalExtras.length && `Vocal extras: ${sanitized.vocalExtras.join(", ")}`,
+      sanitized.moods.length && `Mood: ${sanitized.moods.join(", ")}${sanitized.moodColor ? ` — emotional color: ${sanitized.moodColor}` : ""}`,
+      `Energy: ${sanitized.energy} · Emotion depth: ${sanitized.emotionDepth}`,
+      `Theme: ${sanitized.themePreset}`,
+      sanitized.topic && `Story/topic: ${sanitized.topic}`,
       instrumentsLine,
-      `DRUMS (name exactly): ${data.drumStyle}`,
+      `DRUMS (name exactly): ${sanitized.drumStyle}${sanitized.rhythmPattern ? ` — pattern: ${sanitized.rhythmPattern}` : ""}`,
+      sanitized.bassline && sanitized.bassline !== "None" && `Bassline: ${sanitized.bassline}`,
       tempoLine,
-      `Key: ${data.key}`,
-      `Production: ${data.productionStyle} · ${data.soundQuality}`,
+      `Key: ${sanitized.key}`,
+      `Production: ${sanitized.productionStyle} · ${sanitized.soundQuality}${sanitized.arrangement ? ` · arrangement: ${sanitized.arrangement}` : ""}`,
+      sanitized.mixingStyle && sanitized.mixingStyle !== "None" && `Mixing: ${sanitized.mixingStyle}${sanitized.sonicFinish ? ` — finish: ${sanitized.sonicFinish}` : ""}`,
+      sanitized.hookType && sanitized.hookType !== "None" && `Hook: ${sanitized.hookType}${sanitized.vocalFormat ? ` — format: ${sanitized.vocalFormat}` : ""}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
-      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${data.drumStyle}".`,
+      instrumentsLine && `REMINDER — the final prompt MUST name every one of these instruments verbatim: ${requiredInstruments.join(", ")}. It MUST also name the drum style "${sanitized.drumStyle}".`,
     ].filter(Boolean).join("\n");
 
-    const requiredForCheck = [...requiredInstruments, data.drumStyle];
+    const requiredForCheck = [...requiredInstruments, sanitized.drumStyle];
+
+    // Alias for the remainder of the handler.
+    const data2 = sanitized;
+    void data2;
+
 
     try {
       const first = await generateText({
@@ -280,9 +292,12 @@ export const generatePrompt = createServerFn({ method: "POST" })
 
 export const generatePromptGuest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => GuestInputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data: raw }) => {
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) throw new Error("Generator is not configured. Please try again later.");
+
+    // Guest users only get Standard presets — always sanitize.
+    const data = { ...raw, ...sanitizeToStandard(raw as unknown as PromptInputs) };
 
     const cfg = MODE_CONFIG.standard;
     const { createOpenAI } = await import("@ai-sdk/openai");
@@ -321,6 +336,7 @@ export const generatePromptGuest = createServerFn({ method: "POST" })
       `Production: ${data.productionStyle} · ${data.soundQuality}`,
       avoidCombined && `AVOID: ${avoidCombined}`,
     ].filter(Boolean).join("\n");
+
 
     try {
       const first = await generateText({

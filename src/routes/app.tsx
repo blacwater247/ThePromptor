@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown, Lock, Download, Check, LogIn } from "lucide-react";
+import { Sparkles, Shuffle, RotateCcw, ArrowLeft, Zap, LogOut, CreditCard, Crown, Lock, Download, Check, LogIn, Info } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import packCover from "@/assets/blacure-pack-vol1.png.asset.json";
@@ -347,6 +347,14 @@ function AppPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8 lg:py-10">
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <Info className="h-4 w-4 mt-0.5 brand-text shrink-0" />
+          <p className="text-muted-foreground">
+            <span className="text-foreground font-semibold">The Promptor writes prompts — not songs.</span>{" "}
+            Copy the output into Suno, Udio, or any AI music tool to generate the actual audio.
+          </p>
+        </div>
+
         {showSignupWall && isGuest && (
           <Card className="mb-8 p-6 border-primary/50 bg-card/80 backdrop-blur gold-glow">
             <h2 className="font-display text-2xl font-bold">You've used your 10 free prompts</h2>
@@ -377,7 +385,7 @@ function AppPage() {
               <h2 className="font-display text-lg font-semibold">Prompt Builder</h2>
               <span className="text-xs text-muted-foreground hidden sm:block">All sections feed the AI</span>
             </div>
-            <PromptBuilder value={inputs} onChange={setInputs} />
+            <PromptBuilder value={inputs} onChange={setInputs} isPro={isPro} />
             <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
               <Button
                 onClick={() => handleGenerate("standard")}

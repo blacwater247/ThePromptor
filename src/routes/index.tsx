@@ -67,6 +67,10 @@ function Landing() {
             Studio-grade music prompts in seconds. Hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic — built by producers, polished by AI.
           </p>
           <p className="mt-3 text-sm brand-text font-semibold">10 free prompts — no signup, no card required.</p>
+          <p className="mt-2 text-xs text-muted-foreground max-w-xl mx-auto">
+            The Promptor creates <span className="text-foreground font-semibold">prompts only</span> — not audio. Paste the output into Suno, Udio, or any AI music tool to generate the song.
+          </p>
+
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3">
             <Link to="/app" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
