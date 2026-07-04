@@ -7,64 +7,65 @@ import {
   VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
   THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
   SOUND_QUALITIES, AVOID_PRESETS, PROMPT_MODES,
+  ARRANGEMENTS, MIXING_STYLES, SONIC_FINISHES, HOOK_TYPES, VOCAL_FORMATS,
+  BASSLINES, RHYTHM_PATTERNS, MOOD_COLORS, SUBGENRES,
+  sanitizeToStandard, type PromptInputs,
 } from "./prompt-options";
 
 const enumOf = (values: readonly string[]) =>
   z.string().refine((v) => values.includes(v), { message: "Invalid value" });
 
+const optionalEnum = (values: readonly string[]) =>
+  z.string().refine((v) => v === "" || values.includes(v), { message: "Invalid value" }).optional().default("");
+
 const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
-const GuestInputSchema = z.object({
+// Flatten MOOD_COLORS + SUBGENRES for validation.
+const ALL_MOOD_COLORS = Array.from(new Set(Object.values(MOOD_COLORS).flat()));
+const ALL_SUBGENRES = Array.from(new Set(Object.values(SUBGENRES).flat()));
+
+const baseFields = {
   title: z.string().max(80).optional().default("").transform(stripNewlines),
   promptType: enumOf(PROMPT_TYPES),
   songLength: enumOf(SONG_LENGTHS),
   mainGenre: enumOf(MAIN_GENRES),
+  subgenre: optionalEnum(ALL_SUBGENRES),
   fusionGenre: enumOf(FUSION_GENRES),
   vocalType: enumOf(VOCAL_TYPES),
   vocalPerformance: enumOf(VOCAL_PERFORMANCES),
   vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
   moods: z.array(enumOf(MOODS)).max(20),
+  moodColor: optionalEnum(ALL_MOOD_COLORS),
   energy: enumOf(ENERGY_LEVELS),
   emotionDepth: enumOf(EMOTION_DEPTHS),
   themePreset: enumOf(THEME_PRESETS),
   topic: z.string().max(200).optional().default("").transform(stripNewlines),
-  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
+  instruments: z.array(enumOf(INSTRUMENTS)).max(60),
   drumStyle: enumOf(DRUM_STYLES),
+  rhythmPattern: optionalEnum(RHYTHM_PATTERNS),
   tempo: enumOf(TEMPOS),
   customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
   key: enumOf(KEYS),
   productionStyle: enumOf(PRODUCTION_STYLES),
+  arrangement: optionalEnum(ARRANGEMENTS),
+  mixingStyle: enumOf(MIXING_STYLES).optional().default("None"),
+  sonicFinish: optionalEnum(SONIC_FINISHES),
+  hookType: enumOf(HOOK_TYPES).optional().default("None"),
+  vocalFormat: optionalEnum(VOCAL_FORMATS),
+  bassline: enumOf(BASSLINES).optional().default("None"),
   soundQuality: enumOf(SOUND_QUALITIES),
   avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
   avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
-});
+};
+
+const GuestInputSchema = z.object(baseFields);
 
 const InputSchema = z.object({
   mode: z.enum(PROMPT_MODES).default("standard"),
-  title: z.string().max(80).optional().default("").transform(stripNewlines),
-  promptType: enumOf(PROMPT_TYPES),
-  songLength: enumOf(SONG_LENGTHS),
-  mainGenre: enumOf(MAIN_GENRES),
-  fusionGenre: enumOf(FUSION_GENRES),
-  vocalType: enumOf(VOCAL_TYPES),
-  vocalPerformance: enumOf(VOCAL_PERFORMANCES),
-  vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
-  moods: z.array(enumOf(MOODS)).max(20),
-  energy: enumOf(ENERGY_LEVELS),
-  emotionDepth: enumOf(EMOTION_DEPTHS),
-  themePreset: enumOf(THEME_PRESETS),
-  topic: z.string().max(200).optional().default("").transform(stripNewlines),
-  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
-  drumStyle: enumOf(DRUM_STYLES),
-  tempo: enumOf(TEMPOS),
-  customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
-  key: enumOf(KEYS),
-  productionStyle: enumOf(PRODUCTION_STYLES),
-  soundQuality: enumOf(SOUND_QUALITIES),
-  avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
-  avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
+  ...baseFields,
   environment: z.enum(["sandbox", "live"]),
 });
+
 
 const MODE_CONFIG = {
   standard: {
