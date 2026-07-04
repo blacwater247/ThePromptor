@@ -14,6 +14,31 @@ const enumOf = (values: readonly string[]) =>
 
 const stripNewlines = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 
+const GuestInputSchema = z.object({
+  title: z.string().max(80).optional().default("").transform(stripNewlines),
+  promptType: enumOf(PROMPT_TYPES),
+  songLength: enumOf(SONG_LENGTHS),
+  mainGenre: enumOf(MAIN_GENRES),
+  fusionGenre: enumOf(FUSION_GENRES),
+  vocalType: enumOf(VOCAL_TYPES),
+  vocalPerformance: enumOf(VOCAL_PERFORMANCES),
+  vocalExtras: z.array(enumOf(VOCAL_EXTRAS)).max(20),
+  moods: z.array(enumOf(MOODS)).max(20),
+  energy: enumOf(ENERGY_LEVELS),
+  emotionDepth: enumOf(EMOTION_DEPTHS),
+  themePreset: enumOf(THEME_PRESETS),
+  topic: z.string().max(200).optional().default("").transform(stripNewlines),
+  instruments: z.array(enumOf(INSTRUMENTS)).max(40),
+  drumStyle: enumOf(DRUM_STYLES),
+  tempo: enumOf(TEMPOS),
+  customBpm: z.string().regex(/^\d{0,3}$/).max(3).optional().default(""),
+  key: enumOf(KEYS),
+  productionStyle: enumOf(PRODUCTION_STYLES),
+  soundQuality: enumOf(SOUND_QUALITIES),
+  avoidWords: z.string().max(120).optional().default("").transform(stripNewlines),
+  avoidPresets: z.array(enumOf(AVOID_PRESETS)).max(20).optional().default([]),
+});
+
 const InputSchema = z.object({
   mode: z.enum(PROMPT_MODES).default("standard"),
   title: z.string().max(80).optional().default("").transform(stripNewlines),
@@ -252,4 +277,68 @@ export const generatePrompt = createServerFn({ method: "POST" })
       throw new Error(`Failed to generate prompt. ${suffix}`);
     }
   });
+
+export const generatePromptGuest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => GuestInputSchema.parse(input))
+  .handler(async ({ data }) => {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) throw new Error("Generator is not configured. Please try again later.");
+
+    const cfg = MODE_CONFIG.standard;
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const openai = createOpenAI({ apiKey: openaiKey });
+
+    const tempoLine = data.tempo === "Custom BPM" && data.customBpm
+      ? `Tempo: ${data.customBpm} BPM`
+      : `Tempo: ${data.tempo}`;
+
+    const avoidCombined = [
+      ...(data.avoidPresets ?? []),
+      data.avoidWords,
+    ].filter(Boolean).join(", ");
+
+    const requiredInstruments = data.instruments.slice();
+    const instrumentsLine = requiredInstruments.length
+      ? `REQUIRED INSTRUMENTS (name every one exactly): ${requiredInstruments.join(", ")}`
+      : "";
+
+    const userBlock = [
+      data.title && `Title: "${data.title}"`,
+      `Prompt type: ${data.promptType}`,
+      `Length/structure: ${data.songLength}`,
+      `Main genre: ${data.mainGenre}`,
+      data.fusionGenre !== "None" && `Fusion: ${data.fusionGenre}`,
+      `Vocals: ${data.vocalType} — ${data.vocalPerformance}`,
+      data.vocalExtras.length && `Vocal extras: ${data.vocalExtras.join(", ")}`,
+      data.moods.length && `Mood: ${data.moods.join(", ")}`,
+      `Energy: ${data.energy} · Emotion depth: ${data.emotionDepth}`,
+      `Theme: ${data.themePreset}`,
+      data.topic && `Story/topic: ${data.topic}`,
+      instrumentsLine,
+      `DRUMS (name exactly): ${data.drumStyle}`,
+      tempoLine,
+      `Key: ${data.key}`,
+      `Production: ${data.productionStyle} · ${data.soundQuality}`,
+      avoidCombined && `AVOID: ${avoidCombined}`,
+    ].filter(Boolean).join("\n");
+
+    try {
+      const first = await generateText({
+        model: openai("gpt-4.1-mini"),
+        system: cfg.system,
+        prompt: userBlock,
+        temperature: cfg.temperature,
+        maxOutputTokens: cfg.maxTokens,
+      });
+      return { prompt: sanitizeOutput(first.text) };
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; status?: number; message?: string };
+      const status = e.statusCode ?? e.status;
+      console.error("[prompt guest] generation error", err);
+      if (status === 401) throw new Error("Generator is misconfigured. Please try again later.");
+      if (status === 429) throw new Error("The generator is busy. Please try again in a moment.");
+      throw new Error("Failed to generate prompt. Please try again.");
+    }
+  });
+
 

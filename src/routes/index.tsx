@@ -51,31 +51,31 @@ function Landing() {
       <main>
       {/* Hero */}
       <header className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 text-center">
-          <div className="flex justify-center mb-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-24 text-center">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div className="relative">
-              <img src={logoAsset.url} alt="Blacure logo" className="h-32 w-32 sm:h-40 sm:w-40 rounded-full gold-glow" />
+              <img src={logoAsset.url} alt="Blacure logo" className="h-24 w-24 sm:h-40 sm:w-40 rounded-full gold-glow" />
             </div>
           </div>
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]">
+          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]">
             <span className="brand-text">Blacure</span> — AI Song Prompt Generator
           </h1>
           <p className="mt-3 text-base sm:text-lg font-semibold text-foreground/80 tracking-wide uppercase">
             The Promptor
           </p>
-          <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl text-muted-foreground">
+          <p className="mt-6 mx-auto max-w-2xl text-base sm:text-xl text-muted-foreground">
             Studio-grade music prompts in seconds. Hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic — built by producers, polished by AI.
           </p>
-          <p className="mt-3 text-sm brand-text font-semibold">Start with 10 free prompts — no card required.</p>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <Link to="/app">
-              <Button size="lg" className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
+          <p className="mt-3 text-sm brand-text font-semibold">10 free prompts — no signup, no card required.</p>
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3">
+            <Link to="/app" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
                 <Sparkles className="h-4 w-4" />
                 Launch The Promptor
               </Button>
             </Link>
-            <a href="#features">
-              <Button size="lg" variant="outline" className="border-primary/40 hover:bg-primary/10">
+            <a href="#features" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary/40 hover:bg-primary/10">
                 See how it works
               </Button>
             </a>
