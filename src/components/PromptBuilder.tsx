@@ -76,8 +76,10 @@ function Field({ label, children, pro }: { label: string; children: React.ReactN
   );
 }
 
+const NONE_VALUE = "__none__";
+
 function Dropdown({
-  value, onChange, standard, pro = [], isPro = false, placeholder, disabled,
+  value, onChange, standard, pro = [], isPro = false, placeholder, disabled, allowNone = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -86,16 +88,24 @@ function Dropdown({
   isPro?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  allowNone?: boolean;
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const options = showAdvanced && isPro ? [...standard, ...pro] : standard;
+  const base = showAdvanced && isPro ? [...standard, ...pro] : standard;
+  const options = base.filter((o) => o !== "");
+  const selectValue = value === "" ? (allowNone ? NONE_VALUE : undefined) : value;
   return (
     <div className="space-y-1">
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <Select
+        value={selectValue}
+        onValueChange={(v) => onChange(v === NONE_VALUE ? "" : v)}
+        disabled={disabled}
+      >
         <SelectTrigger className="bg-secondary/40 border-border">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent className="max-h-72">
+          {allowNone && <SelectItem value={NONE_VALUE}>None</SelectItem>}
           {options.map((o) => (
             <SelectItem key={o} value={o}>{o}</SelectItem>
           ))}
@@ -120,6 +130,7 @@ function Dropdown({
   );
 }
 
+
 export function PromptBuilder({ value, onChange, isPro = false }: Props) {
   const set = <K extends keyof PromptInputs>(k: K, v: PromptInputs[K]) => onChange({ ...value, [k]: v });
 
@@ -133,13 +144,14 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
   const [showAdvMoods, setShowAdvMoods] = useState(false);
 
   const subgenreOptions = useMemo(
-    () => ["", ...(SUBGENRES[value.mainGenre] ?? [])],
+    () => SUBGENRES[value.mainGenre] ?? [],
     [value.mainGenre],
   );
   const moodColorOptions = useMemo(() => {
     const firstMood = value.moods[0];
-    return ["", ...(firstMood ? MOOD_COLORS[firstMood] ?? [] : [])];
+    return firstMood ? MOOD_COLORS[firstMood] ?? [] : [];
   }, [value.moods]);
+
 
   return (
     <Accordion type="multiple" defaultValue={["basics", "genre", "vocals", "mood", "topic", "instruments", "tempo", "style"]} className="w-full">
@@ -175,8 +187,10 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               value={value.subgenre}
               onChange={(v) => set("subgenre", v)}
               standard={subgenreOptions}
-              disabled={!isPro || subgenreOptions.length <= 1}
-              placeholder={isPro ? (subgenreOptions.length > 1 ? "Optional — pick a subgenre" : "No subgenres for this genre") : "Pro only"}
+              allowNone
+              disabled={!isPro || subgenreOptions.length === 0}
+              placeholder={isPro ? (subgenreOptions.length > 0 ? "Optional — pick a subgenre" : "No subgenres for this genre") : "Pro only"}
+
             />
           </Field>
           <Field label="Fusion genre"><Dropdown value={value.fusionGenre} onChange={(v) => set("fusionGenre", v)} standard={FUSION_GENRES} /></Field>
@@ -230,8 +244,10 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               value={value.moodColor}
               onChange={(v) => set("moodColor", v)}
               standard={moodColorOptions}
-              disabled={!isPro || moodColorOptions.length <= 1}
-              placeholder={isPro ? (moodColorOptions.length > 1 ? "Pick an emotional color" : "Pick a mood first") : "Pro only"}
+              allowNone
+              disabled={!isPro || moodColorOptions.length === 0}
+              placeholder={isPro ? (moodColorOptions.length > 0 ? "Pick an emotional color" : "Pick a mood first") : "Pro only"}
+
             />
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -288,7 +304,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
               <Dropdown
                 value={value.arrangement}
                 onChange={(v) => set("arrangement", v)}
-                standard={["", ...ARRANGEMENTS]}
+                standard={ARRANGEMENTS} allowNone
                 disabled={!isPro}
                 placeholder={isPro ? "Optional arrangement direction" : "Pro only"}
               />
@@ -322,7 +338,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.rhythmPattern}
               onChange={(v) => set("rhythmPattern", v)}
-              standard={["", ...RHYTHM_PATTERNS]}
+              standard={RHYTHM_PATTERNS} allowNone
               disabled={!isPro}
               placeholder={isPro ? "Pick a rhythm pattern" : "Pro only"}
             />
@@ -361,7 +377,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.sonicFinish}
               onChange={(v) => set("sonicFinish", v)}
-              standard={["", ...SONIC_FINISHES]}
+              standard={SONIC_FINISHES} allowNone
               disabled={!isPro || !value.mixingStyle || value.mixingStyle === "None"}
               placeholder={isPro ? (value.mixingStyle && value.mixingStyle !== "None" ? "Pick a finish" : "Pick a mix first") : "Pro only"}
             />
@@ -385,7 +401,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
             <Dropdown
               value={value.vocalFormat}
               onChange={(v) => set("vocalFormat", v)}
-              standard={["", ...VOCAL_FORMATS]}
+              standard={VOCAL_FORMATS} allowNone
               disabled={!isPro || !value.hookType || value.hookType === "None"}
               placeholder={isPro ? (value.hookType && value.hookType !== "None" ? "Pick a format" : "Pick a hook first") : "Pro only"}
             />
