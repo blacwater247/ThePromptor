@@ -40,7 +40,10 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      console.error("Sign-in error:", error);
+      return toast.error("Incorrect email or password.");
+    }
     toast.success("Welcome back");
     navigate({ to: "/app" });
   };
