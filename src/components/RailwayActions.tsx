@@ -3,28 +3,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, Radio, Save, Loader2, Activity } from "lucide-react";
+import { Save, Loader2, Activity } from "lucide-react";
 import { toast } from "sonner";
-import {
-  savePromptRailway,
-  sunoGenerate,
-  udioGenerate,
-  testBackendRailway,
-} from "@/lib/railway.functions";
+import { savePromptRailway, testBackendRailway } from "@/lib/railway.functions";
 
 interface Props {
   prompt: string;
 }
 
-type Busy = null | "suno" | "udio" | "save" | "test";
+type Busy = null | "save" | "test";
 
 export function RailwayActions({ prompt }: Props) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
   const [testResult, setTestResult] = useState<{ status: number; url: string; body: string; error?: string } | null>(null);
-
-
 
   const hasPrompt = prompt.trim().length > 0;
 
@@ -70,53 +63,22 @@ export function RailwayActions({ prompt }: Props) {
         className="mb-4 bg-black/40 border-white/10"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <Button
-          onClick={() =>
-            send(
-              "suno",
-              () => sunoGenerate({ data: { prompt, title: title || undefined } }),
-              "Sent to Suno.",
-            )
-          }
-          disabled={!hasPrompt || busy !== null}
-          className="brand-gradient text-black font-semibold border-0 hover:opacity-90"
-        >
-          {busy === "suno" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className="w-4 h-4" />}
-          Send to Suno
-        </Button>
-        <Button
-          onClick={() =>
-            send(
-              "udio",
-              () => udioGenerate({ data: { prompt, title: title || undefined } }),
-              "Sent to Udio.",
-            )
-          }
-          disabled={!hasPrompt || busy !== null}
-          variant="outline"
-          className="border-white/20"
-        >
-          {busy === "udio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Radio className="w-4 h-4" />}
-          Send to Udio
-        </Button>
-        <Button
-          onClick={() =>
-            send(
-              "save",
-              () => savePromptRailway({ data: { prompt, title: title || undefined } }),
-              "Prompt saved.",
-              () => queryClient.invalidateQueries({ queryKey: ["railway", "saved-prompts"] }),
-            )
-          }
-          disabled={!hasPrompt || busy !== null}
-          variant="outline"
-          className="border-white/20"
-        >
-          {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Save prompt
-        </Button>
-      </div>
+      <Button
+        onClick={() =>
+          send(
+            "save",
+            () => savePromptRailway({ data: { prompt, title: title || undefined } }),
+            "Prompt saved.",
+            () => queryClient.invalidateQueries({ queryKey: ["railway", "saved-prompts"] }),
+          )
+        }
+        disabled={!hasPrompt || busy !== null}
+        variant="outline"
+        className="w-full border-white/20"
+      >
+        {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        Save prompt
+      </Button>
 
       <div className="mt-4 pt-4 border-t border-white/10">
         <Button

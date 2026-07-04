@@ -17,7 +17,6 @@ export type SavePromptResponse = { id: string };
 export type ListPromptsResponse = {
   prompts: Array<{ id: string; prompt: string; created_at: string }>;
 };
-export type MusicJobResponse = { job_id: string; status: string; url?: string };
 export type PingResponse = { ok: boolean; status?: string };
 
 // ---------- Validators (kept tiny; upstream owns full schema) ----------
@@ -60,7 +59,7 @@ export const testBackendRailway = createServerFn({ method: "GET" })
     if (!baseUrl) {
       return { status: 0, url: "", body: "", error: "API_BASE_URL is not configured" };
     }
-    const url = `${baseUrl.replace(/\/+$/, "")}/api/suno/generate`;
+    const url = `${baseUrl.replace(/\/+$/, "")}/suno/generate`;
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -166,40 +165,3 @@ export const listMyPromptsRailway = createServerFn({ method: "GET" })
     });
   });
 
-/**
- * POST /suno/generate — proxy a Suno job request.
- */
-export const sunoGenerate = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { prompt: string; title?: string; tags?: string }) => ({
-    prompt: nonEmptyString(data.prompt, "prompt"),
-    title: optionalString(data.title, "title"),
-    tags: optionalString(data.tags, "tags"),
-  }))
-  .handler(async ({ data, context }): Promise<RailwayResult<MusicJobResponse>> => {
-    return railwayFetch<MusicJobResponse>({
-      method: "POST",
-      path: "/suno/generate",
-      body: { user_id: context.userId, ...data },
-      timeoutMs: 30_000,
-    });
-  });
-
-/**
- * POST /udio/generate — proxy a Udio job request.
- */
-export const udioGenerate = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { prompt: string; title?: string; tags?: string }) => ({
-    prompt: nonEmptyString(data.prompt, "prompt"),
-    title: optionalString(data.title, "title"),
-    tags: optionalString(data.tags, "tags"),
-  }))
-  .handler(async ({ data, context }): Promise<RailwayResult<MusicJobResponse>> => {
-    return railwayFetch<MusicJobResponse>({
-      method: "POST",
-      path: "/udio/generate",
-      body: { user_id: context.userId, ...data },
-      timeoutMs: 30_000,
-    });
-  });
