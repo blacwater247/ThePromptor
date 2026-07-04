@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Wand2, Save, Music2, Mic2, Sliders, ArrowRight } from "lucide-react";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
+import { CommentForm } from "@/components/CommentForm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -132,6 +133,15 @@ function Landing() {
             </Button>
           </Link>
         </div>
+      </section>
+
+      {/* Comments */}
+      <section id="contact" className="mx-auto max-w-2xl px-4 sm:px-6 py-16 sm:py-20 border-t border-border/40">
+        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-3">Leave a comment</h2>
+        <p className="text-center text-muted-foreground mb-10">
+          Feedback, requests, or just saying hi — drop us a note.
+        </p>
+        <CommentForm />
       </section>
       </main>
 
