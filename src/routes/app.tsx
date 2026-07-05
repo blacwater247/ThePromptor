@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment, isPaymentsConfigured } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useAuth } from "@/hooks/use-auth";
 
 const GUEST_LIMIT = 10;
@@ -53,6 +54,7 @@ function AppPage() {
   const [saved, setSaved] = useLocalStorage<SavedPrompt[]>("songPrompts.v1", []);
   const [guestUsed, setGuestUsed] = useLocalStorage<{ used: number }>("blacure.freePrompts.v1", { used: 0 });
   const [showSignupWall, setShowSignupWall] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const creditsQuery = useQuery({
     queryKey: ["credits", "balance"],
@@ -83,6 +85,12 @@ function AppPage() {
   useEffect(() => {
     if (isGuest && guestUsed.used >= GUEST_LIMIT) setShowSignupWall(true);
   }, [isGuest, guestUsed.used]);
+
+  // Auto-open upgrade modal once when a signed-in free user runs out of credits
+  const outOfCredits = !isGuest && !isPro && !creditsQuery.isLoading && balance < 2;
+  useEffect(() => {
+    if (outOfCredits) setShowUpgradeModal(true);
+  }, [outOfCredits]);
 
   const packReturnUrl =
     typeof window !== "undefined"
@@ -146,10 +154,14 @@ function AppPage() {
       return;
     }
     if (!isPro && balance < cost) {
-      toast.error("Not enough credits", {
-        description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits. Top up to keep generating.`,
-        action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
-      });
+      if (mode === "standard") {
+        setShowUpgradeModal(true);
+      } else {
+        toast.error("Not enough credits", {
+          description: `Pro Studio costs ${cost} credits. Top up to keep generating.`,
+          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      }
       return;
     }
 
@@ -164,11 +176,8 @@ function AppPage() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
-        setError("You're out of credits. Buy more to keep generating.");
-        toast.error("Out of credits", {
-          description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits.`,
-          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
-        });
+        setError("You're out of credits. Buy more or go unlimited to keep generating.");
+        setShowUpgradeModal(true);
       } else if (msg.startsWith("PRO_REQUIRED")) {
         toast.error("Pro Studio Prompt requires a subscription", {
           description: "Upgrade to the Monthly plan to unlock.",
@@ -222,6 +231,7 @@ function AppPage() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
 
       <header className="relative overflow-hidden border-b border-border/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
@@ -306,11 +316,11 @@ function AppPage() {
             <Button
               size="lg"
               onClick={() => handleGenerate("standard")}
-              disabled={loading || !canStandard}
+              disabled={loading || (isGuest && !canStandard)}
               className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
             >
               <Sparkles className="h-4 w-4" />
-              {loading ? "Generating…" : isGuest ? "Generate Prompt (free)" : isPro ? "Generate Prompt" : "Generate Prompt (2 credits)"}
+              {loading ? "Generating…" : isGuest ? "Generate Prompt (free)" : isPro ? "Generate Prompt" : outOfCredits ? "Out of free prompts — Upgrade" : "Generate Prompt (2 credits)"}
             </Button>
             <Button
               size="lg"

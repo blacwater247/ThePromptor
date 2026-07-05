@@ -1,27 +1,42 @@
-## Problem
+## Goal
 
-The `/app` page crashes with:
+Enforce the intended free-tier behavior: **10 free prompts, once. When they're gone, block the Generate button and show an upgrade modal offering the $5 pack or $19.99/mo plan.** No auto-refill anywhere.
 
-> A `<Select.Item />` must have a value prop that is not an empty string.
+## Findings from the current app
 
-`src/components/PromptBuilder.tsx` prepends `""` to several dropdown option lists (subgenre, mood color, arrangement, rhythm pattern, sonic finish, vocal format) so users can "clear" the selection. Radix Select forbids empty-string values, so the whole route errors out and the fallback error page shows.
+- Free grant already works correctly: `handle_new_user` inserts 20 credits (10 Standard prompts × 2 credits) with `ON CONFLICT (reason, ref) DO NOTHING` on `signup_bonus`, so it can never re-grant.
+- No cron, trigger, or function refills `credits_balance`. The only positive deltas in the DB come from `signup_bonus` (once) and `purchase_pack` (Stripe webhook). Balance does **not** actually reset — users who felt it "reset" had bought packs.
+- The real gap: when a signed-in user with `balance < 2` clicks Generate, the server throws `INSUFFICIENT_CREDITS` and it surfaces as a plain toast. There's no clear "buy a pack or subscribe" moment.
 
-## Fix
+## Changes
 
-Replace the empty-string sentinel with a real non-empty value (`"__none__"`) rendered as `"None"` in the dropdown, and translate it to/from `""` at the Dropdown boundary so the rest of the app state and prompt generation logic stays unchanged.
+### 1. `src/components/PromptBuilder.tsx` — client-side gate
+- Read `balance` and `unlimited` (subscriber flag) from the existing `getMyCredits` + `getMySubscription` queries already used elsewhere on `/app`; pass them in as props from `src/routes/app.tsx` (which already loads both).
+- When user is signed in, not a subscriber, and `balance < 2` (Standard cost):
+  - Disable the Generate button, change its label to "Out of free prompts".
+  - Open an `<UpgradeModal />` on click instead of calling the server fn.
+- Pro Studio button already gated by `isPro`; keep as-is.
 
-### Changes in `src/components/PromptBuilder.tsx`
+### 2. New `src/components/UpgradeModal.tsx`
+- shadcn `Dialog`. Copy: "You've used your 10 free prompts. Grab a pack or go unlimited to keep generating."
+- Two CTAs linking to `/pricing`:
+  - "Buy 20 prompts — $2" (existing `credits_pack_20_onetime`)
+  - "Go unlimited — $19.99/mo"
+- Secondary link: "See all plans".
 
-1. In the shared `Dropdown` component:
-   - When mapping `options`, replace any `""` entry with `{ value: "__none__", label: "None" }`; keep other entries as `{ value: o, label: o }`.
-   - Convert value: pass `value === "" ? "__none__" : value` to `<Select value=...>`.
-   - Convert onChange: `onValueChange={(v) => onChange(v === "__none__" ? "" : v)}`.
-2. Remove the need for callers to prepend `""` — instead accept an optional `allowNone?: boolean` prop and let the component prepend a single `{ value: "__none__", label: "None" }` item when true.
-3. Update every call site currently doing `standard={["", ...LIST]}` (subgenre, mood color, arrangement, rhythm pattern, sonic finish, vocal format) to pass the raw list plus `allowNone`.
+### 3. `src/routes/app.tsx` — surface the same state
+- If signed in, not subscriber, `balance < 2`: render a persistent amber banner above the builder ("You're out of free prompts — [Upgrade]") in addition to the modal, so it's obvious on page load.
 
-No other files change. Existing state values (`""`), server sanitization, and prompt generation continue to work unchanged.
+### 4. Server safety net (already correct, verify only)
+- `src/lib/prompt.functions.ts` already throws `INSUFFICIENT_CREDITS` via `spend_credits` RPC before generation; keep the client-side gate + server enforcement both in place.
+- No DB migration needed — confirmed no refill logic exists.
 
-## Verification
+## Out of scope
+- Guest generator on `/` (not tied to per-user free credits).
+- Pricing page copy changes.
+- Subscriber rate limit (already 60/hr).
 
-- Reload `/app`; no error boundary.
-- Open the Subgenre / Emotional color / Arrangement / Rhythm pattern / Sonic finish / Vocal format dropdowns → each shows a "None" option plus real entries; selecting "None" clears the field.
+## Verify
+1. As a user with `balance = 0`: reload `/app` → amber banner visible, Generate button disabled and labeled "Out of free prompts", clicking opens the upgrade modal.
+2. Buy the $2 pack → webhook grants 40 credits → banner and modal disappear, Generate re-enables.
+3. Subscribe monthly → unlimited path bypasses the gate regardless of balance.
