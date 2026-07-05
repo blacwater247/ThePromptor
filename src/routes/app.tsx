@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment, isPaymentsConfigured } from "@/lib/stripe";
 import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useAuth } from "@/hooks/use-auth";
 
 const GUEST_LIMIT = 10;
