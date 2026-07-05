@@ -231,6 +231,7 @@ function AppPage() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
 
       <header className="relative overflow-hidden border-b border-border/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
