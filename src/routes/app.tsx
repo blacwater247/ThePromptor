@@ -194,7 +194,7 @@ function AppPage() {
   };
 
   const handleRandomize = () => {
-    const next = randomizeVibe(inputs);
+    const next = randomizeVibe(inputs, isPro);
     setInputs(next);
     toast("Vibe randomized", {
       description: `${next.mainGenre} · ${next.vocalType} · ${next.moods.slice(0, 2).join(", ") || "—"}`,
