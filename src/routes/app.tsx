@@ -86,6 +86,12 @@ function AppPage() {
     if (isGuest && guestUsed.used >= GUEST_LIMIT) setShowSignupWall(true);
   }, [isGuest, guestUsed.used]);
 
+  // Auto-open upgrade modal once when a signed-in free user runs out of credits
+  const outOfCredits = !isGuest && !isPro && !creditsQuery.isLoading && balance < 2;
+  useEffect(() => {
+    if (outOfCredits) setShowUpgradeModal(true);
+  }, [outOfCredits]);
+
   const packReturnUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`
