@@ -315,11 +315,11 @@ function AppPage() {
             <Button
               size="lg"
               onClick={() => handleGenerate("standard")}
-              disabled={loading || !canStandard}
+              disabled={loading || (isGuest && !canStandard)}
               className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
             >
               <Sparkles className="h-4 w-4" />
-              {loading ? "Generating…" : isGuest ? "Generate Prompt (free)" : isPro ? "Generate Prompt" : "Generate Prompt (2 credits)"}
+              {loading ? "Generating…" : isGuest ? "Generate Prompt (free)" : isPro ? "Generate Prompt" : outOfCredits ? "Out of free prompts — Upgrade" : "Generate Prompt (2 credits)"}
             </Button>
             <Button
               size="lg"
