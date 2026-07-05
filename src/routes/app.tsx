@@ -170,11 +170,8 @@ function AppPage() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
-        setError("You're out of credits. Buy more to keep generating.");
-        toast.error("Out of credits", {
-          description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits.`,
-          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
-        });
+        setError("You're out of credits. Buy more or go unlimited to keep generating.");
+        setShowUpgradeModal(true);
       } else if (msg.startsWith("PRO_REQUIRED")) {
         toast.error("Pro Studio Prompt requires a subscription", {
           description: "Upgrade to the Monthly plan to unlock.",
