@@ -180,7 +180,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
         <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">02</span> Genre</span></AccordionTrigger>
         <AccordionContent className="grid sm:grid-cols-2 gap-4 pt-2">
           <Field label="Main genre">
-            <Dropdown value={value.mainGenre} onChange={(v) => { set("mainGenre", v); set("subgenre", ""); }} standard={STANDARD_MAIN_GENRES} pro={PRO_MAIN_GENRES} isPro={isPro} />
+            <Dropdown value={value.mainGenre} onChange={(v) => onChange({ ...value, mainGenre: v, subgenre: "" })} standard={STANDARD_MAIN_GENRES} pro={PRO_MAIN_GENRES} isPro={isPro} />
           </Field>
           <Field label="Subgenre" pro>
             <Dropdown
