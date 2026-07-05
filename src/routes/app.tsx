@@ -148,10 +148,14 @@ function AppPage() {
       return;
     }
     if (!isPro && balance < cost) {
-      toast.error("Not enough credits", {
-        description: `${mode === "pro" ? "Pro Studio" : "Standard"} costs ${cost} credits. Top up to keep generating.`,
-        action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
-      });
+      if (mode === "standard") {
+        setShowUpgradeModal(true);
+      } else {
+        toast.error("Not enough credits", {
+          description: `Pro Studio costs ${cost} credits. Top up to keep generating.`,
+          action: { label: "Buy credits", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      }
       return;
     }
 
