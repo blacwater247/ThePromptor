@@ -54,6 +54,7 @@ function AppPage() {
   const [saved, setSaved] = useLocalStorage<SavedPrompt[]>("songPrompts.v1", []);
   const [guestUsed, setGuestUsed] = useLocalStorage<{ used: number }>("blacure.freePrompts.v1", { used: 0 });
   const [showSignupWall, setShowSignupWall] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const creditsQuery = useQuery({
     queryKey: ["credits", "balance"],
