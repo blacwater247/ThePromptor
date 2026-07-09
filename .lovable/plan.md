@@ -1,27 +1,34 @@
-## Problem
+## Fix: Copy button fails in preview iframe
 
-Selecting a Main Genre in the prompt builder does not update the dropdown. The value snaps back to "Hip-Hop".
+**Cause:** `navigator.clipboard.writeText` throws in sandboxed/cross-origin iframes (like the Lovable preview) and in non-secure contexts, so clicking Copy just shows "Copy failed".
 
-## Root cause
+**Fix (frontend only, `src/components/PromptPreview.tsx`):**
 
-In `src/components/PromptBuilder.tsx`, the Main Genre field calls the local `set` helper twice:
+Update `CopyButton.onClick` to try `navigator.clipboard.writeText` first, and on failure fall back to a hidden `<textarea>` + `document.execCommand('copy')`. Only show the error toast if both paths fail.
 
-```tsx
-onChange={(v) => { set("mainGenre", v); set("subgenre", ""); }}
+```ts
+async function copyText(text: string) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {}
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 ```
 
-`set` is defined as `(k, v) => onChange({ ...value, [k]: v })`. Both calls close over the same `value` snapshot, so the second call (`subgenre: ""`) rebuilds the object from the pre-change `value` and overwrites the `mainGenre` update. Net result: only `subgenre` is cleared, `mainGenre` never changes.
-
-## Fix
-
-Merge both updates into a single `onChange` call so the two fields are updated atomically:
-
-```tsx
-onChange={(v) => onChange({ ...value, mainGenre: v, subgenre: "" })}
-```
-
-Single-file change, no other callers affected. All other `set` usages in the file only update one key at a time and are safe.
-
-## Verify
-
-Open `/app`, expand "Genre", pick a different Main Genre — the trigger label should now update and the Subgenre dropdown should reset to empty.
+No other files change.

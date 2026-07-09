@@ -21,6 +21,35 @@ type Props = {
   onUseSaved: (p: SavedPrompt) => void;
 };
 
+async function copyText(text: string) {
+  try {
+    if (typeof navigator !== "undefined" && navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to fallback
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?: string; ariaLabel?: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -30,12 +59,12 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
       aria-label={ariaLabel ?? (label ? undefined : "Copy prompt")}
       className={copied ? "bg-emerald-600 hover:bg-emerald-600 text-white border-0 transition-colors" : "transition-colors"}
       onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
+        const ok = await copyText(text);
+        if (ok) {
           setCopied(true);
           toast.success("Copied to clipboard");
           setTimeout(() => setCopied(false), 2000);
-        } catch {
+        } else {
           toast.error("Copy failed");
         }
       }}
