@@ -14,7 +14,7 @@ import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
 import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { generatePrompt, generatePromptGuest } from "@/lib/prompt.functions";
+import { generatePromptGuest } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 import { supabase } from "@/integrations/supabase/client";
