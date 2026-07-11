@@ -14,7 +14,7 @@ import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { DEFAULT_INPUTS, type PromptInputs, type PromptMode } from "@/lib/prompt-options";
 import { randomizeVibe } from "@/lib/randomize";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { generatePrompt, generatePromptGuest } from "@/lib/prompt.functions";
+import { generatePromptGuest } from "@/lib/prompt.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,11 +50,13 @@ function AppPage() {
   const [inputs, setInputs] = useState<PromptInputs>(DEFAULT_INPUTS);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useLocalStorage<SavedPrompt[]>("songPrompts.v1", []);
   const [guestUsed, setGuestUsed] = useLocalStorage<{ used: number }>("blacure.freePrompts.v1", { used: 0 });
   const [showSignupWall, setShowSignupWall] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
 
   const creditsQuery = useQuery({
     queryKey: ["credits", "balance"],
@@ -166,13 +168,59 @@ function AppPage() {
     }
 
     setLoading(true);
+    setStreaming(false);
     setError(null);
+    setPrompt("");
     try {
-      const res = await generatePrompt({ data: { ...inputs, mode, environment: getStripeEnvironment() } });
-      setPrompt(res.prompt);
-      if (typeof res.balance === "number") {
-        queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Please sign in again.");
+
+      const res = await fetch("/api/prompt-stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...inputs, mode, environment: getStripeEnvironment() }),
+      });
+
+      if (!res.ok || !res.body) {
+        let msg = `Failed to generate prompt (${res.status}).`;
+        try {
+          const j = await res.json();
+          if (j?.error) msg = j.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
       }
+
+      const balanceHeader = res.headers.get("X-Credit-Balance");
+      if (balanceHeader !== null) {
+        const bal = Number(balanceHeader);
+        if (!Number.isNaN(bal)) queryClient.setQueryData(["credits", "balance"], { balance: bal });
+      }
+
+      setStreaming(true);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          acc += decoder.decode(value, { stream: true });
+          setPrompt(acc);
+        }
+      }
+      acc += decoder.decode();
+      // Strip common wrappers (code fences / surrounding quotes)
+      let finalText = acc.trim();
+      finalText = finalText.replace(/^```[a-z]*\n?/i, "").replace(/```$/i, "").trim();
+      if ((finalText.startsWith('"') && finalText.endsWith('"')) || (finalText.startsWith("'") && finalText.endsWith("'"))) {
+        finalText = finalText.slice(1, -1).trim();
+      }
+      setPrompt(finalText);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
@@ -190,8 +238,10 @@ function AppPage() {
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
   };
+
 
   const handleRandomize = () => {
     const next = randomizeVibe(inputs, isPro);
@@ -429,12 +479,14 @@ function AppPage() {
           <PromptPreview
             prompt={prompt}
             loading={loading}
+            streaming={streaming}
             error={error}
             onSave={handleSave}
             saved={saved}
             onDelete={(id) => setSaved(saved.filter((s) => s.id !== id))}
             onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
           />
+
         </div>
 
         {/* Prompt packs require signed-in account for downloads */}
