@@ -168,13 +168,59 @@ function AppPage() {
     }
 
     setLoading(true);
+    setStreaming(false);
     setError(null);
+    setPrompt("");
     try {
-      const res = await generatePrompt({ data: { ...inputs, mode, environment: getStripeEnvironment() } });
-      setPrompt(res.prompt);
-      if (typeof res.balance === "number") {
-        queryClient.setQueryData(["credits", "balance"], { balance: res.balance });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Please sign in again.");
+
+      const res = await fetch("/api/prompt-stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...inputs, mode, environment: getStripeEnvironment() }),
+      });
+
+      if (!res.ok || !res.body) {
+        let msg = `Failed to generate prompt (${res.status}).`;
+        try {
+          const j = await res.json();
+          if (j?.error) msg = j.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
       }
+
+      const balanceHeader = res.headers.get("X-Credit-Balance");
+      if (balanceHeader !== null) {
+        const bal = Number(balanceHeader);
+        if (!Number.isNaN(bal)) queryClient.setQueryData(["credits", "balance"], { balance: bal });
+      }
+
+      setStreaming(true);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          acc += decoder.decode(value, { stream: true });
+          setPrompt(acc);
+        }
+      }
+      acc += decoder.decode();
+      // Strip common wrappers (code fences / surrounding quotes)
+      let finalText = acc.trim();
+      finalText = finalText.replace(/^```[a-z]*\n?/i, "").replace(/```$/i, "").trim();
+      if ((finalText.startsWith('"') && finalText.endsWith('"')) || (finalText.startsWith("'") && finalText.endsWith("'"))) {
+        finalText = finalText.slice(1, -1).trim();
+      }
+      setPrompt(finalText);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.startsWith("INSUFFICIENT_CREDITS")) {
@@ -192,8 +238,10 @@ function AppPage() {
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
   };
+
 
   const handleRandomize = () => {
     const next = randomizeVibe(inputs, isPro);
