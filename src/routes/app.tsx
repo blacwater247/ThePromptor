@@ -479,12 +479,14 @@ function AppPage() {
           <PromptPreview
             prompt={prompt}
             loading={loading}
+            streaming={streaming}
             error={error}
             onSave={handleSave}
             saved={saved}
             onDelete={(id) => setSaved(saved.filter((s) => s.id !== id))}
             onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
           />
+
         </div>
 
         {/* Prompt packs require signed-in account for downloads */}
