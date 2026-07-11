@@ -78,7 +78,9 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
 }
 
 
-export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete, onUseSaved }: Props) {
+export function PromptPreview({ prompt, loading, streaming, error, onSave, saved, onDelete, onUseSaved }: Props) {
+  const hasStreamingText = streaming && prompt.length > 0;
+  const showSkeleton = loading && !hasStreamingText;
   return (
     <div className="space-y-6 lg:sticky lg:top-6">
       <Card className="border-border/60 bg-card/70 backdrop-blur p-5">
@@ -88,6 +90,7 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <h2 className="font-display text-lg font-semibold">Generated Prompt</h2>
+            {streaming && <span className="text-[10px] uppercase tracking-widest brand-text animate-pulse">Streaming…</span>}
           </div>
           {prompt && !loading && (
             <div className="flex gap-2">
@@ -101,7 +104,7 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
         </div>
 
         <div className="min-h-[220px] rounded-lg bg-secondary/30 border border-border/60 p-4 text-sm leading-relaxed whitespace-pre-wrap">
-          {loading ? (
+          {showSkeleton ? (
             <div className="space-y-2 animate-pulse">
               <div className="h-3 rounded bg-secondary w-11/12" />
               <div className="h-3 rounded bg-secondary w-10/12" />
@@ -113,7 +116,7 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
           ) : error ? (
             <p className="text-destructive">{error}</p>
           ) : prompt ? (
-            <p>{prompt}</p>
+            <p>{prompt}{hasStreamingText && <span className="inline-block w-1.5 h-4 ml-0.5 bg-primary/80 align-middle animate-pulse" />}</p>
           ) : (
             <div className="text-muted-foreground flex flex-col items-center justify-center h-full text-center pt-6">
               <Music4 className="h-8 w-8 mb-2 opacity-50" />
@@ -122,6 +125,7 @@ export function PromptPreview({ prompt, loading, error, onSave, saved, onDelete,
           )}
         </div>
       </Card>
+
 
       <Card className="border-border/60 bg-card/70 backdrop-blur p-5">
         <h3 className="font-display text-base font-semibold mb-3">Saved Prompts {saved.length > 0 && <span className="text-muted-foreground font-normal text-sm">({saved.length})</span>}</h3>
