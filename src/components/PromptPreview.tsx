@@ -14,12 +14,14 @@ export type SavedPrompt = {
 type Props = {
   prompt: string;
   loading: boolean;
+  streaming?: boolean;
   error: string | null;
   onSave: () => void;
   saved: SavedPrompt[];
   onDelete: (id: string) => void;
   onUseSaved: (p: SavedPrompt) => void;
 };
+
 
 async function copyText(text: string) {
   try {
