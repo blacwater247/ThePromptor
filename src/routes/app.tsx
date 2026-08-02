@@ -314,6 +314,13 @@ function AppPage() {
                 </span>
               )}
 
+              <Link to="/lyrics">
+                <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
+                  <Mic2 className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1">Lyrics</span>
+                </Button>
+              </Link>
+
               {isGuest ? (
                 <Link to="/auth">
                   <Button size="sm" className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
