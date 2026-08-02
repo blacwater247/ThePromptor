@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiPromptStreamRouteImport } from './routes/api/prompt-stream'
+import { Route as ApiLyricsStreamRouteImport } from './routes/api/lyrics-stream'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicPackDownloadRouteImport } from './routes/api/public/pack-download'
@@ -77,6 +78,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
 const ApiPromptStreamRoute = ApiPromptStreamRouteImport.update({
   id: '/api/prompt-stream',
   path: '/api/prompt-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLyricsStreamRoute = ApiLyricsStreamRouteImport.update({
+  id: '/api/lyrics-stream',
+  path: '/api/lyrics-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/_authenticated/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  ApiLyricsStreamRoute: typeof ApiLyricsStreamRoute
   ApiPromptStreamRoute: typeof ApiPromptStreamRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/api/prompt-stream'
       fullPath: '/api/prompt-stream'
       preLoaderRoute: typeof ApiPromptStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lyrics-stream': {
+      id: '/api/lyrics-stream'
+      path: '/api/lyrics-stream'
+      fullPath: '/api/lyrics-stream'
+      preLoaderRoute: typeof ApiLyricsStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -452,6 +472,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  ApiLyricsStreamRoute: ApiLyricsStreamRoute,
   ApiPromptStreamRoute: ApiPromptStreamRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
