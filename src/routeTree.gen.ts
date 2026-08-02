@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as LyricsRouteImport } from './routes/lyrics'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -19,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiPromptStreamRouteImport } from './routes/api/prompt-stream'
+import { Route as ApiLyricsStreamRouteImport } from './routes/api/lyrics-stream'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicPackDownloadRouteImport } from './routes/api/public/pack-download'
@@ -43,6 +45,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LyricsRoute = LyricsRouteImport.update({
+  id: '/lyrics',
+  path: '/lyrics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -77,6 +84,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
 const ApiPromptStreamRoute = ApiPromptStreamRouteImport.update({
   id: '/api/prompt-stream',
   path: '/api/prompt-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLyricsStreamRoute = ApiLyricsStreamRouteImport.update({
+  id: '/api/lyrics-stream',
+  path: '/api/lyrics-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -138,10 +150,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/lyrics': typeof LyricsRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -159,10 +173,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/lyrics': typeof LyricsRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -182,10 +198,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/lyrics': typeof LyricsRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -205,10 +223,12 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/lyrics'
     | '/pricing'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -226,10 +246,12 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/lyrics'
     | '/pricing'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -248,10 +270,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/app'
     | '/auth'
+    | '/lyrics'
     | '/pricing'
     | '/sitemap.xml'
     | '/unsubscribe'
     | '/_authenticated/account'
+    | '/api/lyrics-stream'
     | '/api/prompt-stream'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -271,9 +295,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRoute
+  LyricsRoute: typeof LyricsRoute
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  ApiLyricsStreamRoute: typeof ApiLyricsStreamRoute
   ApiPromptStreamRoute: typeof ApiPromptStreamRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -309,6 +335,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lyrics': {
+      id: '/lyrics'
+      path: '/lyrics'
+      fullPath: '/lyrics'
+      preLoaderRoute: typeof LyricsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -358,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/api/prompt-stream'
       fullPath: '/api/prompt-stream'
       preLoaderRoute: typeof ApiPromptStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/lyrics-stream': {
+      id: '/api/lyrics-stream'
+      path: '/api/lyrics-stream'
+      fullPath: '/api/lyrics-stream'
+      preLoaderRoute: typeof ApiLyricsStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -449,9 +489,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AppRoute: AppRoute,
   AuthRoute: AuthRoute,
+  LyricsRoute: LyricsRoute,
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  ApiLyricsStreamRoute: ApiLyricsStreamRoute,
   ApiPromptStreamRoute: ApiPromptStreamRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -468,13 +510,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
