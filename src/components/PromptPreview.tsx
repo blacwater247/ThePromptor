@@ -20,7 +20,12 @@ type Props = {
   saved: SavedPrompt[];
   onDelete: (id: string) => void;
   onUseSaved: (p: SavedPrompt) => void;
+  heading?: string;
+  savedHeading?: string;
+  emptyHint?: React.ReactNode;
+  loadingHint?: string;
 };
+
 
 
 async function copyText(text: string) {
