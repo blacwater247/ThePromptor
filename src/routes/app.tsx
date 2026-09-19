@@ -30,10 +30,12 @@ export const Route = createFileRoute("/app")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "The Promptor — Blacure" },
-      { name: "description", content: "Build studio-grade AI music prompts with Blacure's Promptor. 10 free prompts — no signup required." },
-      { property: "og:title", content: "The Promptor — Blacure" },
-      { property: "og:description", content: "Build studio-grade AI music prompts in seconds. 10 free prompts, no signup." },
+      { title: "AI Music Prompt Studio — The Promptor by Blacure" },
+      { name: "description", content: "Build production-ready AI song blueprints with The Promptor by Blacure. Try 10 free with no signup." },
+      { property: "og:title", content: "AI Music Prompt Studio — The Promptor by Blacure" },
+      { property: "og:description", content: "Control genre, vocals, instrumentation, arrangement, and mix in one production-ready blueprint." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://thepromptor.life/app" },
     ],
     links: [{ rel: "canonical", href: "https://thepromptor.life/app" }],
@@ -287,8 +289,8 @@ function AppPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
           <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
             <Link to="/" className="flex items-center gap-2 group">
-              <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
-              <span className="font-display text-lg sm:text-xl font-bold brand-text">Blacure</span>
+              <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
+              <span className="leading-tight"><span className="block font-display text-base sm:text-lg font-bold">The Promptor</span><span className="block text-[9px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
               {isGuest ? (
@@ -353,10 +355,10 @@ function AppPage() {
             </div>
           </div>
           <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="brand-text">The Promptor</span> — AI Music Prompt Builder
+            <span className="brand-text">The Promptor</span> — AI Music Prompt Studio
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-lg text-muted-foreground">
-            Create polished music prompts for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
+            Build production-ready AI song blueprints for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
             {isGuest ? (
               <span className="block mt-1 text-sm brand-text">
                 {guestRemaining > 0
@@ -715,7 +717,7 @@ function AppPage() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
-        Blacure · The Promptor — prompts are AI-generated, always review before use.
+        The Promptor by Blacure — prompts are AI-generated, always review before use.
       </footer>
     </div>
   );

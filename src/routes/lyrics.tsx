@@ -24,9 +24,9 @@ export const Route = createFileRoute("/lyrics")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Lyrics Builder — Blacure" },
-      { name: "description", content: "Write original song lyrics with Blacure's AI Lyrics Builder. Pick genre, mood, structure and story — get full verses, hooks and a bridge." },
-      { property: "og:title", content: "AI Lyrics Builder — Blacure" },
+      { title: "Lyrics Builder — The Promptor by Blacure" },
+      { name: "description", content: "Write original song lyrics in The Promptor by Blacure. Pick genre, mood, structure, and story." },
+      { property: "og:title", content: "AI Lyrics Builder — The Promptor by Blacure" },
       { property: "og:description", content: "Generate original, structured song lyrics in seconds. 10 free generations, no signup." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -204,8 +204,8 @@ function LyricsPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
           <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
-              <span className="font-display text-lg sm:text-xl font-bold brand-text">Blacure</span>
+              <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
+              <span className="leading-tight"><span className="block font-display text-base sm:text-lg font-bold">The Promptor</span><span className="block text-[9px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
               {isGuest ? (
@@ -246,7 +246,7 @@ function LyricsPage() {
             <span className="brand-text">Lyrics Builder</span> — write your next song
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-lg text-muted-foreground">
-            Pick a genre, mood, structure and story. Blacure writes original, section-labeled lyrics you can drop straight into Suno, Udio, or the booth.
+            Pick a genre, mood, structure and story. The Promptor writes original, section-labeled lyrics for your music workflow.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
@@ -357,7 +357,7 @@ function LyricsPage() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
-        Blacure · Lyrics Builder — AI-generated lyrics, always review before use.
+        The Promptor by Blacure · Lyrics Builder — AI-generated lyrics, always review before use.
       </footer>
     </div>
   );

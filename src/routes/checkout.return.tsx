@@ -8,7 +8,12 @@ import { CheckCircle2 } from "lucide-react";
 export const Route = createFileRoute("/checkout/return")({
   head: () => ({
     meta: [
-      { title: "Payment complete — Blacure" },
+      { title: "Payment complete — The Promptor by Blacure" },
+      { name: "description", content: "Your The Promptor purchase is complete." },
+      { property: "og:title", content: "Payment complete — The Promptor by Blacure" },
+      { property: "og:description", content: "Your purchase is being added to your account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -44,7 +49,7 @@ function CheckoutReturn() {
         <div className="mt-6 flex flex-col gap-2">
           <Link to="/app">
             <Button className="w-full brand-gradient text-black font-semibold border-0 hover:opacity-90">
-              Open the Promptor
+              Open The Promptor
             </Button>
           </Link>
           <Link to="/pricing">

@@ -13,10 +13,12 @@ import { isPaymentsConfigured } from "@/lib/stripe";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Blacure" },
-      { name: "description", content: "Simple, fair pricing for AI music prompts. Start free with 10 prompts, then $2 for 20 prompts or $19.99/month for unlimited." },
-      { property: "og:title", content: "Pricing — Blacure" },
+      { title: "Pricing — The Promptor by Blacure" },
+      { name: "description", content: "Start with 10 free AI music prompts, top up 20 prompts for $5, or get unlimited Standard and Pro Studio prompts for $19.99 monthly." },
+      { property: "og:title", content: "Pricing — The Promptor by Blacure" },
       { property: "og:description", content: "Start with 10 free prompts. Pay-as-you-go or monthly subscription." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://thepromptor.life/pricing" },
     ],
     links: [{ rel: "canonical", href: "https://thepromptor.life/pricing" }],
@@ -94,8 +96,8 @@ function Pricing() {
       <PaymentTestModeBanner />
       <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure" className="h-10 w-10 rounded-full" />
-          <span className="font-display text-xl font-bold brand-text">Blacure</span>
+          <img src={logoAsset.url} alt="Blacure logo" className="h-10 w-10 rounded-full" />
+          <span className="leading-tight"><span className="block font-display text-lg font-bold">The Promptor</span><span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
         </Link>
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" /> Home
