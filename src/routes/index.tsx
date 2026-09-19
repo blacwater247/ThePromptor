@@ -27,16 +27,16 @@ function Landing() {
   return (
     <div className="min-h-screen text-foreground">
       {/* Nav */}
-      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-3">
+      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between gap-2 sm:gap-3">
+        <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
           <img src={logoAsset.url} alt="Blacure logo" className="h-10 w-10 rounded-full" />
-          <span className="leading-tight">
-            <span className="block font-display text-lg font-bold text-foreground">The Promptor</span>
+          <span className="min-w-0 leading-tight">
+            <span className="block whitespace-nowrap font-display text-sm sm:text-lg font-bold text-foreground">The Promptor</span>
             <span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span>
           </span>
         </Link>
-        <div className="flex items-center gap-2">
-          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Link to="/pricing" className="hidden sm:inline px-2 text-sm font-medium text-muted-foreground hover:text-foreground">
             Pricing
           </Link>
           {!user && (
@@ -45,8 +45,8 @@ function Landing() {
             </Link>
           )}
           <Link to="/app">
-            <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
-              Build a Blueprint <ArrowRight className="h-4 w-4" />
+            <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90 px-3 sm:px-4">
+              <span className="sm:hidden">Build</span><span className="hidden sm:inline">Build a Blueprint</span> <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
