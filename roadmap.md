@@ -6,4 +6,4 @@
 - [x] Upgrade the live blueprint output and main app workspace.
 - [x] Rewrite the homepage for the blueprint workflow and commercial offer.
 - [x] Apply the premium system to lyrics, pricing, sign-in, account, and checkout return.
-- [ ] Validate guest, credit, Pro, desktop, and mobile experiences.
+- [x] Validate guest, credit, Pro, desktop, and mobile experiences.
