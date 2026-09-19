@@ -12,12 +12,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import logoAsset from "../assets/blacure-logo.png.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import "@fontsource/outfit/400.css";
-import "@fontsource/outfit/600.css";
-import "@fontsource/outfit/700.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
+import "@fontsource/archivo-black/400.css";
+import "@fontsource/hind/400.css";
+import "@fontsource/hind/500.css";
+import "@fontsource/hind/600.css";
+import "@fontsource/hind/700.css";
 
 function NotFoundComponent() {
   return (
@@ -90,9 +89,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/p2bGEYWYHYN5El64aqCfUprBQ553/social-images/social-1782665065148-ChatGPT_Image_Jun_22,_2026,_08_31_37_PM.webp" },
-      { title: "The Promptor by Blacure — AI Music Prompt Studio" },
-      { property: "og:title", content: "The Promptor by Blacure — AI Music Prompt Studio" },
-      { name: "twitter:title", content: "The Promptor by Blacure — AI Music Prompt Studio" },
+      { title: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
+      { property: "og:title", content: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
+      { name: "twitter:title", content: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
       { name: "description", content: "Build production-ready AI song blueprints with precise creative and production controls." },
       { property: "og:description", content: "Build production-ready AI song blueprints with precise creative and production controls." },
       { name: "twitter:description", content: "Build production-ready AI song blueprints with precise creative and production controls." },
@@ -119,9 +118,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "WebSite",
               "@id": "https://thepromptor.life/#website",
-              name: "The Promptor by Blacure",
+              name: "THE PROMPTOR™ by Blacure",
               url: "https://thepromptor.life",
-              description: "AI Music Prompt Studio for building production-ready song blueprints.",
+              description: "AI Song Blueprint Studio for building production-ready music direction.",
               publisher: { "@id": "https://thepromptor.life/#organization" },
             },
           ],
