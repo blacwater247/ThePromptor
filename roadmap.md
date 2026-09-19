@@ -1,6 +1,9 @@
-# Current milestone
+# THE PROMPTOR™ AI Song Blueprint upgrade
 
-- [x] Make “The Promptor by Blacure” consistent across customer-facing pages.
-- [x] Rebuild the homepage around production-ready blueprints and concrete product proof.
-- [x] Present the existing free, pack, monthly, and downloadable offers clearly.
-- [x] Verify mobile and desktop layouts, links, and the preview build.
+- [x] Install the Carbon Copper brand system and typography.
+- [x] Add the complete blueprint field model and generation support.
+- [x] Rebuild the prompt builder as a five-phase Studio Console.
+- [x] Upgrade the live blueprint output and main app workspace.
+- [x] Rewrite the homepage for the blueprint workflow and commercial offer.
+- [x] Apply the premium system to lyrics, pricing, sign-in, account, and checkout return.
+- [x] Validate guest, credit, Pro, desktop, and mobile experiences.

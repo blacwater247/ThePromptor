@@ -112,8 +112,9 @@ function AccountPage() {
 
       <main className="mx-auto max-w-4xl px-4 sm:px-6 py-8 space-y-6">
         <header>
-          <h1 className="font-display text-3xl font-bold">Account &amp; Billing</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage your plan, view credits, and see your history.</p>
+           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary">Studio membership</p>
+           <h1 className="mt-2 font-display text-3xl">Account &amp; Billing</h1>
+           <p className="mt-1 text-sm text-muted-foreground">Manage access, credits, downloads, and production activity.</p>
         </header>
 
         <div className="grid md:grid-cols-2 gap-6">

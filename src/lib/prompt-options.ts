@@ -428,6 +428,18 @@ export const BASSLINES = [
 ];
 
 // ------------------------------------------------------------
+// BLUEPRINT INTELLIGENCE
+// ------------------------------------------------------------
+export const ERAS = ["Current / modern", "1960s soul", "1970s analog", "1980s synth", "1990s golden era", "2000s radio", "2010s crossover", "Futuristic"];
+export const VOCAL_REGISTERS = ["Natural range", "Low register", "Mid register", "High register", "Falsetto-led", "Wide dynamic range"];
+export const VOCAL_TEXTURES = ["Clean and controlled", "Breathy", "Raspy", "Smoky", "Gritty", "Silky", "Raw and cracked", "Processed and futuristic"];
+export const HARMONY_STYLES = ["Minimal unison", "Tight two-part harmony", "Stacked three-part harmony", "Gospel call and response", "Wide choir layers", "Counter-melody harmonies", "Octave doubles", "No vocal harmony"];
+export const DYNAMICS_ARCS = ["Steady and controlled", "Slow-burn rise", "Verse restraint / hook lift", "Wide cinematic swells", "Drop-driven contrast", "Intimate to explosive", "Peak early / strip back late"];
+export const STEREO_CHARACTERS = ["Balanced natural width", "Wide hooks / narrow verses", "Immersive ultra-wide", "Focused mono-compatible center", "Vintage narrow image", "Asymmetric movement", "Headphone-detail panorama"];
+export const REFERENCE_TRAITS = ["Analog warmth", "Modern low-end", "Live-room energy", "Club translation", "Radio clarity", "Cinematic depth", "Raw demo intimacy", "Tape-era texture", "Minimal negative space", "Dense layered production"];
+export const OPTIMIZATION_MODES = ["Universal", "Suno", "Udio"];
+
+// ------------------------------------------------------------
 // AVOID
 // ------------------------------------------------------------
 export const AVOID_PRESETS = [
@@ -448,10 +460,14 @@ export type PromptInputs = {
   songLength: string;
   mainGenre: string;
   subgenre: string;
+  era: string;
   fusionGenre: string;
   vocalType: string;
   vocalPerformance: string;
   vocalExtras: string[];
+  vocalRegister: string;
+  vocalTexture: string;
+  harmonyStyle: string;
   moods: string[];
   moodColor: string;
   energy: string;
@@ -466,8 +482,12 @@ export type PromptInputs = {
   key: string;
   productionStyle: string;
   arrangement: string;
+  dynamicsArc: string;
   mixingStyle: string;
   sonicFinish: string;
+  stereoCharacter: string;
+  referenceTraits: string[];
+  optimizationMode: string;
   hookType: string;
   vocalFormat: string;
   bassline: string;
@@ -482,10 +502,14 @@ export const DEFAULT_INPUTS: PromptInputs = {
   songLength: "3-minute radio song",
   mainGenre: "Hip-Hop",
   subgenre: "",
+  era: "Current / modern",
   fusionGenre: "None",
   vocalType: "Male singer",
   vocalPerformance: "Smooth",
   vocalExtras: [],
+  vocalRegister: "Natural range",
+  vocalTexture: "Clean and controlled",
+  harmonyStyle: "Minimal unison",
   moods: [],
   moodColor: "",
   energy: "Medium",
@@ -500,8 +524,12 @@ export const DEFAULT_INPUTS: PromptInputs = {
   key: "Auto",
   productionStyle: "Clean radio-ready mix",
   arrangement: "",
+  dynamicsArc: "Steady and controlled",
   mixingStyle: "None",
   sonicFinish: "",
+  stereoCharacter: "Balanced natural width",
+  referenceTraits: [],
+  optimizationMode: "Universal",
   hookType: "None",
   vocalFormat: "",
   bassline: "None",
@@ -523,6 +551,7 @@ export function sanitizeToStandard(inputs: PromptInputs): PromptInputs {
     ...inputs,
     mainGenre: STANDARD_MAIN_GENRES_SET.has(inputs.mainGenre) ? inputs.mainGenre : DEFAULT_INPUTS.mainGenre,
     subgenre: "",
+    harmonyStyle: DEFAULT_INPUTS.harmonyStyle,
     moods: inputs.moods.filter((m) => STANDARD_MOODS_SET.has(m)),
     moodColor: "",
     instruments: inputs.instruments.filter((i) => STANDARD_INSTRUMENTS_SET.has(i)),
@@ -530,8 +559,12 @@ export function sanitizeToStandard(inputs: PromptInputs): PromptInputs {
     rhythmPattern: "",
     productionStyle: STANDARD_PRODUCTION_STYLES_SET.has(inputs.productionStyle) ? inputs.productionStyle : DEFAULT_INPUTS.productionStyle,
     arrangement: "",
+    dynamicsArc: DEFAULT_INPUTS.dynamicsArc,
     mixingStyle: "None",
     sonicFinish: "",
+    stereoCharacter: DEFAULT_INPUTS.stereoCharacter,
+    referenceTraits: inputs.referenceTraits.filter((trait) => ["Analog warmth", "Modern low-end", "Live-room energy", "Radio clarity", "Raw demo intimacy", "Minimal negative space"].includes(trait)),
+    optimizationMode: "Universal",
     hookType: "None",
     vocalFormat: "",
     bassline: "None",

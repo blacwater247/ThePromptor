@@ -14,6 +14,8 @@
   "dependencies": {
     "@ai-sdk/openai": "^4.0.4",
     "@ai-sdk/openai-compatible": "^3.0.0",
+    "@fontsource/archivo-black": "^5.3.0",
+    "@fontsource/hind": "^5.3.0",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, SlidersHorizontal, Music2, ArrowRight, Check, Layers3, Gauge, AudioLines } from "lucide-react";
+import { Sparkles, SlidersHorizontal, ArrowRight, Layers3, Gauge, Mic2, Cpu, Waves } from "lucide-react";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { CommentForm } from "@/components/CommentForm";
@@ -8,9 +8,9 @@ import { CommentForm } from "@/components/CommentForm";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "The Promptor by Blacure — AI Music Prompt Studio" },
+      { title: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
       { name: "description", content: "Build production-ready AI song blueprints with guided controls for genre, vocals, arrangement, instrumentation, and mix. Try 10 free with no signup." },
-      { property: "og:title", content: "The Promptor by Blacure — AI Music Prompt Studio" },
+      { property: "og:title", content: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
       { property: "og:description", content: "Turn a musical idea into a detailed, production-ready AI song blueprint." },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://thepromptor.life/favicon.ico" },
@@ -31,8 +31,8 @@ function Landing() {
         <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
           <img src={logoAsset.url} alt="Blacure logo" className="h-10 w-10 rounded-full" />
           <span className="min-w-0 leading-tight">
-            <span className="block whitespace-nowrap font-display text-sm sm:text-lg font-bold text-foreground">The Promptor</span>
-            <span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span>
+            <span className="block whitespace-nowrap font-display text-sm sm:text-base text-foreground">THE PROMPTOR™</span>
+            <span className="block text-[10px] font-semibold uppercase tracking-widest text-primary">by Blacure</span>
           </span>
         </Link>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -61,17 +61,12 @@ function Landing() {
               <img src={logoAsset.url} alt="The Promptor by Blacure" className="h-24 w-24 sm:h-32 sm:w-32 rounded-full gold-glow" />
             </div>
           </div>
-          <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-bold leading-none">
-            <span className="brand-text">The Promptor</span>
+          <p className="text-[11px] font-bold uppercase tracking-[.24em] text-primary">AI Music Production Intelligence</p>
+          <h1 className="mt-4 font-display text-4xl sm:text-6xl lg:text-7xl leading-[1.05]">
+            Build production-ready<br /><span className="brand-text">AI song blueprints.</span>
           </h1>
-          <p className="mt-3 text-xs sm:text-sm font-semibold text-muted-foreground uppercase">
-            by Blacure
-          </p>
-          <p className="mt-6 font-display text-xl sm:text-3xl font-semibold text-foreground">
-            AI Music Prompt Studio
-          </p>
           <p className="mt-4 mx-auto max-w-2xl text-base sm:text-xl text-muted-foreground">
-            Build production-ready AI song blueprints with precise control over sound, performance, arrangement, and mix.
+            Turn creative intent into precise direction for genre, rhythm, voice, arrangement, mix, and your chosen AI music engine.
           </p>
           <p className="mt-4 text-sm brand-text font-bold">10 free prompts. No signup. No credit card.</p>
           <p className="mt-2 text-xs text-muted-foreground max-w-xl mx-auto">
@@ -94,11 +89,30 @@ function Landing() {
         </div>
       </header>
 
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
+        <div className="studio-panel rounded-lg p-4 sm:p-6">
+          <div className="flex flex-col gap-2 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary">The Blueprint Workflow</p><h2 className="mt-2 font-display text-2xl sm:text-3xl">Make every production decision count</h2></div>
+            <p className="max-w-sm text-sm text-muted-foreground">Five guided phases replace guesswork with a repeatable studio process.</p>
+          </div>
+          <div className="mt-5 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-5">
+            {[
+              ["01", "Creative Identity", "Genre · Subgenre · Era · Mood"],
+              ["02", "Rhythm & Tonality", "BPM · Key · Drums · Bass"],
+              ["03", "Voice & Palette", "Register · Texture · Harmony"],
+              ["04", "Arrangement", "Structure · Hook · Dynamics"],
+              ["05", "Mix & Translate", "Stereo · Traits · AI engine"],
+            ].map(([n, title, body]) => <div key={n} className="bg-card p-4"><span className="font-display text-xl text-primary">{n}</span><h3 className="mt-8 text-sm font-bold uppercase tracking-wide">{title}</h3><p className="mt-2 text-xs leading-5 text-muted-foreground">{body}</p></div>)}
+          </div>
+          <div className="mt-5 flex justify-end"><Link to="/app"><Button className="brand-gradient border-0 font-semibold text-white">Generate Blueprint <ArrowRight className="h-4 w-4" /></Button></Link></div>
+        </div>
+      </section>
+
       <section id="features" className="border-y border-border/40 bg-card/30">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
           <div className="mb-9 text-center">
             <p className="text-xs font-bold uppercase brand-text">Idea in. Blueprint out.</p>
-            <h2 className="mt-3 font-display text-3xl sm:text-5xl font-bold">Hear the difference in the direction</h2>
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl">Hear the difference in the direction</h2>
             <p className="mt-3 mx-auto max-w-2xl text-muted-foreground">A vague idea leaves the music engine guessing. The Promptor turns intent into production language.</p>
           </div>
           <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
@@ -127,15 +141,15 @@ function Landing() {
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
             <p className="text-xs font-bold uppercase brand-text">Built for music decisions</p>
-            <h2 className="mt-3 font-display text-3xl sm:text-5xl font-bold">Not a blank chat box</h2>
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl">Why not just use ChatGPT?</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">The Promptor guides the choices that shape a record, then turns them into one coherent instruction set.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-lg border border-border/60 bg-border/60">
             {[
-              { icon: SlidersHorizontal, title: "Structured control", body: "Choose genre, subgenre, mood, BPM, key, drum feel, vocals, instruments, and production traits." },
-              { icon: Layers3, title: "Coherent direction", body: "Selections work together as one blueprint instead of a loose list of adjectives." },
-              { icon: Gauge, title: "Fast exploration", body: "Randomize a compatible vibe, refine the controls, and generate again without rewriting instructions." },
-              { icon: AudioLines, title: "Producer language", body: "Get clear musical, arrangement, performance, and mix direction ready for your workflow." },
+              { icon: SlidersHorizontal, title: "Structured decisions", body: "Curated controls reveal the production choices a blank chat box never asks you to make." },
+              { icon: Layers3, title: "Coherent direction", body: "Every selection is translated into one compatible blueprint, not a loose adjective list." },
+              { icon: Gauge, title: "Repeatable workflow", body: "Randomize, refine, save, and generate again without rebuilding context from scratch." },
+              { icon: Cpu, title: "Engine translation", body: "Pro Studio adapts your creative intent for Universal, Suno, or Udio prompting." },
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="bg-card p-6">
                 <Icon className="h-5 w-5 text-primary" />
@@ -143,6 +157,15 @@ function Landing() {
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/50 bg-card/30">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+            <div><p className="text-xs font-bold uppercase tracking-[.2em] text-primary">More than prompts</p><h2 className="mt-3 font-display text-3xl sm:text-5xl">From blueprint to lyrics</h2><p className="mt-4 max-w-xl text-muted-foreground">Keep the same creative momentum in the Lyrics Builder. Direct structure, rhyme, hook style, story, and vocal perspective with the same studio-first approach.</p><Link to="/lyrics" className="mt-6 inline-block"><Button variant="outline" className="border-primary/50"><Mic2 className="h-4 w-4" /> Explore Lyrics Builder</Button></Link></div>
+            <div className="studio-panel rounded-lg p-6"><Waves className="h-6 w-6 text-primary" /><p className="mt-8 text-xs font-bold uppercase tracking-widest text-muted-foreground">Connected creative workflow</p><p className="mt-3 font-display text-xl">Blueprint the sound. Write the story. Keep creating.</p><div className="mt-5 h-20 rounded-md border border-border bg-background/50 p-3 font-mono text-xs leading-5 text-muted-foreground">[VERSE] restrained detail<br />[PRE-HOOK] tension rises<br />[HOOK] memorable emotional release</div></div>
           </div>
         </div>
       </section>
@@ -191,7 +214,7 @@ function Landing() {
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-10 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <img src={logoAsset.url} alt="" className="h-7 w-7 rounded-full" />
-          <span className="font-display font-semibold text-foreground">The Promptor <span className="text-muted-foreground font-normal">by Blacure</span></span>
+          <span className="font-display text-sm text-foreground">THE PROMPTOR™ <span className="font-sans text-muted-foreground">by Blacure</span></span>
         </div>
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Blacure</p>
       </footer>

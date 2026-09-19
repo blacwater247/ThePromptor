@@ -17,7 +17,7 @@ export function UpgradeModal({ open, onOpenChange }: { open: boolean; onOpenChan
           <Link to="/pricing" onClick={() => onOpenChange(false)}>
             <Button className="w-full brand-gradient text-black font-semibold border-0 hover:opacity-90">
               <CreditCard className="h-4 w-4" />
-              Buy 20 prompts — $2
+              Buy 20 prompts — $5
             </Button>
           </Link>
           <Link to="/pricing" onClick={() => onOpenChange(false)}>
