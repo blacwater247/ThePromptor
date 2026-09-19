@@ -24,6 +24,7 @@ type Props = {
   savedHeading?: string;
   emptyHint?: React.ReactNode;
   loadingHint?: string;
+  blueprintMeta?: { genre: string; tempo: string; key: string; engine: string; instruments: number };
 };
 
 
@@ -83,12 +84,12 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
 }
 
 
-export function PromptPreview({ prompt, loading, streaming, error, onSave, saved, onDelete, onUseSaved, heading = "Generated Prompt", savedHeading = "Saved Prompts", emptyHint, loadingHint = "Composing your studio-ready prompt…" }: Props) {
+export function PromptPreview({ prompt, loading, streaming, error, onSave, saved, onDelete, onUseSaved, heading = "Blueprint Output", savedHeading = "Saved Blueprints", emptyHint, loadingHint = "Composing your production-ready blueprint…", blueprintMeta }: Props) {
   const hasStreamingText = streaming && prompt.length > 0;
   const showSkeleton = loading && !hasStreamingText;
   return (
     <div className="space-y-6 lg:sticky lg:top-6">
-      <Card className="border-border/60 bg-card/70 backdrop-blur p-5">
+      <Card className="studio-panel p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="brand-gradient w-7 h-7 rounded-md flex items-center justify-center shadow-md shadow-primary/30">
@@ -108,7 +109,16 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
           )}
         </div>
 
-        <div className="min-h-[220px] rounded-lg bg-secondary/30 border border-border/60 p-4 text-sm leading-relaxed whitespace-pre-wrap">
+        {blueprintMeta && (
+          <div className="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-5">
+            {[
+              ["Genre", blueprintMeta.genre], ["Tempo", blueprintMeta.tempo], ["Key", blueprintMeta.key],
+              ["Engine", blueprintMeta.engine], ["Palette", `${blueprintMeta.instruments} sounds`],
+            ].map(([label, value]) => <div key={label} className="bg-background/70 px-3 py-2"><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-0.5 truncate text-xs text-foreground">{value}</p></div>)}
+          </div>
+        )}
+
+        <div className="min-h-[260px] rounded-md bg-background/60 border border-border/60 p-4 font-mono text-[13px] leading-7 whitespace-pre-wrap">
           {showSkeleton ? (
             <div className="space-y-2 animate-pulse">
               <div className="h-3 rounded bg-secondary w-11/12" />
@@ -132,7 +142,7 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
       </Card>
 
 
-      <Card className="border-border/60 bg-card/70 backdrop-blur p-5">
+      <Card className="studio-panel p-5">
         <h3 className="font-display text-base font-semibold mb-3">{savedHeading} {saved.length > 0 && <span className="text-muted-foreground font-normal text-sm">({saved.length})</span>}</h3>
         {saved.length === 0 ? (
           <p className="text-sm text-muted-foreground">Your saved prompts will appear here. Stored locally in your browser.</p>

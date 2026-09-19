@@ -30,7 +30,7 @@ export const Route = createFileRoute("/app")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "AI Music Prompt Studio — The Promptor by Blacure" },
+      { title: "AI Song Blueprint Studio — THE PROMPTOR™ by Blacure" },
       { name: "description", content: "Build production-ready AI song blueprints with The Promptor by Blacure. Try 10 free with no signup." },
       { property: "og:title", content: "AI Music Prompt Studio — The Promptor by Blacure" },
       { property: "og:description", content: "Control genre, vocals, instrumentation, arrangement, and mix in one production-ready blueprint." },
@@ -290,7 +290,7 @@ function AppPage() {
           <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
             <Link to="/" className="flex items-center gap-2 group">
               <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
-              <span className="leading-tight"><span className="block font-display text-base sm:text-lg font-bold">The Promptor</span><span className="block text-[9px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
+              <span className="leading-tight"><span className="block font-display text-sm sm:text-base">THE PROMPTOR™</span><span className="block text-[9px] font-semibold uppercase tracking-widest text-primary">by Blacure</span></span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
               {isGuest ? (
@@ -307,7 +307,7 @@ function AppPage() {
                 <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border ${!canStandard ? "border-destructive/50 text-destructive" : "border-primary/40 brand-text"}`}>
                   <Zap className="h-3.5 w-3.5" />
                   {creditsQuery.isLoading ? "…" : `${balance} credits`}
-                  <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} prompts</span>
+                   <span className="text-muted-foreground font-normal hidden sm:inline">· {Math.floor(balance / 2)} Standard · {Math.floor(balance / 6)} Pro</span>
                 </div>
               )}
               {isPro && (
@@ -355,7 +355,7 @@ function AppPage() {
             </div>
           </div>
           <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="brand-text">The Promptor</span> — AI Music Prompt Studio
+            <span className="brand-text">THE PROMPTOR™</span> — AI Song Blueprint Studio
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-lg text-muted-foreground">
             Build production-ready AI song blueprints for hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic, and more.
@@ -371,37 +371,7 @@ function AppPage() {
               <span className="block mt-1 text-sm">Go Monthly for unlimited Standard + Pro Studio prompts.</span>
             )}
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
-            <Button
-              size="lg"
-              onClick={() => handleGenerate("standard")}
-              disabled={loading || (isGuest && !canStandard)}
-              className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow"
-            >
-              <Sparkles className="h-4 w-4" />
-              {loading ? "Generating…" : isGuest ? "Generate Prompt (free)" : isPro ? "Generate Prompt" : outOfCredits ? "Out of free prompts — Upgrade" : "Generate Prompt (2 credits)"}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleGenerate("pro")}
-              disabled={loading}
-              className="w-full sm:w-auto border-primary/60 hover:bg-primary/10 relative"
-              title={isPro ? "Longer, structured studio prompt — unlimited" : "Unlock with Monthly plan"}
-            >
-              {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-              {isPro ? "Pro Studio Prompt" : "Unlock Pro Studio"}
-              <span className="ml-1 rounded bg-primary/20 brand-text text-[10px] font-bold px-1.5 py-0.5">PRO</span>
-            </Button>
-            <Button size="lg" variant="outline" onClick={handleRandomize} className="w-full sm:w-auto border-primary/40 hover:bg-primary/10">
-              <Shuffle className="h-4 w-4" />
-              Randomize Vibe
-            </Button>
-            <Button size="lg" variant="ghost" onClick={handleClear} className="w-full sm:w-auto">
-              <RotateCcw className="h-4 w-4" />
-              Clear Form
-            </Button>
-          </div>
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-xs uppercase tracking-widest text-muted-foreground"><span>01 Identity</span><span>02 Rhythm</span><span>03 Voice</span><span>04 Arrangement</span><span>05 Mix</span></div>
           {isGuest && guestRemaining === 0 && (
             <p className="mt-4 text-sm text-destructive">
               You've used your 10 free prompts. <Link to="/auth" className="underline font-semibold">Create a free account</Link> to keep going — then top up 20 more for $5.
@@ -451,8 +421,8 @@ function AppPage() {
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
           <Card className="border-border/60 bg-card/70 backdrop-blur p-5 lg:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-display text-lg font-semibold">Prompt Builder</h2>
-              <span className="text-xs text-muted-foreground hidden sm:block">All sections feed the AI</span>
+              <h2 className="font-display text-lg">Blueprint Controls</h2>
+              <span className="text-xs text-muted-foreground hidden sm:block">Every decision shapes one coherent output</span>
             </div>
             <PromptBuilder value={inputs} onChange={setInputs} isPro={isPro} />
             <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
@@ -462,7 +432,7 @@ function AppPage() {
                 className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90"
               >
                 <Sparkles className="h-4 w-4" />
-                {loading ? "Generating…" : isGuest ? "Generate (free)" : isPro ? "Generate" : "Generate (2 credits)"}
+                {loading ? "Building…" : isGuest ? "Generate Blueprint (free)" : isPro ? "Generate Blueprint" : "Generate Blueprint (2 credits)"}
               </Button>
               <Button
                 type="button"
@@ -472,7 +442,7 @@ function AppPage() {
                 className="w-full sm:w-auto border-primary/60 hover:bg-primary/10"
               >
                 {isPro ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                {isPro ? "Pro Studio" : "Unlock Pro Studio"}
+                {isPro ? "Generate Pro Blueprint" : "Unlock Pro Studio"}
               </Button>
               <Button type="button" variant="outline" onClick={handleRandomize} className="w-full sm:w-auto border-primary/40 hover:bg-primary/10">
                 <Shuffle className="h-4 w-4" />
@@ -494,6 +464,7 @@ function AppPage() {
             saved={saved}
             onDelete={(id) => setSaved(saved.filter((s) => s.id !== id))}
             onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
+            blueprintMeta={{ genre: inputs.subgenre || inputs.mainGenre, tempo: inputs.customBpm ? `${inputs.customBpm} BPM` : inputs.tempo, key: inputs.key, engine: inputs.optimizationMode, instruments: inputs.instruments.length }}
           />
 
         </div>
