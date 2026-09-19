@@ -15,8 +15,12 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — Blacure" },
-      { name: "description", content: "Sign in to Blacure to generate AI music prompts. New accounts get 10 free prompts." },
+      { title: "Sign in — The Promptor by Blacure" },
+      { name: "description", content: "Sign in to The Promptor by Blacure to build and manage AI music prompts." },
+      { property: "og:title", content: "Sign in — The Promptor by Blacure" },
+      { property: "og:description", content: "Access your AI music prompt studio." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -100,8 +104,8 @@ function AuthPage() {
       <Toaster theme="dark" position="top-center" richColors />
       <nav className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure" className="h-9 w-9 rounded-full" />
-          <span className="font-display text-xl font-bold brand-text">Blacure</span>
+          <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 rounded-full" />
+          <span className="leading-tight"><span className="block font-display text-lg font-bold">The Promptor</span><span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
         </Link>
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" /> Home
@@ -111,8 +115,8 @@ function AuthPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md border-border/60 bg-card/70 backdrop-blur p-6">
           <div className="text-center mb-6">
-            <h1 className="font-display text-2xl font-bold">Sign in to <span className="brand-text">Blacure</span></h1>
-            <p className="text-sm text-muted-foreground mt-1">Get 10 free prompts on signup.</p>
+            <h1 className="font-display text-2xl font-bold">Sign in to <span className="brand-text">The Promptor</span></h1>
+            <p className="text-sm text-muted-foreground mt-1">Your AI Music Prompt Studio by Blacure.</p>
           </div>
 
           <div className="space-y-2 mb-4">

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wand2, Save, Music2, Mic2, Sliders, ArrowRight } from "lucide-react";
+import { Sparkles, SlidersHorizontal, Music2, ArrowRight, Check, Layers3, Gauge, AudioLines } from "lucide-react";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { CommentForm } from "@/components/CommentForm";
@@ -8,10 +8,11 @@ import { CommentForm } from "@/components/CommentForm";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Blacure — AI Song Prompt Generator" },
-      { name: "description", content: "Blacure is The Promptor: studio-grade AI prompts for hip-hop, R&B, trap, soul, gospel, Afrobeat, pop, house, and cinematic music." },
-      { property: "og:title", content: "Blacure — AI Song Prompt Generator" },
-      { property: "og:description", content: "Studio-grade AI prompts for music — built in seconds." },
+      { title: "The Promptor by Blacure — AI Music Prompt Studio" },
+      { name: "description", content: "Build production-ready AI song blueprints with guided controls for genre, vocals, arrangement, instrumentation, and mix. Try 10 free with no signup." },
+      { property: "og:title", content: "The Promptor by Blacure — AI Music Prompt Studio" },
+      { property: "og:description", content: "Turn a musical idea into a detailed, production-ready AI song blueprint." },
+      { property: "og:type", content: "website" },
       { property: "og:image", content: "https://thepromptor.life/favicon.ico" },
       { property: "og:url", content: "https://thepromptor.life/" },
       { name: "twitter:image", content: "https://thepromptor.life/favicon.ico" },
@@ -26,13 +27,16 @@ function Landing() {
   return (
     <div className="min-h-screen text-foreground">
       {/* Nav */}
-      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure AI Music logo" className="h-10 w-10 rounded-full" />
-          <span className="font-display text-xl font-bold tracking-tight brand-text">Blacure</span>
+      <nav className="mx-auto max-w-6xl px-4 sm:px-6 py-5 flex items-center justify-between gap-2 sm:gap-3">
+        <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <img src={logoAsset.url} alt="Blacure logo" className="h-10 w-10 rounded-full" />
+          <span className="min-w-0 leading-tight">
+            <span className="block whitespace-nowrap font-display text-sm sm:text-lg font-bold text-foreground">The Promptor</span>
+            <span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span>
+          </span>
         </Link>
-        <div className="flex items-center gap-2">
-          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground px-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Link to="/pricing" className="hidden sm:inline px-2 text-sm font-medium text-muted-foreground hover:text-foreground">
             Pricing
           </Link>
           {!user && (
@@ -41,8 +45,8 @@ function Landing() {
             </Link>
           )}
           <Link to="/app">
-            <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90">
-              Open Generator <ArrowRight className="h-4 w-4" />
+            <Button className="brand-gradient text-black font-semibold border-0 hover:opacity-90 px-3 sm:px-4">
+              <span className="sm:hidden">Build</span><span className="hidden sm:inline">Build a Blueprint</span> <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
@@ -51,78 +55,109 @@ function Landing() {
       <main>
       {/* Hero */}
       <header className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-24 text-center">
-          <div className="flex justify-center mb-6 sm:mb-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-10 pb-14 sm:pt-16 sm:pb-20 text-center">
+          <div className="flex justify-center mb-5 sm:mb-6">
             <div className="relative">
-              <img src={logoAsset.url} alt="Blacure logo" className="h-24 w-24 sm:h-40 sm:w-40 rounded-full gold-glow" />
+              <img src={logoAsset.url} alt="The Promptor by Blacure" className="h-24 w-24 sm:h-32 sm:w-32 rounded-full gold-glow" />
             </div>
           </div>
-          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05]">
-            <span className="brand-text">Blacure</span> — AI Song Prompt Generator
+          <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-bold leading-none">
+            <span className="brand-text">The Promptor</span>
           </h1>
-          <p className="mt-3 text-base sm:text-lg font-semibold text-foreground/80 tracking-wide uppercase">
-            The Promptor
+          <p className="mt-3 text-xs sm:text-sm font-semibold text-muted-foreground uppercase">
+            by Blacure
           </p>
-          <p className="mt-6 mx-auto max-w-2xl text-base sm:text-xl text-muted-foreground">
-            Studio-grade music prompts in seconds. Hip-hop, R&amp;B, trap, soul, gospel, Afrobeat, pop, house, cinematic — built by producers, polished by AI.
+          <p className="mt-6 font-display text-xl sm:text-3xl font-semibold text-foreground">
+            AI Music Prompt Studio
           </p>
-          <p className="mt-3 text-sm brand-text font-semibold">10 free prompts — no signup, no card required.</p>
+          <p className="mt-4 mx-auto max-w-2xl text-base sm:text-xl text-muted-foreground">
+            Build production-ready AI song blueprints with precise control over sound, performance, arrangement, and mix.
+          </p>
+          <p className="mt-4 text-sm brand-text font-bold">10 free prompts. No signup. No credit card.</p>
           <p className="mt-2 text-xs text-muted-foreground max-w-xl mx-auto">
-            The Promptor creates <span className="text-foreground font-semibold">prompts only</span> — not audio. Paste the output into Suno, Udio, or any AI music tool to generate the song.
+            The Promptor creates prompts, not audio. Use the finished blueprint in your preferred AI music tool.
           </p>
 
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3">
             <Link to="/app" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
                 <Sparkles className="h-4 w-4" />
-                Launch The Promptor
+                Build Your First Blueprint
               </Button>
             </Link>
             <a href="#features" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary/40 hover:bg-primary/10">
-                See how it works
+                See the Difference
               </Button>
             </a>
           </div>
         </div>
       </header>
 
-      {/* Features */}
-      <section id="features" className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-3">Built for real producers</h2>
-        <p className="text-center text-muted-foreground max-w-xl mx-auto mb-12">
-          Every knob a song needs — wired into a prompt the AI actually understands.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            { icon: Sliders, title: "Total control", body: "Genre, fusion, vocals, mood, tempo, key, drums, production — every choice shapes the output." },
-            { icon: Wand2, title: "Randomize Vibe", body: "One click rolls a fresh combination across every section to spark new ideas." },
-            { icon: Mic2, title: "Vocal direction", body: "Pick performer, delivery, and extras — choirs, ad-libs, call-and-response, the works." },
-            { icon: Music2, title: "Genre fusions", body: "Stack styles like Trap-Soul or Afrobeat + Amapiano without losing focus." },
-            { icon: Save, title: "Save & reuse", body: "Every prompt you like is stored locally so you can revisit and copy with one tap." },
-            { icon: Sparkles, title: "Studio-grade output", body: "Polished prompt language, ready to paste into your music generator of choice." },
-          ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur p-6 hover:border-primary/40 transition">
-              <div className="brand-gradient w-10 h-10 rounded-xl flex items-center justify-center mb-4">
-                <Icon className="h-5 w-5 text-black" />
-              </div>
-              <h3 className="font-display text-lg font-semibold mb-1">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+      <section id="features" className="border-y border-border/40 bg-card/30">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
+          <div className="mb-9 text-center">
+            <p className="text-xs font-bold uppercase brand-text">Idea in. Blueprint out.</p>
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl font-bold">Hear the difference in the direction</h2>
+            <p className="mt-3 mx-auto max-w-2xl text-muted-foreground">A vague idea leaves the music engine guessing. The Promptor turns intent into production language.</p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="rounded-lg border border-border/60 bg-background/60 p-5 sm:p-7">
+              <p className="text-xs font-bold uppercase text-muted-foreground">What you say</p>
+              <p className="mt-5 font-display text-2xl sm:text-3xl font-semibold">“Dark emotional R&amp;B song about losing someone.”</p>
             </div>
-          ))}
+            <div className="rounded-lg border border-primary/40 bg-card p-5 sm:p-7 gold-glow">
+              <p className="text-xs font-bold uppercase brand-text">What The Promptor builds</p>
+              <p className="mt-5 text-sm sm:text-base leading-7 text-foreground/90">
+                74 BPM contemporary R&amp;B / neo-soul in F# minor. Warm Rhodes voicings, deep rounded sub-bass, restrained pocket drums, muted electric guitar textures, and distant vocal pads. Intimate male tenor with a breathy lower register, controlled runs, and layered harmonies. Open with eight sparse bars, build tension through the pre-hook, then widen the chorus with fuller drums and stereo harmonies. Keep the mix warm, nocturnal, dynamic, and emotionally unresolved.
+              </p>
+            </div>
+          </div>
+          <div className="mt-7 text-center">
+            <Link to="/app">
+              <Button size="lg" className="brand-gradient text-primary-foreground font-semibold border-0 hover:opacity-90">
+                Generate Yours Free <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="text-xs font-bold uppercase brand-text">Built for music decisions</p>
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl font-bold">Not a blank chat box</h2>
+            <p className="mt-4 text-muted-foreground leading-relaxed">The Promptor guides the choices that shape a record, then turns them into one coherent instruction set.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-lg border border-border/60 bg-border/60">
+            {[
+              { icon: SlidersHorizontal, title: "Structured control", body: "Choose genre, subgenre, mood, BPM, key, drum feel, vocals, instruments, and production traits." },
+              { icon: Layers3, title: "Coherent direction", body: "Selections work together as one blueprint instead of a loose list of adjectives." },
+              { icon: Gauge, title: "Fast exploration", body: "Randomize a compatible vibe, refine the controls, and generate again without rewriting instructions." },
+              { icon: AudioLines, title: "Producer language", body: "Get clear musical, arrangement, performance, and mix direction ready for your workflow." },
+            ].map(({ icon: Icon, title, body }) => (
+              <div key={title} className="bg-card p-6">
+                <Icon className="h-5 w-5 text-primary" />
+                <h3 className="mt-4 font-display text-lg font-semibold">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* How it works */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20 border-t border-border/40">
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-12">Three steps to a finished prompt</h2>
+        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-3">Start free. Scale when it earns its place.</h2>
+        <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">A clear path from first experiment to an unlimited production workflow.</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {[
-            { n: "01", title: "Build", body: "Pick genre, vocals, mood, instruments, tempo, and style — or randomize." },
-            { n: "02", title: "Generate", body: "Blacure turns your selections into one polished, studio-ready prompt." },
-            { n: "03", title: "Use it", body: "Copy and paste into Suno, Udio, or your favorite music AI. Save the ones that hit." },
+            { n: "$0", title: "10 prompts free", body: "No signup and no credit card. Build and test complete song blueprints immediately." },
+            { n: "$5", title: "20-prompt top-up", body: "A one-time pack of 40 credits that never expires. Each Standard prompt uses 2 credits." },
+            { n: "$19.99", title: "Studio membership", body: "Unlimited Standard and Pro Studio prompts every month, with no credit counting." },
           ].map((s) => (
-            <div key={s.n} className="rounded-2xl border border-border/60 bg-card/40 p-6">
+            <div key={s.title} className="rounded-lg border border-border/60 bg-card/40 p-6">
               <div className="brand-text font-display text-3xl font-bold mb-3">{s.n}</div>
               <h3 className="font-display text-xl font-semibold mb-2">{s.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
@@ -133,10 +168,13 @@ function Landing() {
           <Link to="/app">
             <Button size="lg" className="brand-gradient text-black font-semibold border-0 hover:opacity-90 gold-glow">
               <Sparkles className="h-4 w-4" />
-              Start building
+              Build Your First Blueprint
             </Button>
           </Link>
         </div>
+        <p className="mt-5 text-center text-sm text-muted-foreground">
+          Prefer ready-made ideas? <Link to="/pricing" className="font-semibold text-primary hover:underline">Downloadable Blacure prompt packs start at $2.</Link>
+        </p>
       </section>
 
       {/* Comments */}
@@ -153,9 +191,9 @@ function Landing() {
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-10 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <img src={logoAsset.url} alt="" className="h-7 w-7 rounded-full" />
-          <span className="font-display font-semibold brand-text">Blacure</span>
+          <span className="font-display font-semibold text-foreground">The Promptor <span className="text-muted-foreground font-normal">by Blacure</span></span>
         </div>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Blacure · The Promptor</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Blacure</p>
       </footer>
     </div>
   );

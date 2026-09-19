@@ -25,8 +25,12 @@ import { listMyPacks, getPackDownloadUrl } from "@/lib/packs.functions";
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
-      { title: "Account & Billing — Blacure" },
-      { name: "description", content: "Manage your Blacure subscription, credits, and billing." },
+      { title: "Account & Billing — The Promptor by Blacure" },
+      { name: "description", content: "Manage your The Promptor subscription, credits, billing, and downloadable packs." },
+      { property: "og:title", content: "Account & Billing — The Promptor by Blacure" },
+      { property: "og:description", content: "Manage your prompt studio membership and purchases." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -98,8 +102,8 @@ function AccountPage() {
       <Toaster theme="dark" position="top-center" richColors />
       <nav className="mx-auto max-w-4xl px-4 sm:px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="Blacure" className="h-9 w-9 rounded-full" />
-          <span className="font-display text-xl font-bold brand-text">Blacure</span>
+          <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 rounded-full" />
+          <span className="leading-tight"><span className="block font-display text-lg font-bold">The Promptor</span><span className="block text-[10px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
         </Link>
         <Link to="/app" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" /> Back to app
@@ -127,7 +131,7 @@ function AccountPage() {
               <p className="text-sm text-muted-foreground">Loading…</p>
             ) : isPro ? (
               <>
-                <p className="text-sm">Blacure Monthly — unlimited Standard &amp; Pro Studio prompts.</p>
+                <p className="text-sm">The Promptor Monthly — unlimited Standard &amp; Pro Studio prompts.</p>
                 <p className="mt-2 text-xs text-muted-foreground">
                   Status: <span className="font-mono">{sub?.status}</span>
                   {sub?.cancel_at_period_end && " · cancels at period end"}
