@@ -120,12 +120,13 @@ function Pricing() {
         ) : (
           <>
             <header className="text-center mb-12">
-              <h1 className="font-display text-4xl sm:text-5xl font-bold">Simple, fair pricing</h1>
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-primary">Choose your studio access</p>
+              <h1 className="mt-3 font-display text-4xl sm:text-5xl">Build free. Scale when ready.</h1>
               <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
                 Start free with 10 prompts. Top up when you need more, or go monthly for the best value.
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                Free & Pack use credits (1 prompt = 2 credits). Monthly is unlimited — no credit counting.
+                 Standard uses 2 credits. Pro Studio uses 6 credits. Monthly is unlimited — your purchased credits remain on your account.
               </p>
             </header>
 

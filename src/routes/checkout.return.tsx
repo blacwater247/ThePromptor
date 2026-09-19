@@ -40,7 +40,8 @@ function CheckoutReturn() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="max-w-md w-full p-8 text-center border-border/60 bg-card/70">
         <CheckCircle2 className="h-14 w-14 text-primary mx-auto" />
-        <h1 className="mt-4 font-display text-2xl font-bold">Payment received</h1>
+        <p className="mt-4 text-[10px] font-bold uppercase tracking-[.2em] text-primary">Studio access updated</p>
+        <h1 className="mt-2 font-display text-2xl">Payment received</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {session_id
             ? "Your credits and access will appear in your account within a few seconds."

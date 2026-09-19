@@ -115,8 +115,9 @@ function AuthPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md border-border/60 bg-card/70 backdrop-blur p-6">
           <div className="text-center mb-6">
-            <h1 className="font-display text-2xl font-bold">Sign in to <span className="brand-text">The Promptor</span></h1>
-            <p className="text-sm text-muted-foreground mt-1">Your AI Music Prompt Studio by Blacure.</p>
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary">Studio access</p>
+            <h1 className="mt-2 font-display text-2xl">Sign in to <span className="brand-text">THE PROMPTOR™</span></h1>
+            <p className="text-sm text-muted-foreground mt-1">Your AI Song Blueprint Studio by Blacure.</p>
           </div>
 
           <div className="space-y-2 mb-4">
