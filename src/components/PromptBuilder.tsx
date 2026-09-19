@@ -1,440 +1,119 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Crown, Lock } from "lucide-react";
 import {
-  AVOID_PRESETS, EMOTION_DEPTHS, ENERGY_LEVELS, FUSION_GENRES, KEYS,
-  PROMPT_TYPES, SONG_LENGTHS, SOUND_QUALITIES, THEME_PRESETS, TEMPOS,
-  VOCAL_EXTRAS, VOCAL_PERFORMANCES, VOCAL_TYPES,
-  STANDARD_MAIN_GENRES, PRO_MAIN_GENRES, SUBGENRES,
-  STANDARD_MOODS, PRO_MOODS, MOOD_COLORS,
-  STANDARD_INSTRUMENTS, PRO_INSTRUMENTS,
-  STANDARD_DRUM_STYLES, PRO_DRUM_STYLES, RHYTHM_PATTERNS,
-  STANDARD_PRODUCTION_STYLES, PRO_PRODUCTION_STYLES, ARRANGEMENTS,
-  MIXING_STYLES, SONIC_FINISHES, HOOK_TYPES, VOCAL_FORMATS, BASSLINES,
-  type PromptInputs,
+  AVOID_PRESETS, ARRANGEMENTS, BASSLINES, DYNAMICS_ARCS, EMOTION_DEPTHS, ENERGY_LEVELS,
+  ERAS, FUSION_GENRES, HARMONY_STYLES, HOOK_TYPES, KEYS, MIXING_STYLES, MOOD_COLORS,
+  OPTIMIZATION_MODES, PRO_DRUM_STYLES, PRO_INSTRUMENTS, PRO_MAIN_GENRES, PRO_MOODS,
+  PRO_PRODUCTION_STYLES, PROMPT_TYPES, REFERENCE_TRAITS, RHYTHM_PATTERNS, SONG_LENGTHS,
+  SONIC_FINISHES, SOUND_QUALITIES, STANDARD_DRUM_STYLES, STANDARD_INSTRUMENTS,
+  STANDARD_MAIN_GENRES, STANDARD_MOODS, STANDARD_PRODUCTION_STYLES, STEREO_CHARACTERS,
+  SUBGENRES, TEMPOS, THEME_PRESETS, VOCAL_EXTRAS, VOCAL_FORMATS, VOCAL_PERFORMANCES,
+  VOCAL_REGISTERS, VOCAL_TEXTURES, VOCAL_TYPES, type PromptInputs,
 } from "@/lib/prompt-options";
 
-type Props = {
-  value: PromptInputs;
-  onChange: (next: PromptInputs) => void;
-  isPro?: boolean;
-};
-
-function Chip({ active, onClick, children, locked }: { active: boolean; onClick: () => void; children: React.ReactNode; locked?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium border transition inline-flex items-center gap-1 ${
-        locked
-          ? "bg-secondary/20 text-muted-foreground border-border/50 hover:bg-secondary/30"
-          : active
-          ? "brand-gradient text-white border-transparent shadow-md shadow-primary/30"
-          : "bg-secondary/50 text-secondary-foreground border-border hover:bg-secondary"
-      }`}
-    >
-      {locked && <Lock className="h-3 w-3" />}
-      {children}
-    </button>
-  );
-}
-
-function ProLockedChip({ children }: { children: React.ReactNode }) {
-  return (
-    <TooltipProvider delayDuration={100}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link to="/pricing" className="inline-block">
-            <Chip locked active={false} onClick={() => {}}>{children}</Chip>
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">
-          <span className="flex items-center gap-1"><Crown className="h-3 w-3" /> Pro plan — click to upgrade</span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
+type Props = { value: PromptInputs; onChange: (next: PromptInputs) => void; isPro?: boolean };
+const NONE = "__none__";
 
 function Field({ label, children, pro }: { label: string; children: React.ReactNode; pro?: boolean }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-        {label}
-        {pro && <span className="inline-flex items-center gap-0.5 rounded bg-primary/20 brand-text text-[9px] font-bold px-1 py-0.5"><Crown className="h-2.5 w-2.5" /> PRO</span>}
-      </Label>
-      {children}
-    </div>
-  );
+  return <div className="space-y-1.5"><Label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[.14em] text-muted-foreground">{label}{pro && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[9px] text-primary">PRO</span>}</Label>{children}</div>;
 }
 
-const NONE_VALUE = "__none__";
-
-function Dropdown({
-  value, onChange, standard, pro = [], isPro = false, placeholder, disabled, allowNone = false,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  standard: readonly string[];
-  pro?: readonly string[];
-  isPro?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  allowNone?: boolean;
-}) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const base = showAdvanced && isPro ? [...standard, ...pro] : standard;
-  const options = base.filter((o) => o !== "");
-  const selectValue = value === "" ? (allowNone ? NONE_VALUE : undefined) : value;
-  return (
-    <div className="space-y-1">
-      <Select
-        value={selectValue}
-        onValueChange={(v) => onChange(v === NONE_VALUE ? "" : v)}
-        disabled={disabled}
-      >
-        <SelectTrigger className="bg-secondary/40 border-border">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent className="max-h-72">
-          {allowNone && <SelectItem value={NONE_VALUE}>None</SelectItem>}
-          {options.map((o) => (
-            <SelectItem key={o} value={o}>{o}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {pro.length > 0 && (
-        isPro ? (
-          <button
-            type="button"
-            onClick={() => setShowAdvanced((v) => !v)}
-            className="text-[11px] brand-text hover:underline"
-          >
-            {showAdvanced ? "Hide advanced" : `+ ${pro.length} more (Advanced)`}
-          </button>
-        ) : (
-          <Link to="/pricing" className="text-[11px] text-muted-foreground hover:brand-text inline-flex items-center gap-1">
-            <Lock className="h-2.5 w-2.5" /> +{pro.length} more with Pro
-          </Link>
-        )
-      )}
-    </div>
-  );
+function Dropdown({ value, onChange, options, placeholder, disabled, allowNone }: { value: string; onChange: (v: string) => void; options: readonly string[]; placeholder?: string; disabled?: boolean; allowNone?: boolean }) {
+  return <Select value={value || (allowNone ? NONE : undefined)} onValueChange={(v) => onChange(v === NONE ? "" : v)} disabled={disabled}>
+    <SelectTrigger className="border-border/80 bg-background/50"><SelectValue placeholder={placeholder} /></SelectTrigger>
+    <SelectContent className="max-h-72">{allowNone && <SelectItem value={NONE}>None</SelectItem>}{options.filter(Boolean).map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+  </Select>;
 }
 
+function Phase({ number, title, description, children }: { number: string; title: string; description: string; children: React.ReactNode }) {
+  return <section className="studio-panel overflow-hidden rounded-lg">
+    <header className="flex items-start gap-4 border-b border-border/70 px-4 py-4 sm:px-5">
+      <span className="font-display text-xl text-primary">{number}</span>
+      <div><h3 className="font-display text-base text-foreground">{title}</h3><p className="mt-1 text-xs text-muted-foreground">{description}</p></div>
+    </header>
+    <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">{children}</div>
+  </section>;
+}
+
+function Chips({ options, selected, onToggle, locked }: { options: readonly string[]; selected: string[]; onToggle: (v: string) => void; locked?: boolean }) {
+  return <div className="flex flex-wrap gap-2">{options.map((o) => <button key={o} type="button" disabled={locked} onClick={() => onToggle(o)} className={`rounded-md border px-2.5 py-1.5 text-xs transition ${selected.includes(o) ? "border-primary bg-primary/15 text-copper-soft" : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"} disabled:cursor-not-allowed disabled:opacity-45`}>{locked && <Lock className="mr-1 inline h-3 w-3" />}{o}</button>)}</div>;
+}
 
 export function PromptBuilder({ value, onChange, isPro = false }: Props) {
-  const set = <K extends keyof PromptInputs>(k: K, v: PromptInputs[K]) => onChange({ ...value, [k]: v });
+  const set = <K extends keyof PromptInputs>(key: K, next: PromptInputs[K]) => onChange({ ...value, [key]: next });
+  const toggle = (key: "vocalExtras" | "moods" | "instruments" | "avoidPresets" | "referenceTraits", item: string) => set(key, value[key].includes(item) ? value[key].filter((x) => x !== item) : [...value[key], item]);
+  const [advanced, setAdvanced] = useState(false);
+  const subgenres = useMemo(() => SUBGENRES[value.mainGenre] ?? [], [value.mainGenre]);
+  const moodColors = useMemo(() => value.moods[0] ? MOOD_COLORS[value.moods[0]] ?? [] : [], [value.moods]);
+  const proGate = !isPro;
 
-  const toggleArr = (key: "vocalExtras" | "moods" | "instruments" | "avoidPresets", item: string) => {
-    const arr = value[key];
-    const next = arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
-    onChange({ ...value, [key]: next });
-  };
+  return <div className="space-y-4">
+    <div className="flex items-center justify-between rounded-lg border border-primary/25 bg-primary/5 px-4 py-3">
+      <div><p className="text-xs font-bold uppercase tracking-[.16em] text-primary">AI Song Blueprint Console</p><p className="mt-1 text-xs text-muted-foreground">Move from creative identity to final engine-ready direction.</p></div>
+      <Badge variant="outline" className="border-primary/35">5 phases</Badge>
+    </div>
 
-  const [showAdvInstruments, setShowAdvInstruments] = useState(false);
-  const [showAdvMoods, setShowAdvMoods] = useState(false);
+    <Phase number="01" title="Creative Identity" description="Define the record's musical world and emotional intent.">
+      <Field label="Blueprint title"><Input value={value.title} onChange={(e) => set("title", e.target.value)} maxLength={80} placeholder="Name this direction" className="bg-background/50" /></Field>
+      <Field label="Blueprint type"><Dropdown value={value.promptType} onChange={(v) => set("promptType", v)} options={PROMPT_TYPES} /></Field>
+      <Field label="Main genre"><Dropdown value={value.mainGenre} onChange={(v) => onChange({ ...value, mainGenre: v, subgenre: "" })} options={isPro ? [...STANDARD_MAIN_GENRES, ...PRO_MAIN_GENRES] : STANDARD_MAIN_GENRES} /></Field>
+      <Field label="Subgenre" pro><Dropdown value={value.subgenre} onChange={(v) => set("subgenre", v)} options={subgenres} allowNone disabled={proGate} placeholder={isPro ? "Optional" : "Unlock with Pro"} /></Field>
+      <Field label="Era"><Dropdown value={value.era} onChange={(v) => set("era", v)} options={ERAS} /></Field>
+      <Field label="Fusion"><Dropdown value={value.fusionGenre} onChange={(v) => set("fusionGenre", v)} options={FUSION_GENRES} /></Field>
+      <div className="sm:col-span-2"><Field label={`Mood · ${value.moods.length} selected`}><Chips options={isPro ? [...STANDARD_MOODS, ...PRO_MOODS] : STANDARD_MOODS} selected={value.moods} onToggle={(v) => toggle("moods", v)} /></Field></div>
+      <Field label="Mood color" pro><Dropdown value={value.moodColor} onChange={(v) => set("moodColor", v)} options={moodColors} allowNone disabled={proGate || !moodColors.length} placeholder={isPro ? "Choose a mood first" : "Unlock with Pro"} /></Field>
+      <Field label="Theme"><Dropdown value={value.themePreset} onChange={(v) => set("themePreset", v)} options={THEME_PRESETS} /></Field>
+      <div className="sm:col-span-2"><Field label="Story detail"><Textarea value={value.topic} onChange={(e) => set("topic", e.target.value)} maxLength={200} rows={3} placeholder="Describe the emotional situation in one or two sentences." className="resize-none bg-background/50" /><p className="text-right text-[10px] text-muted-foreground">{value.topic.length}/200</p></Field></div>
+    </Phase>
 
-  const subgenreOptions = useMemo(
-    () => SUBGENRES[value.mainGenre] ?? [],
-    [value.mainGenre],
-  );
-  const moodColorOptions = useMemo(() => {
-    const firstMood = value.moods[0];
-    return firstMood ? MOOD_COLORS[firstMood] ?? [] : [];
-  }, [value.moods]);
+    <Phase number="02" title="Rhythm & Tonality" description="Set the pulse, harmonic center, drums, bass, and energy curve.">
+      <Field label="Tempo"><Dropdown value={value.tempo} onChange={(v) => set("tempo", v)} options={TEMPOS} /></Field>
+      <Field label="Custom BPM"><Input type="number" min={40} max={220} value={value.customBpm} onChange={(e) => set("customBpm", e.target.value)} disabled={value.tempo !== "Custom BPM"} placeholder="92" className="bg-background/50" /></Field>
+      <Field label="Key / scale"><Dropdown value={value.key} onChange={(v) => set("key", v)} options={KEYS} /></Field>
+      <Field label="Energy"><Dropdown value={value.energy} onChange={(v) => set("energy", v)} options={ENERGY_LEVELS} /></Field>
+      <Field label="Drum character"><Dropdown value={value.drumStyle} onChange={(v) => set("drumStyle", v)} options={isPro ? [...STANDARD_DRUM_STYLES, ...PRO_DRUM_STYLES] : STANDARD_DRUM_STYLES} /></Field>
+      <Field label="Rhythm pattern" pro><Dropdown value={value.rhythmPattern} onChange={(v) => set("rhythmPattern", v)} options={RHYTHM_PATTERNS} allowNone disabled={proGate} placeholder={isPro ? "Optional" : "Unlock with Pro"} /></Field>
+      <Field label="Bass character" pro><Dropdown value={value.bassline} onChange={(v) => set("bassline", v)} options={BASSLINES} disabled={proGate} placeholder={isPro ? "Choose bass direction" : "Unlock with Pro"} /></Field>
+      <Field label="Emotion depth"><Dropdown value={value.emotionDepth} onChange={(v) => set("emotionDepth", v)} options={EMOTION_DEPTHS} /></Field>
+    </Phase>
 
+    <Phase number="03" title="Voice & Musical Palette" description="Direct the performance, harmony, and exact instrument palette.">
+      <Field label="Vocal type"><Dropdown value={value.vocalType} onChange={(v) => set("vocalType", v)} options={VOCAL_TYPES} /></Field>
+      <Field label="Performance"><Dropdown value={value.vocalPerformance} onChange={(v) => set("vocalPerformance", v)} options={VOCAL_PERFORMANCES} /></Field>
+      <Field label="Vocal register"><Dropdown value={value.vocalRegister} onChange={(v) => set("vocalRegister", v)} options={VOCAL_REGISTERS} /></Field>
+      <Field label="Vocal texture"><Dropdown value={value.vocalTexture} onChange={(v) => set("vocalTexture", v)} options={VOCAL_TEXTURES} /></Field>
+      <Field label="Harmony" pro><Dropdown value={value.harmonyStyle} onChange={(v) => set("harmonyStyle", v)} options={HARMONY_STYLES} disabled={proGate} /></Field>
+      <Field label="Vocal extras"><Chips options={VOCAL_EXTRAS} selected={value.vocalExtras} onToggle={(v) => toggle("vocalExtras", v)} /></Field>
+      <div className="sm:col-span-2"><Field label={`Instrumentation · ${value.instruments.length} selected`}><Chips options={advanced && isPro ? [...STANDARD_INSTRUMENTS, ...PRO_INSTRUMENTS] : STANDARD_INSTRUMENTS} selected={value.instruments} onToggle={(v) => toggle("instruments", v)} /><button type="button" onClick={() => isPro ? setAdvanced((v) => !v) : undefined} className="mt-2 text-xs text-primary hover:underline">{isPro ? (advanced ? "Hide advanced instruments" : `Show ${PRO_INSTRUMENTS.length} advanced instruments`) : <Link to="/pricing"><Lock className="mr-1 inline h-3 w-3" />Unlock advanced instruments</Link>}</button></Field></div>
+    </Phase>
 
-  return (
-    <Accordion type="multiple" defaultValue={["basics", "genre", "vocals", "mood", "topic", "instruments", "tempo", "style"]} className="w-full">
-      <AccordionItem value="basics">
-        <AccordionTrigger className="text-base">
-          <span className="flex items-center gap-2"><span className="text-primary">01</span> Song Basics</span>
-        </AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <Field label="Song title">
-            <Input
-              value={value.title}
-              onChange={(e) => set("title", e.target.value)}
-              placeholder='e.g. "Love Myself to Win"'
-              className="bg-secondary/40"
-              maxLength={80}
-            />
-          </Field>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Prompt type"><Dropdown value={value.promptType} onChange={(v) => set("promptType", v)} standard={PROMPT_TYPES} /></Field>
-            <Field label="Length / structure"><Dropdown value={value.songLength} onChange={(v) => set("songLength", v)} standard={SONG_LENGTHS} /></Field>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+    <Phase number="04" title="Arrangement & Production" description="Shape the song's movement, hook, dynamics, and production character.">
+      <Field label="Length / structure"><Dropdown value={value.songLength} onChange={(v) => set("songLength", v)} options={SONG_LENGTHS} /></Field>
+      <Field label="Production style"><Dropdown value={value.productionStyle} onChange={(v) => set("productionStyle", v)} options={isPro ? [...STANDARD_PRODUCTION_STYLES, ...PRO_PRODUCTION_STYLES] : STANDARD_PRODUCTION_STYLES} /></Field>
+      <Field label="Arrangement" pro><Dropdown value={value.arrangement} onChange={(v) => set("arrangement", v)} options={ARRANGEMENTS} allowNone disabled={proGate} placeholder={isPro ? "Optional" : "Unlock with Pro"} /></Field>
+      <Field label="Dynamics arc" pro><Dropdown value={value.dynamicsArc} onChange={(v) => set("dynamicsArc", v)} options={DYNAMICS_ARCS} disabled={proGate} /></Field>
+      <Field label="Hook type" pro><Dropdown value={value.hookType} onChange={(v) => set("hookType", v)} options={HOOK_TYPES} disabled={proGate} /></Field>
+      <Field label="Vocal format" pro><Dropdown value={value.vocalFormat} onChange={(v) => set("vocalFormat", v)} options={VOCAL_FORMATS} allowNone disabled={proGate || value.hookType === "None"} /></Field>
+    </Phase>
 
-      <AccordionItem value="genre">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">02</span> Genre</span></AccordionTrigger>
-        <AccordionContent className="grid sm:grid-cols-2 gap-4 pt-2">
-          <Field label="Main genre">
-            <Dropdown value={value.mainGenre} onChange={(v) => onChange({ ...value, mainGenre: v, subgenre: "" })} standard={STANDARD_MAIN_GENRES} pro={PRO_MAIN_GENRES} isPro={isPro} />
-          </Field>
-          <Field label="Subgenre" pro>
-            <Dropdown
-              value={value.subgenre}
-              onChange={(v) => set("subgenre", v)}
-              standard={subgenreOptions}
-              allowNone
-              disabled={!isPro || subgenreOptions.length === 0}
-              placeholder={isPro ? (subgenreOptions.length > 0 ? "Optional — pick a subgenre" : "No subgenres for this genre") : "Pro only"}
-
-            />
-          </Field>
-          <Field label="Fusion genre"><Dropdown value={value.fusionGenre} onChange={(v) => set("fusionGenre", v)} standard={FUSION_GENRES} /></Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="vocals">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">03</span> Vocals</span></AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Vocal type"><Dropdown value={value.vocalType} onChange={(v) => set("vocalType", v)} standard={VOCAL_TYPES} /></Field>
-            <Field label="Performance"><Dropdown value={value.vocalPerformance} onChange={(v) => set("vocalPerformance", v)} standard={VOCAL_PERFORMANCES} /></Field>
-          </div>
-          <Field label="Vocal extras">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {VOCAL_EXTRAS.map((e) => (
-                <label key={e} className="flex items-center gap-2 rounded-md border border-border bg-secondary/30 px-2.5 py-2 text-sm cursor-pointer hover:bg-secondary/50">
-                  <Checkbox aria-label={e} checked={value.vocalExtras.includes(e)} onCheckedChange={() => toggleArr("vocalExtras", e)} />
-                  <span>{e}</span>
-                </label>
-              ))}
-            </div>
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="mood">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">04</span> Mood</span></AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <Field label={`Mood (${value.moods.length} selected)`}>
-            <div className="flex flex-wrap gap-2">
-              {STANDARD_MOODS.map((m) => (
-                <Chip key={m} active={value.moods.includes(m)} onClick={() => toggleArr("moods", m)}>{m}</Chip>
-              ))}
-              {isPro && showAdvMoods && PRO_MOODS.map((m) => (
-                <Chip key={m} active={value.moods.includes(m)} onClick={() => toggleArr("moods", m)}>{m}</Chip>
-              ))}
-            </div>
-            {isPro ? (
-              <button type="button" onClick={() => setShowAdvMoods((v) => !v)} className="mt-2 text-[11px] brand-text hover:underline">
-                {showAdvMoods ? "Hide advanced" : `+ ${PRO_MOODS.length} more moods (Advanced)`}
-              </button>
-            ) : (
-              <Link to="/pricing" className="mt-2 text-[11px] text-muted-foreground hover:brand-text inline-flex items-center gap-1">
-                <Lock className="h-2.5 w-2.5" /> +{PRO_MOODS.length} more moods with Pro
-              </Link>
-            )}
-          </Field>
-          <Field label="Emotional color" pro>
-            <Dropdown
-              value={value.moodColor}
-              onChange={(v) => set("moodColor", v)}
-              standard={moodColorOptions}
-              allowNone
-              disabled={!isPro || moodColorOptions.length === 0}
-              placeholder={isPro ? (moodColorOptions.length > 0 ? "Pick an emotional color" : "Pick a mood first") : "Pro only"}
-
-            />
-          </Field>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Energy level"><Dropdown value={value.energy} onChange={(v) => set("energy", v)} standard={ENERGY_LEVELS} /></Field>
-            <Field label="Emotion depth"><Dropdown value={value.emotionDepth} onChange={(v) => set("emotionDepth", v)} standard={EMOTION_DEPTHS} /></Field>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="topic">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">05</span> Topic & Story</span></AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <Field label="Theme preset"><Dropdown value={value.themePreset} onChange={(v) => set("themePreset", v)} standard={THEME_PRESETS} /></Field>
-          <Field label="Extra story detail (optional)">
-            <Textarea
-              rows={3}
-              value={value.topic}
-              onChange={(e) => set("topic", e.target.value)}
-              placeholder="One or two sentences of specific detail."
-              className="bg-secondary/40 resize-none"
-              maxLength={200}
-            />
-            <p className="text-xs text-muted-foreground mt-1">{value.topic.length}/200</p>
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="tempo">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">06</span> Tempo & Key</span></AccordionTrigger>
-        <AccordionContent className="grid sm:grid-cols-3 gap-4 pt-2">
-          <Field label="Tempo"><Dropdown value={value.tempo} onChange={(v) => set("tempo", v)} standard={TEMPOS} /></Field>
-          <Field label="Custom BPM">
-            <Input
-              type="number"
-              min={40}
-              max={220}
-              value={value.customBpm}
-              onChange={(e) => set("customBpm", e.target.value)}
-              placeholder="e.g. 92"
-              disabled={value.tempo !== "Custom BPM"}
-              className="bg-secondary/40"
-            />
-          </Field>
-          <Field label="Key / scale"><Dropdown value={value.key} onChange={(v) => set("key", v)} standard={KEYS} /></Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="style">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">07</span> Style & Production</span></AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Production style"><Dropdown value={value.productionStyle} onChange={(v) => set("productionStyle", v)} standard={STANDARD_PRODUCTION_STYLES} pro={PRO_PRODUCTION_STYLES} isPro={isPro} /></Field>
-            <Field label="Arrangement" pro>
-              <Dropdown
-                value={value.arrangement}
-                onChange={(v) => set("arrangement", v)}
-                standard={ARRANGEMENTS} allowNone
-                disabled={!isPro}
-                placeholder={isPro ? "Optional arrangement direction" : "Pro only"}
-              />
-            </Field>
-            <Field label="Sound quality"><Dropdown value={value.soundQuality} onChange={(v) => set("soundQuality", v)} standard={SOUND_QUALITIES} /></Field>
-          </div>
-          <Field label={`Avoid these (${value.avoidPresets.length} selected)`}>
-            <div className="flex flex-wrap gap-2">
-              {AVOID_PRESETS.map((a) => (
-                <Chip key={a} active={value.avoidPresets.includes(a)} onClick={() => toggleArr("avoidPresets", a)}>{a}</Chip>
-              ))}
-            </div>
-          </Field>
-          <Field label="Other avoid words (optional)">
-            <Input
-              value={value.avoidWords}
-              onChange={(e) => set("avoidWords", e.target.value)}
-              placeholder="e.g. violet, midnight"
-              className="bg-secondary/40"
-              maxLength={120}
-            />
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="drums">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">08</span> Drum Feel</span></AccordionTrigger>
-        <AccordionContent className="grid sm:grid-cols-2 gap-4 pt-2">
-          <Field label="Drum style"><Dropdown value={value.drumStyle} onChange={(v) => set("drumStyle", v)} standard={STANDARD_DRUM_STYLES} pro={PRO_DRUM_STYLES} isPro={isPro} /></Field>
-          <Field label="Rhythm pattern" pro>
-            <Dropdown
-              value={value.rhythmPattern}
-              onChange={(v) => set("rhythmPattern", v)}
-              standard={RHYTHM_PATTERNS} allowNone
-              disabled={!isPro}
-              placeholder={isPro ? "Pick a rhythm pattern" : "Pro only"}
-            />
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="bassline">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">09</span> Bassline <Crown className="h-3.5 w-3.5 brand-text" /></span></AccordionTrigger>
-        <AccordionContent className="pt-2">
-          <Field label="Bassline direction" pro>
-            <Dropdown
-              value={value.bassline}
-              onChange={(v) => set("bassline", v)}
-              standard={BASSLINES}
-              disabled={!isPro}
-              placeholder={isPro ? "Optional bass direction" : "Pro only"}
-            />
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="mixing">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">10</span> Mixing Style <Crown className="h-3.5 w-3.5 brand-text" /></span></AccordionTrigger>
-        <AccordionContent className="grid sm:grid-cols-2 gap-4 pt-2">
-          <Field label="Mixing style" pro>
-            <Dropdown
-              value={value.mixingStyle}
-              onChange={(v) => set("mixingStyle", v)}
-              standard={MIXING_STYLES}
-              disabled={!isPro}
-              placeholder={isPro ? "Pick a mixing style" : "Pro only"}
-            />
-          </Field>
-          <Field label="Sonic finish" pro>
-            <Dropdown
-              value={value.sonicFinish}
-              onChange={(v) => set("sonicFinish", v)}
-              standard={SONIC_FINISHES} allowNone
-              disabled={!isPro || !value.mixingStyle || value.mixingStyle === "None"}
-              placeholder={isPro ? (value.mixingStyle && value.mixingStyle !== "None" ? "Pick a finish" : "Pick a mix first") : "Pro only"}
-            />
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="hook">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">11</span> Hook Type <Crown className="h-3.5 w-3.5 brand-text" /></span></AccordionTrigger>
-        <AccordionContent className="grid sm:grid-cols-2 gap-4 pt-2">
-          <Field label="Hook type" pro>
-            <Dropdown
-              value={value.hookType}
-              onChange={(v) => set("hookType", v)}
-              standard={HOOK_TYPES}
-              disabled={!isPro}
-              placeholder={isPro ? "Pick a hook" : "Pro only"}
-            />
-          </Field>
-          <Field label="Vocal format" pro>
-            <Dropdown
-              value={value.vocalFormat}
-              onChange={(v) => set("vocalFormat", v)}
-              standard={VOCAL_FORMATS} allowNone
-              disabled={!isPro || !value.hookType || value.hookType === "None"}
-              placeholder={isPro ? (value.hookType && value.hookType !== "None" ? "Pick a format" : "Pick a hook first") : "Pro only"}
-            />
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="instruments">
-        <AccordionTrigger className="text-base"><span className="flex items-center gap-2"><span className="text-primary">12</span> Instruments</span></AccordionTrigger>
-        <AccordionContent className="grid gap-4 pt-2">
-          <Field label={`Instruments (${value.instruments.length} selected)`}>
-            <div className="flex flex-wrap gap-2">
-              {STANDARD_INSTRUMENTS.map((i) => (
-                <Chip key={i} active={value.instruments.includes(i)} onClick={() => toggleArr("instruments", i)}>{i}</Chip>
-              ))}
-              {isPro && showAdvInstruments && PRO_INSTRUMENTS.map((i) => (
-                <Chip key={i} active={value.instruments.includes(i)} onClick={() => toggleArr("instruments", i)}>{i}</Chip>
-              ))}
-            </div>
-            {isPro ? (
-              <button type="button" onClick={() => setShowAdvInstruments((v) => !v)} className="mt-2 text-[11px] brand-text hover:underline">
-                {showAdvInstruments ? "Hide advanced" : `+ ${PRO_INSTRUMENTS.length} more instruments (Advanced)`}
-              </button>
-            ) : (
-              <Link to="/pricing" className="mt-2 text-[11px] text-muted-foreground hover:brand-text inline-flex items-center gap-1">
-                <Lock className="h-2.5 w-2.5" /> +{PRO_INSTRUMENTS.length} more instruments with Pro
-              </Link>
-            )}
-          </Field>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
+    <Phase number="05" title="Mix & Engine Translation" description="Finish the sonic image and translate your intent for the target engine.">
+      <Field label="Mix character" pro><Dropdown value={value.mixingStyle} onChange={(v) => set("mixingStyle", v)} options={MIXING_STYLES} disabled={proGate} /></Field>
+      <Field label="Sonic finish" pro><Dropdown value={value.sonicFinish} onChange={(v) => set("sonicFinish", v)} options={SONIC_FINISHES} allowNone disabled={proGate || value.mixingStyle === "None"} /></Field>
+      <Field label="Stereo character" pro><Dropdown value={value.stereoCharacter} onChange={(v) => set("stereoCharacter", v)} options={STEREO_CHARACTERS} disabled={proGate} /></Field>
+      <Field label="Sound quality"><Dropdown value={value.soundQuality} onChange={(v) => set("soundQuality", v)} options={SOUND_QUALITIES} /></Field>
+      <Field label="Engine optimization" pro><Dropdown value={value.optimizationMode} onChange={(v) => set("optimizationMode", v)} options={OPTIMIZATION_MODES} disabled={proGate} /></Field>
+      <Field label="Reference traits"><Chips options={REFERENCE_TRAITS} selected={value.referenceTraits} onToggle={(v) => toggle("referenceTraits", v)} /></Field>
+      <div className="sm:col-span-2"><Field label={`Avoid · ${value.avoidPresets.length} selected`}><Chips options={AVOID_PRESETS} selected={value.avoidPresets} onToggle={(v) => toggle("avoidPresets", v)} /></Field></div>
+      <div className="sm:col-span-2"><Field label="Other avoid words"><Input value={value.avoidWords} onChange={(e) => set("avoidWords", e.target.value)} maxLength={120} placeholder="Optional words or clichés to exclude" className="bg-background/50" /></Field></div>
+    </Phase>
+  </div>;
 }
 
-export { Badge, ProLockedChip };
+export { Badge };
