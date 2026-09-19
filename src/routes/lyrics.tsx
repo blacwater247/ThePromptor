@@ -205,7 +205,7 @@ function LyricsPage() {
           <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
             <Link to="/" className="flex items-center gap-2">
               <img src={logoAsset.url} alt="Blacure logo" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full" />
-              <span className="leading-tight"><span className="block font-display text-base sm:text-lg font-bold">The Promptor</span><span className="block text-[9px] font-semibold uppercase text-muted-foreground">by Blacure</span></span>
+              <span className="leading-tight"><span className="block font-display text-sm sm:text-base">THE PROMPTOR™</span><span className="block text-[9px] font-semibold uppercase tracking-widest text-primary">by Blacure</span></span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
               {isGuest ? (
@@ -226,7 +226,7 @@ function LyricsPage() {
               <Link to="/app">
                 <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
                   <Sparkles className="h-4 w-4" />
-                  <span className="ml-1 hidden sm:inline">Prompt Builder</span>
+                  <span className="ml-1">Blueprint Studio</span>
                 </Button>
               </Link>
               {isGuest && (
@@ -243,10 +243,10 @@ function LyricsPage() {
           </div>
 
           <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="brand-text">Lyrics Builder</span> — write your next song
+            <span className="brand-text">Promptor Lyrics</span> — write your next song
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-lg text-muted-foreground">
-            Pick a genre, mood, structure and story. The Promptor writes original, section-labeled lyrics for your music workflow.
+            Direct genre, mood, structure, rhyme, and story in the companion studio for your song blueprint.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
@@ -310,7 +310,7 @@ function LyricsPage() {
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
           <Card className="border-border/60 bg-card/70 backdrop-blur p-5 lg:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-display text-lg font-semibold">Lyrics Builder</h2>
+              <h2 className="font-display text-lg">Lyrics Controls</h2>
               <span className="text-xs text-muted-foreground hidden sm:block">All sections feed the AI</span>
             </div>
             <LyricsBuilder value={inputs} onChange={setInputs} isPro={isPro} />
@@ -357,7 +357,7 @@ function LyricsPage() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 sm:px-6 py-8 text-center text-xs text-muted-foreground">
-        The Promptor by Blacure · Lyrics Builder — AI-generated lyrics, always review before use.
+        THE PROMPTOR™ by Blacure · Lyrics Builder — AI-generated lyrics, always review before use.
       </footer>
     </div>
   );

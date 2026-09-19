@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, SlidersHorizontal, ArrowRight, Layers3, Gauge, AudioLines, Mic2, Cpu, Waves } from "lucide-react";
+import { Sparkles, SlidersHorizontal, ArrowRight, Layers3, Gauge, Mic2, Cpu, Waves } from "lucide-react";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { CommentForm } from "@/components/CommentForm";
