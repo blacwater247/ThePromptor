@@ -123,6 +123,7 @@ function AppPage() {
       }
       if (guestUsed.used >= GUEST_LIMIT) {
         setShowSignupWall(true);
+        setShowUpgradeModal(true);
         return;
       }
       setLoading(true);
@@ -134,9 +135,7 @@ function AppPage() {
         setPrompt(res.prompt);
         setGuestUsed({ used: guestUsed.used + 1 });
         if (guestUsed.used + 1 >= GUEST_LIMIT) {
-          toast("That was your last free prompt", {
-            description: "Create a free account to keep going.",
-          });
+          setShowUpgradeModal(true);
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Something went wrong";
@@ -283,7 +282,7 @@ function AppPage() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} isGuest={isGuest} />
 
       <header className="relative overflow-hidden border-b border-border/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
