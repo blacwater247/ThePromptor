@@ -401,8 +401,24 @@ export const Route = createFileRoute("/api/promptor-ai")({
           }
         };
 
+        const historyBlock = history.length
+          ? `\n\nCONVERSATION SO FAR:\n${history
+              .map((h) => `${h.role === "user" ? "User" : "PROMPTOR AI"}: ${h.text}`)
+              .join("\n")}`
+          : "";
+        const settingsBlock = currentSettings.trim()
+          ? `\n\nCURRENT SETTINGS ON SCREEN:\n${currentSettings.trim()}`
+          : "";
+
+        const chatInstruction = `The user is refining an existing song prompt in conversation with you. Apply their newest instruction to the CURRENT PROMPT — edit it, never start a new song from scratch, and keep everything they did not ask you to change.
+"reply" is a short, friendly two-sentence summary of what you changed, in plain producer language. No markdown.
+Only set "question" when something genuinely essential is missing and you truly cannot proceed (for example no genre and no mood at all) — otherwise set it to null and just do the work. Never ask more than one question, and never run the user through a questionnaire.
+finalPrompt is the full updated prompt.${settingsBlock}\n\nCURRENT PROMPT:\n${existingPrompt || "(none yet)"}${historyBlock}\n\nNEWEST INSTRUCTION:\n${message}`;
+
         const instruction =
-          action === "surprise"
+          action === "chat"
+            ? chatInstruction
+            : action === "surprise"
             ? `Invent a fresh, coherent and commercially interesting song idea of your own, then build the full production prompt for it. Make it distinctive, not generic.`
             : action === "improve"
               ? `Analyse this existing music prompt and rebuild it as a stronger version. In "issues", list the concrete weaknesses you found (missing vocal direction, missing tempo, weak drums, weak instrumentation, weak arrangement, unclear production, contradictions, overload). finalPrompt is the improved version.\n\nEXISTING PROMPT:\n${existingPrompt}`
