@@ -10,6 +10,7 @@ import { LyricsBuilder } from "@/components/LyricsBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { DEFAULT_LYRICS_INPUTS, type LyricsInputs, type LyricsMode } from "@/lib/lyrics-options";
+import { LYRIC_CONCEPT_STORAGE_KEY, type PromptorLyricConcept as PromptorLyricConceptType } from "@/lib/promptor-ai";
 import { generateLyricsGuest } from "@/lib/lyrics.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { useLocalStorage } from "@/hooks/use-local-storage";
