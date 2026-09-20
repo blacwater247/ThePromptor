@@ -94,6 +94,32 @@ const AnalysisSchema = z.object({
 });
 type Analysis = z.infer<typeof AnalysisSchema>;
 
+const ChatSchema = AnalysisSchema.extend({
+  reply: z.string(),
+  question: nstr(),
+});
+type ChatAnalysis = z.infer<typeof ChatSchema>;
+
+const ExplainSchema = z.object({
+  instruments: z.string(),
+  tempo: z.string(),
+  drums: z.string(),
+  vocals: z.string(),
+  arrangement: z.string(),
+});
+
+const LyricConceptSchema = z.object({
+  concept: z.string(),
+  theme: z.string(),
+  pointOfView: z.string(),
+  emotionalConflict: z.string(),
+  hookConcept: z.string(),
+  verse1: z.string(),
+  verse2: z.string(),
+  bridge: z.string(),
+  ending: z.string(),
+});
+
 function errorResponse(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
     status,
