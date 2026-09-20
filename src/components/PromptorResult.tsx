@@ -16,6 +16,7 @@ type Props = {
   onRegenerate: () => void;
   onVariation: (style: VariationStyle) => void;
   onEdit: (text: string) => void;
+  children?: React.ReactNode;
 };
 
 async function copyText(text: string) {
