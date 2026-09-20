@@ -9,6 +9,8 @@ export type SavedPrompt = {
   title: string;
   createdAt: number;
   prompt: string;
+  /** Present when the prompt came from PROMPTOR AI — lets us restore the full result panel. */
+  aiResult?: PromptorResultType;
 };
 
 type Props = {
