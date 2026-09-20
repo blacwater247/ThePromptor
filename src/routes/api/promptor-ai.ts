@@ -321,7 +321,8 @@ export const Route = createFileRoute("/api/promptor-ai")({
         }
         const parsed = RequestSchema.safeParse(raw);
         if (!parsed.success) return errorResponse("Invalid request.", 400);
-        const { action, idea, existingPrompt, variationStyle, environment } = parsed.data;
+        const { action, idea, existingPrompt, variationStyle, message, history, currentSettings, environment } =
+          parsed.data;
 
         if (action === "analyze" && !idea.trim()) {
           return errorResponse("Describe what you want to create first.", 400);
