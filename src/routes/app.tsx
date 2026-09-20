@@ -25,7 +25,18 @@ import { UpgradeModal } from "@/components/UpgradeModal";
 import { useAuth } from "@/hooks/use-auth";
 import { PromptorAIBox } from "@/components/PromptorAIBox";
 import { PromptorResult } from "@/components/PromptorResult";
-import type { PromptorAction, PromptorResult as PromptorResultType, VariationStyle } from "@/lib/promptor-ai";
+import { PromptorAssistant } from "@/components/PromptorAssistant";
+import { PromptorWhyThisWorks } from "@/components/PromptorWhyThisWorks";
+import { PromptorLyricConcept } from "@/components/PromptorLyricConcept";
+import {
+  LYRIC_CONCEPT_STORAGE_KEY,
+  type PromptorAction,
+  type PromptorChatMessage,
+  type PromptorExplain,
+  type PromptorLyricConcept as PromptorLyricConceptType,
+  type PromptorResult as PromptorResultType,
+  type VariationStyle,
+} from "@/lib/promptor-ai";
 
 const GUEST_LIMIT = 10;
 
@@ -289,6 +300,166 @@ function AppPage() {
       ? "Unlimited with your Monthly plan"
       : "2 credits per AI action";
 
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<PromptorChatMessage[]>([]);
+  const [explainOpen, setExplainOpen] = useState(false);
+  const [explain, setExplain] = useState<PromptorExplain | null>(null);
+  const [explainBusy, setExplainBusy] = useState(false);
+  const [lyricConcept, setLyricConcept] = useState<PromptorLyricConceptType | null>(null);
+  const [conceptBusy, setConceptBusy] = useState(false);
+
+  const currentSettingsText = () =>
+    [
+      `Genre: ${inputs.mainGenre}${inputs.subgenre ? ` / ${inputs.subgenre}` : ""}`,
+      `Mood: ${(inputs.moods ?? []).join(", ") || "—"}`,
+      `Vocals: ${inputs.vocalType || "—"}`,
+      `Tempo: ${inputs.tempo}${inputs.customBpm ? ` (${inputs.customBpm} BPM)` : ""}`,
+      `Instruments: ${(inputs.instruments ?? []).join(", ") || "—"}`,
+      `Production: ${inputs.productionStyle || "—"}`,
+    ].join("\n");
+
+  type PromptorBody = {
+    idea?: string;
+    existingPrompt?: string;
+    variationStyle?: string;
+    message?: string;
+    history?: { role: "user" | "assistant"; text: string }[];
+    currentSettings?: string;
+  };
+
+  const callPromptorRaw = async (action: PromptorAction, body: PromptorBody): Promise<unknown | null> => {
+    if (isGuest && guestUsed.used >= GUEST_LIMIT) {
+      setShowSignupWall(true);
+      setShowUpgradeModal(true);
+      return null;
+    }
+    if (!isGuest && !isPro && balance < 2) {
+      setShowUpgradeModal(true);
+      return null;
+    }
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (!isGuest) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Please sign in again.");
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch("/api/promptor-ai", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action, environment: getStripeEnvironment(), ...body }),
+    });
+
+    if (!res.ok) {
+      let msg = `PROMPTOR AI failed (${res.status}).`;
+      try {
+        const j = await res.json();
+        if (j?.error) msg = j.error;
+      } catch { /* ignore */ }
+      throw new Error(msg);
+    }
+
+    const balanceHeader = res.headers.get("X-Credit-Balance");
+    if (balanceHeader !== null) {
+      const bal = Number(balanceHeader);
+      if (!Number.isNaN(bal)) queryClient.setQueryData(["credits", "balance"], { balance: bal });
+    }
+
+    if (isGuest) {
+      const nextUsed = guestUsed.used + 1;
+      setGuestUsed({ used: nextUsed });
+      if (nextUsed >= GUEST_LIMIT) setShowUpgradeModal(true);
+    }
+
+    return await res.json();
+  };
+
+  const handleAiError = (e: unknown) => {
+    const msg = e instanceof Error ? e.message : "Something went wrong";
+    if (msg.startsWith("INSUFFICIENT_CREDITS")) setShowUpgradeModal(true);
+    else toast.error(msg);
+    queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+  };
+
+  const handleAiChat = async (message: string) => {
+    const userMsg: PromptorChatMessage = { id: crypto.randomUUID(), role: "user", text: message };
+    const history = chatMessages.slice(-10).map((m) => ({ role: m.role, text: m.text }));
+    setChatMessages((prev) => [...prev, userMsg]);
+    setAiBusy(true);
+    setAiAction("chat");
+    try {
+      const data = (await callPromptorRaw("chat", {
+        message,
+        history,
+        existingPrompt: aiResult?.finalPrompt ?? prompt ?? "",
+        currentSettings: currentSettingsText(),
+      })) as PromptorResultType | null;
+      if (!data) return;
+      setAiPrevInputs(inputs);
+      setInputs((prev) => ({ ...prev, ...data.fields }));
+      setAiResult(data);
+      setPrompt(data.finalPrompt);
+      setExplain(null);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: data.reply || "Updated your prompt.",
+          question: data.question,
+          applied: data.appliedLabels,
+        },
+      ]);
+    } catch (e) {
+      handleAiError(e);
+    } finally {
+      setAiBusy(false);
+      setAiAction(null);
+    }
+  };
+
+  const handleAiExplain = async () => {
+    if (explain) { setExplainOpen((v) => !v); return; }
+    const source = aiResult?.finalPrompt || prompt;
+    if (!source?.trim()) { toast.error("Generate a prompt first."); return; }
+    setExplainBusy(true);
+    setExplainOpen(true);
+    try {
+      const data = (await callPromptorRaw("explain", { existingPrompt: source })) as PromptorExplain | null;
+      if (data) setExplain(data);
+      else setExplainOpen(false);
+    } catch (e) {
+      setExplainOpen(false);
+      handleAiError(e);
+    } finally {
+      setExplainBusy(false);
+    }
+  };
+
+  const handleAiLyricConcept = async () => {
+    const source = aiResult?.finalPrompt || prompt;
+    if (!source?.trim()) { toast.error("Generate a prompt first."); return; }
+    setConceptBusy(true);
+    try {
+      const data = (await callPromptorRaw("lyricConcept", { existingPrompt: source })) as PromptorLyricConceptType | null;
+      if (data) setLyricConcept(data);
+    } catch (e) {
+      handleAiError(e);
+    } finally {
+      setConceptBusy(false);
+    }
+  };
+
+  const handleWriteLyrics = () => {
+    if (!lyricConcept) return;
+    try {
+      sessionStorage.setItem(LYRIC_CONCEPT_STORAGE_KEY, JSON.stringify(lyricConcept));
+    } catch { /* ignore */ }
+    void navigate({ to: "/lyrics" });
+  };
+
   const callPromptor = async (
     action: PromptorAction,
     body: { idea?: string; existingPrompt?: string; variationStyle?: string },
@@ -347,6 +518,9 @@ function AppPage() {
       setInputs((prev) => ({ ...prev, ...data.fields }));
       setAiResult(data);
       setPrompt(data.finalPrompt);
+      setExplain(null);
+      setExplainOpen(false);
+      setLyricConcept(null);
       setError(null);
 
       if (isGuest) {
@@ -410,6 +584,14 @@ function AppPage() {
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
       <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} isGuest={isGuest} />
+      <PromptorAssistant
+        open={assistantOpen}
+        busy={aiBusy}
+        messages={chatMessages}
+        costLabel={aiCostLabel}
+        onOpenChange={setAssistantOpen}
+        onSend={(msg) => void handleAiChat(msg)}
+      />
 
       <header className="relative overflow-hidden border-b border-border/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">
@@ -568,7 +750,22 @@ function AppPage() {
             onRegenerate={handleAiRegenerate}
             onVariation={handleAiVariation}
             onEdit={(text) => { setAiResult({ ...aiResult, finalPrompt: text }); setPrompt(text); }}
-          />
+          >
+            <PromptorWhyThisWorks
+              open={explainOpen}
+              busy={explainBusy}
+              data={explain}
+              costLabel={aiCostLabel}
+              onToggle={() => void handleAiExplain()}
+            />
+            <PromptorLyricConcept
+              busy={conceptBusy}
+              data={lyricConcept}
+              costLabel={aiCostLabel}
+              onGenerate={() => void handleAiLyricConcept()}
+              onWriteLyrics={handleWriteLyrics}
+            />
+          </PromptorResult>
         )}
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">

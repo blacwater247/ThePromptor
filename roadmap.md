@@ -11,4 +11,4 @@
 # PROMPTOR AI
 
 - [x] Phase 1 — idea box (Generate with AI, Surprise Me, Improve My Prompt), auto-filled controls with undo, result panel with variations and Prompt Strength score.
-- [ ] Phase 2 — chat assistant with follow-up context, quick AI commands, "Why this works", lyric concept tool.
+- [x] Phase 2 — chat assistant with follow-up context, quick AI commands, "Why this works", lyric concept tool.

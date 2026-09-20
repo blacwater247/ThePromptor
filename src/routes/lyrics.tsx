@@ -10,6 +10,7 @@ import { LyricsBuilder } from "@/components/LyricsBuilder";
 import { PromptPreview, type SavedPrompt } from "@/components/PromptPreview";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { DEFAULT_LYRICS_INPUTS, type LyricsInputs, type LyricsMode } from "@/lib/lyrics-options";
+import { LYRIC_CONCEPT_STORAGE_KEY, type PromptorLyricConcept as PromptorLyricConceptType } from "@/lib/promptor-ai";
 import { generateLyricsGuest } from "@/lib/lyrics.functions";
 import { getMyCredits, getMySubscription } from "@/lib/credits.functions";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -72,6 +73,25 @@ function LyricsPage() {
   useEffect(() => {
     if (isGuest && guestUsed.used >= GUEST_LIMIT) setShowSignupWall(true);
   }, [isGuest, guestUsed.used]);
+
+  // Concept handed over from PROMPTOR AI on the creation page
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(LYRIC_CONCEPT_STORAGE_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(LYRIC_CONCEPT_STORAGE_KEY);
+      const c = JSON.parse(raw) as PromptorLyricConceptType;
+      setInputs((prev) => ({
+        ...prev,
+        topic: [c.concept, c.emotionalConflict, `Hook: ${c.hookConcept}`, `Verse 1: ${c.verse1}`, `Verse 2: ${c.verse2}`, `Bridge: ${c.bridge}`, `Ending: ${c.ending}`]
+          .filter(Boolean)
+          .join(" · ")
+          .slice(0, 1200),
+        keyPhrase: prev.keyPhrase || (c.hookConcept ?? "").slice(0, 120),
+      }));
+      toast.success("PROMPTOR AI concept loaded");
+    } catch { /* ignore */ }
+  }, []);
 
   const handleGenerate = async (mode: LyricsMode = "standard") => {
     if (isGuest) {

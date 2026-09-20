@@ -24,10 +24,17 @@ const ALL_SUBGENRES = Array.from(new Set(Object.values(SUBGENRES).flat()));
 const CREDIT_COST = 2;
 
 const RequestSchema = z.object({
-  action: z.enum(["analyze", "surprise", "improve", "variation"]),
+  action: z.enum(["analyze", "surprise", "improve", "variation", "chat", "explain", "lyricConcept"]),
   idea: z.string().max(1200).optional().default(""),
   existingPrompt: z.string().max(4000).optional().default(""),
   variationStyle: z.string().max(40).optional().default(""),
+  message: z.string().max(1200).optional().default(""),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
+    .max(20)
+    .optional()
+    .default([]),
+  currentSettings: z.string().max(3000).optional().default(""),
   environment: z.enum(["sandbox", "live"]),
 });
 
@@ -86,6 +93,32 @@ const AnalysisSchema = z.object({
   }),
 });
 type Analysis = z.infer<typeof AnalysisSchema>;
+
+const ChatSchema = AnalysisSchema.extend({
+  reply: z.string(),
+  question: nstr(),
+});
+type ChatAnalysis = z.infer<typeof ChatSchema>;
+
+const ExplainSchema = z.object({
+  instruments: z.string(),
+  tempo: z.string(),
+  drums: z.string(),
+  vocals: z.string(),
+  arrangement: z.string(),
+});
+
+const LyricConceptSchema = z.object({
+  concept: z.string(),
+  theme: z.string(),
+  pointOfView: z.string(),
+  emotionalConflict: z.string(),
+  hookConcept: z.string(),
+  verse1: z.string(),
+  verse2: z.string(),
+  bridge: z.string(),
+  ending: z.string(),
+});
 
 function errorResponse(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
@@ -288,7 +321,8 @@ export const Route = createFileRoute("/api/promptor-ai")({
         }
         const parsed = RequestSchema.safeParse(raw);
         if (!parsed.success) return errorResponse("Invalid request.", 400);
-        const { action, idea, existingPrompt, variationStyle, environment } = parsed.data;
+        const { action, idea, existingPrompt, variationStyle, message, history, currentSettings, environment } =
+          parsed.data;
 
         if (action === "analyze" && !idea.trim()) {
           return errorResponse("Describe what you want to create first.", 400);
@@ -299,6 +333,12 @@ export const Route = createFileRoute("/api/promptor-ai")({
         const style = (VARIATION_STYLES as readonly string[]).includes(variationStyle) ? variationStyle : "";
         if (action === "variation" && (!style || !existingPrompt.trim())) {
           return errorResponse("Pick a variation style first.", 400);
+        }
+        if (action === "chat" && !message.trim()) {
+          return errorResponse("Type what you want changed.", 400);
+        }
+        if ((action === "explain" || action === "lyricConcept") && !existingPrompt.trim()) {
+          return errorResponse("Generate a prompt first.", 400);
         }
 
         const auth = await verifyBearer(request);
@@ -361,8 +401,87 @@ export const Route = createFileRoute("/api/promptor-ai")({
           }
         };
 
+        const makeModel = async () => {
+          const { createOpenAI } = await import("@ai-sdk/openai");
+          const lovable = createOpenAI({
+            baseURL: "https://ai.gateway.lovable.dev/v1",
+            apiKey,
+            headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+          });
+          return lovable.responses("openai/gpt-6-astra");
+        };
+        const PROVIDER_OPTIONS = {
+          openai: {
+            forceReasoning: true,
+            reasoningEffort: "low",
+            reasoningSummary: "auto",
+            store: false,
+            include: ["reasoning.encrypted_content"],
+          },
+        };
+
+        const finish = (payload: unknown) => {
+          const headers = new Headers({ "Content-Type": "application/json" });
+          if (newBalance !== null) headers.set("X-Credit-Balance", String(newBalance));
+          headers.set("X-Unlimited", isSubscriber ? "1" : "0");
+          return new Response(JSON.stringify(payload), { status: 200, headers });
+        };
+
+        const logUsage = async () => {
+          if (!userId) return;
+          try {
+            await supabaseAdmin.from("generations_log").insert({ user_id: userId, mode: "standard" });
+          } catch (e) {
+            console.error("[promptor-ai] log insert failed", e);
+          }
+        };
+
+        // ---- side tools: Why this works / Lyric concept ----
+        if (action === "explain" || action === "lyricConcept") {
+          try {
+            const model = await makeModel();
+            const isExplain = action === "explain";
+            const sidePrompt = isExplain
+                ? `Explain, for a working music creator, why this prompt works musically. Two or three plain sentences per field, concrete and useful, never childish and never a lecture. No markdown.\n\nPROMPT:\n${existingPrompt}`
+                : `Develop the song concept behind this prompt. Do NOT write any lyrics, lines or rhymes — give direction only: the concept, theme, point of view, emotional conflict, hook concept, verse 1 and verse 2 direction, bridge direction and ending direction. One to three sentences each, plain language, no markdown.\n\nPROMPT:\n${existingPrompt}`;
+            const out = isExplain
+              ? await streamText({
+                  model, system: BASE_SYSTEM, prompt: sidePrompt,
+                  output: Output.object({ schema: ExplainSchema }),
+                  providerOptions: PROVIDER_OPTIONS,
+                }).output
+              : await streamText({
+                  model, system: BASE_SYSTEM, prompt: sidePrompt,
+                  output: Output.object({ schema: LyricConceptSchema }),
+                  providerOptions: PROVIDER_OPTIONS,
+                }).output;
+            await logUsage();
+            return finish(out);
+          } catch (err) {
+            await refund();
+            console.error("[promptor-ai] side tool error", err);
+            return errorResponse("PROMPTOR AI could not complete that request.", 500);
+          }
+        }
+
+        const historyBlock = history.length
+          ? `\n\nCONVERSATION SO FAR:\n${history
+              .map((h) => `${h.role === "user" ? "User" : "PROMPTOR AI"}: ${h.text}`)
+              .join("\n")}`
+          : "";
+        const settingsBlock = currentSettings.trim()
+          ? `\n\nCURRENT SETTINGS ON SCREEN:\n${currentSettings.trim()}`
+          : "";
+
+        const chatInstruction = `The user is refining an existing song prompt in conversation with you. Apply their newest instruction to the CURRENT PROMPT — edit it, never start a new song from scratch, and keep everything they did not ask you to change.
+"reply" is a short, friendly two-sentence summary of what you changed, in plain producer language. No markdown.
+Only set "question" when something genuinely essential is missing and you truly cannot proceed (for example no genre and no mood at all) — otherwise set it to null and just do the work. Never ask more than one question, and never run the user through a questionnaire.
+finalPrompt is the full updated prompt.${settingsBlock}\n\nCURRENT PROMPT:\n${existingPrompt || "(none yet)"}${historyBlock}\n\nNEWEST INSTRUCTION:\n${message}`;
+
         const instruction =
-          action === "surprise"
+          action === "chat"
+            ? chatInstruction
+            : action === "surprise"
             ? `Invent a fresh, coherent and commercially interesting song idea of your own, then build the full production prompt for it. Make it distinctive, not generic.`
             : action === "improve"
               ? `Analyse this existing music prompt and rebuild it as a stronger version. In "issues", list the concrete weaknesses you found (missing vocal direction, missing tempo, weak drums, weak instrumentation, weak arrangement, unclear production, contradictions, overload). finalPrompt is the improved version.\n\nEXISTING PROMPT:\n${existingPrompt}`
@@ -373,30 +492,17 @@ export const Route = createFileRoute("/api/promptor-ai")({
         const userBlock = `${instruction}\n\nALLOWED CONTROL VALUES (choose the closest, or null):\n${allowedLists(isSubscriber)}`;
 
         try {
-          const { createOpenAI } = await import("@ai-sdk/openai");
-          const lovable = createOpenAI({
-            baseURL: "https://ai.gateway.lovable.dev/v1",
-            apiKey,
-            headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-          });
+          const model = await makeModel();
 
           const result = streamText({
-            model: lovable.responses("openai/gpt-6-astra"),
+            model,
             system: BASE_SYSTEM,
             prompt: userBlock,
-            output: Output.object({ schema: AnalysisSchema }),
-            providerOptions: {
-              openai: {
-                forceReasoning: true,
-                reasoningEffort: "low",
-                reasoningSummary: "auto",
-                store: false,
-                include: ["reasoning.encrypted_content"],
-              },
-            },
+            output: Output.object({ schema: action === "chat" ? ChatSchema : AnalysisSchema }),
+            providerOptions: PROVIDER_OPTIONS,
           });
 
-          const analysis = (await result.output) as Analysis;
+          const analysis = (await result.output) as Analysis & Partial<ChatAnalysis>;
           const fields = buildFields(analysis, isSubscriber);
           const appliedLabels = Object.keys(fields)
             .map((k) => LABELS[k] ?? k)
@@ -436,6 +542,12 @@ export const Route = createFileRoute("/api/promptor-ai")({
               clarity: clamp(analysis.score.clarity),
               recommendations: (analysis.score.recommendations ?? []).slice(0, 3),
             },
+            ...(action === "chat"
+              ? {
+                  reply: (analysis.reply ?? "").trim() || "Updated your prompt.",
+                  question: (analysis.question ?? "").trim() || undefined,
+                }
+              : {}),
           };
 
           if (!finalPrompt) {
@@ -443,18 +555,8 @@ export const Route = createFileRoute("/api/promptor-ai")({
             return errorResponse("PROMPTOR AI returned an empty result. Try again.", 502);
           }
 
-          if (userId) {
-            try {
-              await supabaseAdmin.from("generations_log").insert({ user_id: userId, mode: "standard" });
-            } catch (e) {
-              console.error("[promptor-ai] log insert failed", e);
-            }
-          }
-
-          const headers = new Headers({ "Content-Type": "application/json" });
-          if (newBalance !== null) headers.set("X-Credit-Balance", String(newBalance));
-          headers.set("X-Unlimited", isSubscriber ? "1" : "0");
-          return new Response(JSON.stringify(payload), { status: 200, headers });
+          await logUsage();
+          return finish(payload);
         } catch (err: unknown) {
           await refund();
           console.error("[promptor-ai] error", err);
