@@ -23,6 +23,9 @@ import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useAuth } from "@/hooks/use-auth";
+import { PromptorAIBox } from "@/components/PromptorAIBox";
+import { PromptorResult } from "@/components/PromptorResult";
+import type { PromptorAction, PromptorResult as PromptorResultType, VariationStyle } from "@/lib/promptor-ai";
 
 const GUEST_LIMIT = 10;
 
