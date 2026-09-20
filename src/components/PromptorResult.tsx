@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ type Props = {
   onRegenerate: () => void;
   onVariation: (style: VariationStyle) => void;
   onEdit: (text: string) => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 async function copyText(text: string) {
@@ -56,7 +56,7 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
 }
 
 export function PromptorResult({
-  result, busy, appliedLabels, canUndo, onUndoApply, onSave, onRegenerate, onVariation, onEdit,
+  result, busy, appliedLabels, canUndo, onUndoApply, onSave, onRegenerate, onVariation, onEdit, children,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(result.finalPrompt);
@@ -189,6 +189,8 @@ export function PromptorResult({
           </ul>
         )}
       </div>
+
+      {children}
     </Card>
   );
 }
