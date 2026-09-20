@@ -565,7 +565,7 @@ export function sanitizeToStandard(inputs: PromptInputs): PromptInputs {
     mixingStyle: "None",
     sonicFinish: "",
     stereoCharacter: DEFAULT_INPUTS.stereoCharacter,
-    referenceTraits: inputs.referenceTraits.filter((trait) => ["Analog warmth", "Modern low-end", "Live-room energy", "Radio clarity", "Raw demo intimacy", "Minimal negative space"].includes(trait)),
+    referenceTraits: inputs.referenceTraits.filter((trait) => STANDARD_REFERENCE_TRAITS.includes(trait)),
     optimizationMode: "Universal",
     hookType: "None",
     vocalFormat: "",
