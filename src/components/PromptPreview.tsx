@@ -157,11 +157,26 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
         {saved.length === 0 ? (
           <p className="text-sm text-muted-foreground">Your saved prompts will appear here. Stored locally in your browser.</p>
         ) : (
+          <>
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search your saved prompts…"
+              aria-label="Search saved prompts"
+              className="h-9 pl-9 text-sm bg-background/50"
+            />
+          </div>
+          {visibleSaved.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No saved prompts match “{query}”.</p>
+          ) : (
           <ul className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-            {saved.map((s) => (
+            {visibleSaved.map((s) => (
               <li key={s.id} className="rounded-lg border border-border/60 bg-secondary/20 p-3">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <button onClick={() => onUseSaved(s)} className="text-left font-medium text-sm hover:text-primary transition">
+                  <button onClick={() => onUseSaved(s)} className="flex items-center gap-1.5 text-left font-medium text-sm hover:text-primary transition">
+                    {s.aiResult && <Brain className="h-3.5 w-3.5 shrink-0 brand-text" />}
                     {s.title || "Untitled prompt"}
                   </button>
                   <div className="flex gap-1">
