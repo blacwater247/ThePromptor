@@ -112,7 +112,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
       <Field label="Stereo character" pro><Dropdown value={value.stereoCharacter} onChange={(v) => set("stereoCharacter", v)} options={STEREO_CHARACTERS} disabled={proGate} /></Field>
       <Field label="Sound quality"><Dropdown value={value.soundQuality} onChange={(v) => set("soundQuality", v)} options={SOUND_QUALITIES} /></Field>
       <Field label="Engine optimization" pro><Dropdown value={value.optimizationMode} onChange={(v) => set("optimizationMode", v)} options={OPTIMIZATION_MODES} disabled={proGate} /></Field>
-      <Field label="Reference traits"><Chips options={REFERENCE_TRAITS} selected={value.referenceTraits} onToggle={(v) => toggle("referenceTraits", v)} /></Field>
+      <Field label="Reference traits"><Chips options={REFERENCE_TRAITS} selected={value.referenceTraits} onToggle={(v) => toggle("referenceTraits", v)} lockedOptions={isPro ? undefined : PRO_REFERENCE_TRAITS} /></Field>
       <div className="sm:col-span-2"><Field label={`Avoid · ${value.avoidPresets.length} selected`}><Chips options={AVOID_PRESETS} selected={value.avoidPresets} onToggle={(v) => toggle("avoidPresets", v)} /></Field></div>
       <div className="sm:col-span-2"><Field label="Other avoid words"><Input value={value.avoidWords} onChange={(e) => set("avoidWords", e.target.value)} maxLength={120} placeholder="Optional words or clichés to exclude" className="bg-background/50" /></Field></div>
     </Phase>
