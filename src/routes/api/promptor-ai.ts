@@ -334,6 +334,12 @@ export const Route = createFileRoute("/api/promptor-ai")({
         if (action === "variation" && (!style || !existingPrompt.trim())) {
           return errorResponse("Pick a variation style first.", 400);
         }
+        if (action === "chat" && !message.trim()) {
+          return errorResponse("Type what you want changed.", 400);
+        }
+        if ((action === "explain" || action === "lyricConcept") && !existingPrompt.trim()) {
+          return errorResponse("Generate a prompt first.", 400);
+        }
 
         const auth = await verifyBearer(request);
         let isSubscriber = false;
