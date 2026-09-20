@@ -418,7 +418,7 @@ export const Route = createFileRoute("/api/promptor-ai")({
             store: false,
             include: ["reasoning.encrypted_content"],
           },
-        } as const;
+        };
 
         const finish = (payload: unknown) => {
           const headers = new Headers({ "Content-Type": "application/json" });
@@ -441,16 +441,20 @@ export const Route = createFileRoute("/api/promptor-ai")({
           try {
             const model = await makeModel();
             const isExplain = action === "explain";
-            const sideResult = streamText({
-              model,
-              system: BASE_SYSTEM,
-              prompt: isExplain
+            const sidePrompt = isExplain
                 ? `Explain, for a working music creator, why this prompt works musically. Two or three plain sentences per field, concrete and useful, never childish and never a lecture. No markdown.\n\nPROMPT:\n${existingPrompt}`
-                : `Develop the song concept behind this prompt. Do NOT write any lyrics, lines or rhymes — give direction only: the concept, theme, point of view, emotional conflict, hook concept, verse 1 and verse 2 direction, bridge direction and ending direction. One to three sentences each, plain language, no markdown.\n\nPROMPT:\n${existingPrompt}`,
-              output: Output.object({ schema: isExplain ? ExplainSchema : LyricConceptSchema }),
-              providerOptions: PROVIDER_OPTIONS,
-            });
-            const out = await sideResult.output;
+                : `Develop the song concept behind this prompt. Do NOT write any lyrics, lines or rhymes — give direction only: the concept, theme, point of view, emotional conflict, hook concept, verse 1 and verse 2 direction, bridge direction and ending direction. One to three sentences each, plain language, no markdown.\n\nPROMPT:\n${existingPrompt}`;
+            const out = isExplain
+              ? await streamText({
+                  model, system: BASE_SYSTEM, prompt: sidePrompt,
+                  output: Output.object({ schema: ExplainSchema }),
+                  providerOptions: PROVIDER_OPTIONS,
+                }).output
+              : await streamText({
+                  model, system: BASE_SYSTEM, prompt: sidePrompt,
+                  output: Output.object({ schema: LyricConceptSchema }),
+                  providerOptions: PROVIDER_OPTIONS,
+                }).output;
             await logUsage();
             return finish(out);
           } catch (err) {
