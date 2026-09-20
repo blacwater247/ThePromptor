@@ -91,6 +91,12 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
 export function PromptPreview({ prompt, loading, streaming, error, onSave, saved, onDelete, onUseSaved, heading = "Blueprint Output", savedHeading = "Saved Blueprints", emptyHint, loadingHint = "Composing your production-ready blueprint…", blueprintMeta }: Props) {
   const hasStreamingText = streaming && prompt.length > 0;
   const showSkeleton = loading && !hasStreamingText;
+  const [query, setQuery] = useState("");
+  const visibleSaved = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return saved;
+    return saved.filter((s) => `${s.title} ${s.prompt}`.toLowerCase().includes(q));
+  }, [saved, query]);
   return (
     <div className="space-y-6 lg:sticky lg:top-6">
       <Card className="studio-panel p-5">
