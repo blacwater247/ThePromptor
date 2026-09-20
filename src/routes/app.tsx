@@ -567,7 +567,13 @@ function AppPage() {
   const handleAiSavePrompt = (text: string) => {
     if (!text.trim()) return;
     setSaved([
-      { id: crypto.randomUUID(), title: inputs.title.trim() || `${inputs.mainGenre} · PROMPTOR AI`, createdAt: Date.now(), prompt: text },
+      {
+        id: crypto.randomUUID(),
+        title: inputs.title.trim() || `${inputs.mainGenre} · PROMPTOR AI`,
+        createdAt: Date.now(),
+        prompt: text,
+        ...(aiResult ? { aiResult: { ...aiResult, finalPrompt: text } } : {}),
+      },
       ...saved,
     ]);
     toast.success("Prompt saved");
