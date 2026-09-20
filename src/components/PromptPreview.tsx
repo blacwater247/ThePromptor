@@ -1,14 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Copy, Check, Save, Trash2, Music4, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Copy, Check, Save, Trash2, Music4, Sparkles, Search, Brain } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import type { PromptorResult as PromptorResultType } from "@/lib/promptor-ai";
 
 export type SavedPrompt = {
   id: string;
   title: string;
   createdAt: number;
   prompt: string;
+  /** Present when the prompt came from PROMPTOR AI — lets us restore the full result panel. */
+  aiResult?: PromptorResultType;
 };
 
 type Props = {
@@ -87,6 +91,12 @@ function CopyButton({ text, label = "Copy", ariaLabel }: { text: string; label?:
 export function PromptPreview({ prompt, loading, streaming, error, onSave, saved, onDelete, onUseSaved, heading = "Blueprint Output", savedHeading = "Saved Blueprints", emptyHint, loadingHint = "Composing your production-ready blueprint…", blueprintMeta }: Props) {
   const hasStreamingText = streaming && prompt.length > 0;
   const showSkeleton = loading && !hasStreamingText;
+  const [query, setQuery] = useState("");
+  const visibleSaved = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return saved;
+    return saved.filter((s) => `${s.title} ${s.prompt}`.toLowerCase().includes(q));
+  }, [saved, query]);
   return (
     <div className="space-y-6 lg:sticky lg:top-6">
       <Card className="studio-panel p-5">
@@ -147,11 +157,26 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
         {saved.length === 0 ? (
           <p className="text-sm text-muted-foreground">Your saved prompts will appear here. Stored locally in your browser.</p>
         ) : (
+          <>
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search your saved prompts…"
+              aria-label="Search saved prompts"
+              className="h-9 pl-9 text-sm bg-background/50"
+            />
+          </div>
+          {visibleSaved.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No saved prompts match “{query}”.</p>
+          ) : (
           <ul className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-            {saved.map((s) => (
+            {visibleSaved.map((s) => (
               <li key={s.id} className="rounded-lg border border-border/60 bg-secondary/20 p-3">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <button onClick={() => onUseSaved(s)} className="text-left font-medium text-sm hover:text-primary transition">
+                  <button onClick={() => onUseSaved(s)} className="flex items-center gap-1.5 text-left font-medium text-sm hover:text-primary transition">
+                    {s.aiResult && <Brain className="h-3.5 w-3.5 shrink-0 brand-text" />}
                     {s.title || "Untitled prompt"}
                   </button>
                   <div className="flex gap-1">
@@ -162,10 +187,19 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2">{s.prompt}</p>
-                <p className="text-[10px] text-muted-foreground/70 mt-1">{new Date(s.createdAt).toLocaleString()}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <p className="text-[10px] text-muted-foreground/70">{new Date(s.createdAt).toLocaleString()}</p>
+                  {s.aiResult && (
+                    <span className="rounded-full border border-primary/40 px-2 py-0.5 text-[10px] font-semibold brand-text">
+                      Strength {s.aiResult.score.overall}/100
+                    </span>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
+          )}
+          </>
         )}
       </Card>
     </div>
