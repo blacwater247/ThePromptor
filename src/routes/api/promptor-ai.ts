@@ -401,6 +401,65 @@ export const Route = createFileRoute("/api/promptor-ai")({
           }
         };
 
+        const makeModel = async () => {
+          const { createOpenAI } = await import("@ai-sdk/openai");
+          const lovable = createOpenAI({
+            baseURL: "https://ai.gateway.lovable.dev/v1",
+            apiKey,
+            headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+          });
+          return lovable.responses("openai/gpt-6-astra");
+        };
+        const PROVIDER_OPTIONS = {
+          openai: {
+            forceReasoning: true,
+            reasoningEffort: "low",
+            reasoningSummary: "auto",
+            store: false,
+            include: ["reasoning.encrypted_content"],
+          },
+        } as const;
+
+        const finish = (payload: unknown) => {
+          const headers = new Headers({ "Content-Type": "application/json" });
+          if (newBalance !== null) headers.set("X-Credit-Balance", String(newBalance));
+          headers.set("X-Unlimited", isSubscriber ? "1" : "0");
+          return new Response(JSON.stringify(payload), { status: 200, headers });
+        };
+
+        const logUsage = async () => {
+          if (!userId) return;
+          try {
+            await supabaseAdmin.from("generations_log").insert({ user_id: userId, mode: "standard" });
+          } catch (e) {
+            console.error("[promptor-ai] log insert failed", e);
+          }
+        };
+
+        // ---- side tools: Why this works / Lyric concept ----
+        if (action === "explain" || action === "lyricConcept") {
+          try {
+            const model = await makeModel();
+            const isExplain = action === "explain";
+            const sideResult = streamText({
+              model,
+              system: BASE_SYSTEM,
+              prompt: isExplain
+                ? `Explain, for a working music creator, why this prompt works musically. Two or three plain sentences per field, concrete and useful, never childish and never a lecture. No markdown.\n\nPROMPT:\n${existingPrompt}`
+                : `Develop the song concept behind this prompt. Do NOT write any lyrics, lines or rhymes — give direction only: the concept, theme, point of view, emotional conflict, hook concept, verse 1 and verse 2 direction, bridge direction and ending direction. One to three sentences each, plain language, no markdown.\n\nPROMPT:\n${existingPrompt}`,
+              output: Output.object({ schema: isExplain ? ExplainSchema : LyricConceptSchema }),
+              providerOptions: PROVIDER_OPTIONS,
+            });
+            const out = await sideResult.output;
+            await logUsage();
+            return finish(out);
+          } catch (err) {
+            await refund();
+            console.error("[promptor-ai] side tool error", err);
+            return errorResponse("PROMPTOR AI could not complete that request.", 500);
+          }
+        }
+
         const historyBlock = history.length
           ? `\n\nCONVERSATION SO FAR:\n${history
               .map((h) => `${h.role === "user" ? "User" : "PROMPTOR AI"}: ${h.text}`)
