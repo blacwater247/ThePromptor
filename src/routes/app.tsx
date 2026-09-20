@@ -518,6 +518,9 @@ function AppPage() {
       setInputs((prev) => ({ ...prev, ...data.fields }));
       setAiResult(data);
       setPrompt(data.finalPrompt);
+      setExplain(null);
+      setExplainOpen(false);
+      setLyricConcept(null);
       setError(null);
 
       if (isGuest) {
