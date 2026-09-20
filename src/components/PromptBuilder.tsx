@@ -11,7 +11,7 @@ import {
   AVOID_PRESETS, ARRANGEMENTS, BASSLINES, DYNAMICS_ARCS, EMOTION_DEPTHS, ENERGY_LEVELS,
   ERAS, FUSION_GENRES, HARMONY_STYLES, HOOK_TYPES, KEYS, MIXING_STYLES, MOOD_COLORS,
   OPTIMIZATION_MODES, PRO_DRUM_STYLES, PRO_INSTRUMENTS, PRO_MAIN_GENRES, PRO_MOODS,
-  PRO_PRODUCTION_STYLES, PROMPT_TYPES, REFERENCE_TRAITS, RHYTHM_PATTERNS, SONG_LENGTHS,
+  PRO_PRODUCTION_STYLES, PRO_REFERENCE_TRAITS, PROMPT_TYPES, REFERENCE_TRAITS, RHYTHM_PATTERNS, SONG_LENGTHS,
   SONIC_FINISHES, SOUND_QUALITIES, STANDARD_DRUM_STYLES, STANDARD_INSTRUMENTS,
   STANDARD_MAIN_GENRES, STANDARD_MOODS, STANDARD_PRODUCTION_STYLES, STEREO_CHARACTERS,
   SUBGENRES, TEMPOS, THEME_PRESETS, VOCAL_EXTRAS, VOCAL_FORMATS, VOCAL_PERFORMANCES,
@@ -42,8 +42,11 @@ function Phase({ number, title, description, children }: { number: string; title
   </section>;
 }
 
-function Chips({ options, selected, onToggle, locked }: { options: readonly string[]; selected: string[]; onToggle: (v: string) => void; locked?: boolean }) {
-  return <div className="flex flex-wrap gap-2">{options.map((o) => <button key={o} type="button" disabled={locked} onClick={() => onToggle(o)} className={`rounded-md border px-2.5 py-1.5 text-xs transition ${selected.includes(o) ? "border-primary bg-primary/15 text-copper-soft" : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"} disabled:cursor-not-allowed disabled:opacity-45`}>{locked && <Lock className="mr-1 inline h-3 w-3" />}{o}</button>)}</div>;
+function Chips({ options, selected, onToggle, locked, lockedOptions }: { options: readonly string[]; selected: string[]; onToggle: (v: string) => void; locked?: boolean; lockedOptions?: readonly string[] }) {
+  return <div className="flex flex-wrap gap-2">{options.map((o) => {
+    const isLocked = locked || (lockedOptions?.includes(o) ?? false);
+    return <button key={o} type="button" disabled={isLocked} title={isLocked ? "Unlock with Pro Studio" : undefined} onClick={() => onToggle(o)} className={`rounded-md border px-2.5 py-1.5 text-xs transition ${selected.includes(o) ? "border-primary bg-primary/15 text-copper-soft" : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"} disabled:cursor-not-allowed disabled:opacity-45`}>{isLocked && <Lock className="mr-1 inline h-3 w-3" />}{o}</button>;
+  })}</div>;
 }
 
 export function PromptBuilder({ value, onChange, isPro = false }: Props) {
@@ -109,7 +112,7 @@ export function PromptBuilder({ value, onChange, isPro = false }: Props) {
       <Field label="Stereo character" pro><Dropdown value={value.stereoCharacter} onChange={(v) => set("stereoCharacter", v)} options={STEREO_CHARACTERS} disabled={proGate} /></Field>
       <Field label="Sound quality"><Dropdown value={value.soundQuality} onChange={(v) => set("soundQuality", v)} options={SOUND_QUALITIES} /></Field>
       <Field label="Engine optimization" pro><Dropdown value={value.optimizationMode} onChange={(v) => set("optimizationMode", v)} options={OPTIMIZATION_MODES} disabled={proGate} /></Field>
-      <Field label="Reference traits"><Chips options={REFERENCE_TRAITS} selected={value.referenceTraits} onToggle={(v) => toggle("referenceTraits", v)} /></Field>
+      <Field label="Reference traits"><Chips options={REFERENCE_TRAITS} selected={value.referenceTraits} onToggle={(v) => toggle("referenceTraits", v)} lockedOptions={isPro ? undefined : PRO_REFERENCE_TRAITS} /></Field>
       <div className="sm:col-span-2"><Field label={`Avoid · ${value.avoidPresets.length} selected`}><Chips options={AVOID_PRESETS} selected={value.avoidPresets} onToggle={(v) => toggle("avoidPresets", v)} /></Field></div>
       <div className="sm:col-span-2"><Field label="Other avoid words"><Input value={value.avoidWords} onChange={(e) => set("avoidWords", e.target.value)} maxLength={120} placeholder="Optional words or clichés to exclude" className="bg-background/50" /></Field></div>
     </Phase>

@@ -436,7 +436,9 @@ export const VOCAL_TEXTURES = ["Clean and controlled", "Breathy", "Raspy", "Smok
 export const HARMONY_STYLES = ["Minimal unison", "Tight two-part harmony", "Stacked three-part harmony", "Gospel call and response", "Wide choir layers", "Counter-melody harmonies", "Octave doubles", "No vocal harmony"];
 export const DYNAMICS_ARCS = ["Steady and controlled", "Slow-burn rise", "Verse restraint / hook lift", "Wide cinematic swells", "Drop-driven contrast", "Intimate to explosive", "Peak early / strip back late"];
 export const STEREO_CHARACTERS = ["Balanced natural width", "Wide hooks / narrow verses", "Immersive ultra-wide", "Focused mono-compatible center", "Vintage narrow image", "Asymmetric movement", "Headphone-detail panorama"];
-export const REFERENCE_TRAITS = ["Analog warmth", "Modern low-end", "Live-room energy", "Club translation", "Radio clarity", "Cinematic depth", "Raw demo intimacy", "Tape-era texture", "Minimal negative space", "Dense layered production"];
+export const STANDARD_REFERENCE_TRAITS = ["Analog warmth", "Modern low-end", "Live-room energy", "Radio clarity", "Raw demo intimacy", "Minimal negative space"];
+export const PRO_REFERENCE_TRAITS = ["Club translation", "Cinematic depth", "Tape-era texture", "Dense layered production"];
+export const REFERENCE_TRAITS = [...STANDARD_REFERENCE_TRAITS, ...PRO_REFERENCE_TRAITS];
 export const OPTIMIZATION_MODES = ["Universal", "Suno", "Udio"];
 
 // ------------------------------------------------------------
@@ -563,7 +565,7 @@ export function sanitizeToStandard(inputs: PromptInputs): PromptInputs {
     mixingStyle: "None",
     sonicFinish: "",
     stereoCharacter: DEFAULT_INPUTS.stereoCharacter,
-    referenceTraits: inputs.referenceTraits.filter((trait) => ["Analog warmth", "Modern low-end", "Live-room energy", "Radio clarity", "Raw demo intimacy", "Minimal negative space"].includes(trait)),
+    referenceTraits: inputs.referenceTraits.filter((trait) => STANDARD_REFERENCE_TRAITS.includes(trait)),
     optimizationMode: "Universal",
     hookType: "None",
     vocalFormat: "",
