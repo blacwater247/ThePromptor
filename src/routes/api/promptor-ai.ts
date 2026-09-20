@@ -488,30 +488,17 @@ finalPrompt is the full updated prompt.${settingsBlock}\n\nCURRENT PROMPT:\n${ex
         const userBlock = `${instruction}\n\nALLOWED CONTROL VALUES (choose the closest, or null):\n${allowedLists(isSubscriber)}`;
 
         try {
-          const { createOpenAI } = await import("@ai-sdk/openai");
-          const lovable = createOpenAI({
-            baseURL: "https://ai.gateway.lovable.dev/v1",
-            apiKey,
-            headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-          });
+          const model = await makeModel();
 
           const result = streamText({
-            model: lovable.responses("openai/gpt-6-astra"),
+            model,
             system: BASE_SYSTEM,
             prompt: userBlock,
-            output: Output.object({ schema: AnalysisSchema }),
-            providerOptions: {
-              openai: {
-                forceReasoning: true,
-                reasoningEffort: "low",
-                reasoningSummary: "auto",
-                store: false,
-                include: ["reasoning.encrypted_content"],
-              },
-            },
+            output: Output.object({ schema: action === "chat" ? ChatSchema : AnalysisSchema }),
+            providerOptions: PROVIDER_OPTIONS,
           });
 
-          const analysis = (await result.output) as Analysis;
+          const analysis = (await result.output) as Analysis & Partial<ChatAnalysis>;
           const fields = buildFields(analysis, isSubscriber);
           const appliedLabels = Object.keys(fields)
             .map((k) => LABELS[k] ?? k)
