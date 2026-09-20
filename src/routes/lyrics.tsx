@@ -77,6 +77,7 @@ function LyricsPage() {
     if (isGuest) {
       if (mode === "pro" || guestUsed.used >= GUEST_LIMIT) {
         setShowSignupWall(true);
+        if (guestUsed.used >= GUEST_LIMIT) setShowUpgradeModal(true);
         return;
       }
       setLoading(true);
@@ -86,6 +87,7 @@ function LyricsPage() {
         const res = await generateLyricsGuest({ data: inputs });
         setLyrics(res.lyrics);
         setGuestUsed({ used: guestUsed.used + 1 });
+        if (guestUsed.used + 1 >= GUEST_LIMIT) setShowUpgradeModal(true);
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Something went wrong";
         setError(msg);
@@ -198,7 +200,7 @@ function LyricsPage() {
   return (
     <div className="min-h-screen text-foreground">
       <Toaster theme="dark" position="top-center" richColors />
-      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} isGuest={isGuest} />
 
       <header className="relative overflow-hidden border-b border-border/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-8">

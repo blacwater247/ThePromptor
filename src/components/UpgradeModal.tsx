@@ -1,18 +1,36 @@
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, CreditCard } from "lucide-react";
+import { Crown, CreditCard, LogIn } from "lucide-react";
 
-export function UpgradeModal({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function UpgradeModal({
+  open,
+  onOpenChange,
+  isGuest = false,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  isGuest?: boolean;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-primary/40 bg-card/95">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">You've used your 10 free prompts</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Free prompts don't reset. Grab a pack or go unlimited monthly to keep generating.
+            {isGuest
+              ? "Free prompts don't reset. Create a free account, then grab a pack or go unlimited to keep generating."
+              : "Free prompts don't reset. Grab a pack or go unlimited monthly to keep generating."}
           </DialogDescription>
         </DialogHeader>
+        {isGuest && (
+          <Link to="/auth" onClick={() => onOpenChange(false)} className="mt-2 block">
+            <Button variant="outline" className="w-full border-primary/60 hover:bg-primary/10">
+              <LogIn className="h-4 w-4" />
+              Create free account
+            </Button>
+          </Link>
+        )}
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           <Link to="/pricing" onClick={() => onOpenChange(false)}>
             <Button className="w-full brand-gradient text-black font-semibold border-0 hover:opacity-90">
