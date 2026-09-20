@@ -49,7 +49,7 @@ export function randomizeVibe(current: PromptInputs, isPro = false): PromptInput
     productionStyle: pick(productionStyles),
     dynamicsArc: isPro ? pick(DYNAMICS_ARCS) : "Steady and controlled",
     stereoCharacter: isPro ? pick(STEREO_CHARACTERS) : "Balanced natural width",
-    referenceTraits: pickMany(REFERENCE_TRAITS, 1, isPro ? 3 : 2),
+    referenceTraits: pickMany(isPro ? REFERENCE_TRAITS : STANDARD_REFERENCE_TRAITS, 1, isPro ? 3 : 2),
     optimizationMode: isPro ? pick(OPTIMIZATION_MODES) : "Universal",
     soundQuality: pick(SOUND_QUALITIES),
   };
