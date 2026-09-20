@@ -187,10 +187,19 @@ export function PromptPreview({ prompt, loading, streaming, error, onSave, saved
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2">{s.prompt}</p>
-                <p className="text-[10px] text-muted-foreground/70 mt-1">{new Date(s.createdAt).toLocaleString()}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <p className="text-[10px] text-muted-foreground/70">{new Date(s.createdAt).toLocaleString()}</p>
+                  {s.aiResult && (
+                    <span className="rounded-full border border-primary/40 px-2 py-0.5 text-[10px] font-semibold brand-text">
+                      Strength {s.aiResult.score.overall}/100
+                    </span>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
+          )}
+          </>
         )}
       </Card>
     </div>
