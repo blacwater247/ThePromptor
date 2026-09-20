@@ -542,6 +542,33 @@ function AppPage() {
               </Button>
             </div>
           </Card>
+         )}
+
+        <PromptorAIBox
+          busy={aiBusy}
+          busyAction={aiAction}
+          disabled={isGuest ? guestRemaining === 0 : !isPro && balance < 2}
+          costLabel={aiCostLabel}
+          improve={aiImprove}
+          onGenerate={handleAiGenerate}
+          onSurprise={handleAiSurprise}
+          onImprove={(existing) => void callPromptor("improve", { existingPrompt: existing })}
+          onUseImproved={(text) => { setPrompt(text); setAiImprove(null); toast.success("Improved prompt loaded"); }}
+          onDismissImprove={() => setAiImprove(null)}
+        />
+
+        {aiResult && (
+          <PromptorResult
+            result={aiResult}
+            busy={aiBusy}
+            appliedLabels={aiResult.appliedLabels}
+            canUndo={!!aiPrevInputs}
+            onUndoApply={handleAiUndo}
+            onSave={handleAiSavePrompt}
+            onRegenerate={handleAiRegenerate}
+            onVariation={handleAiVariation}
+            onEdit={(text) => { setAiResult({ ...aiResult, finalPrompt: text }); setPrompt(text); }}
+          />
         )}
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
