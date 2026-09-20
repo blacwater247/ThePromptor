@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import {
+  STANDARD_MAIN_GENRES, STANDARD_MOODS, STANDARD_INSTRUMENTS, STANDARD_DRUM_STYLES,
+  STANDARD_PRODUCTION_STYLES, STANDARD_REFERENCE_TRAITS,
   PROMPT_TYPES, SONG_LENGTHS, MAIN_GENRES, FUSION_GENRES, VOCAL_TYPES,
   VOCAL_PERFORMANCES, VOCAL_EXTRAS, MOODS, ENERGY_LEVELS, EMOTION_DEPTHS,
   THEME_PRESETS, INSTRUMENTS, DRUM_STYLES, TEMPOS, KEYS, PRODUCTION_STYLES,
@@ -238,7 +240,7 @@ function allowedLists(isPro: boolean) {
   return [
     list("promptType", PROMPT_TYPES),
     list("songLength", SONG_LENGTHS),
-    list("mainGenre", MAIN_GENRES),
+    list("mainGenre", MAIN_GENRES_A),
     list("subgenre", ALL_SUBGENRES),
     list("era", ERAS),
     list("fusionGenre", FUSION_GENRES),
@@ -248,24 +250,24 @@ function allowedLists(isPro: boolean) {
     list("vocalTexture", VOCAL_TEXTURES),
     list("harmonyStyle", HARMONY_STYLES),
     list("vocalExtras", VOCAL_EXTRAS),
-    list("moods", MOODS),
+    list("moods", MOODS_A),
     list("moodColor", ALL_MOOD_COLORS),
     list("energy", ENERGY_LEVELS),
     list("emotionDepth", EMOTION_DEPTHS),
     list("themePreset", THEME_PRESETS),
-    list("instruments", INSTRUMENTS),
-    list("drumStyle", DRUM_STYLES),
+    list("instruments", INSTRUMENTS_A),
+    list("drumStyle", DRUM_STYLES_A),
     list("rhythmPattern", RHYTHM_PATTERNS),
     list("bassline", BASSLINES),
     list("tempo", TEMPOS),
     list("key", KEYS),
-    list("productionStyle", PRODUCTION_STYLES),
+    list("productionStyle", PRODUCTION_STYLES_A),
     list("arrangement", ARRANGEMENTS),
     list("dynamicsArc", DYNAMICS_ARCS),
     list("mixingStyle", MIXING_STYLES),
     list("sonicFinish", SONIC_FINISHES),
     list("stereoCharacter", STEREO_CHARACTERS),
-    list("referenceTraits", REFERENCE_TRAITS),
+    list("referenceTraits", REFERENCE_TRAITS_A),
     list("hookType", HOOK_TYPES),
     list("vocalFormat", VOCAL_FORMATS),
   ].join("\n");
@@ -368,7 +370,7 @@ export const Route = createFileRoute("/api/promptor-ai")({
                 ? `Create a "${style}" variation of this prompt. Keep the core idea and identity, but genuinely change the underlying musical characteristics (tempo, groove, drums, bass, instrumentation, arrangement, vocal delivery, production) to fit the direction — do not just swap adjectives.\n\nCURRENT PROMPT:\n${existingPrompt}`
                 : `Build the full production prompt from this idea:\n\n${idea}`;
 
-        const userBlock = `${instruction}\n\nALLOWED CONTROL VALUES (choose the closest, or null):\n${allowedLists()}`;
+        const userBlock = `${instruction}\n\nALLOWED CONTROL VALUES (choose the closest, or null):\n${allowedLists(isSubscriber)}`;
 
         try {
           const { createOpenAI } = await import("@ai-sdk/openai");
