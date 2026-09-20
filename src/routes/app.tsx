@@ -819,7 +819,22 @@ function AppPage() {
             onSave={handleSave}
             saved={saved}
             onDelete={(id) => setSaved(saved.filter((s) => s.id !== id))}
-            onUseSaved={(s) => { setPrompt(s.prompt); setError(null); }}
+            onUseSaved={(s) => {
+              setPrompt(s.prompt);
+              setError(null);
+              setAiImprove(null);
+              setExplain(null);
+              setExplainOpen(false);
+              setLyricConcept(null);
+              if (s.aiResult) {
+                setAiResult(s.aiResult);
+                setAiPrevInputs(inputs);
+                setInputs((prev) => ({ ...prev, ...s.aiResult!.fields }));
+                toast.success("Restored saved PROMPTOR AI result");
+              } else {
+                setAiResult(null);
+              }
+            }}
             blueprintMeta={{ genre: inputs.subgenre || inputs.mainGenre, tempo: inputs.customBpm ? `${inputs.customBpm} BPM` : inputs.tempo, key: inputs.key, engine: inputs.optimizationMode, instruments: inputs.instruments.length }}
           />
 
