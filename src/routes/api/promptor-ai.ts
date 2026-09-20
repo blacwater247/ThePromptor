@@ -538,6 +538,12 @@ finalPrompt is the full updated prompt.${settingsBlock}\n\nCURRENT PROMPT:\n${ex
               clarity: clamp(analysis.score.clarity),
               recommendations: (analysis.score.recommendations ?? []).slice(0, 3),
             },
+            ...(action === "chat"
+              ? {
+                  reply: (analysis.reply ?? "").trim() || "Updated your prompt.",
+                  question: (analysis.question ?? "").trim() || undefined,
+                }
+              : {}),
           };
 
           if (!finalPrompt) {
@@ -545,18 +551,8 @@ finalPrompt is the full updated prompt.${settingsBlock}\n\nCURRENT PROMPT:\n${ex
             return errorResponse("PROMPTOR AI returned an empty result. Try again.", 502);
           }
 
-          if (userId) {
-            try {
-              await supabaseAdmin.from("generations_log").insert({ user_id: userId, mode: "standard" });
-            } catch (e) {
-              console.error("[promptor-ai] log insert failed", e);
-            }
-          }
-
-          const headers = new Headers({ "Content-Type": "application/json" });
-          if (newBalance !== null) headers.set("X-Credit-Balance", String(newBalance));
-          headers.set("X-Unlimited", isSubscriber ? "1" : "0");
-          return new Response(JSON.stringify(payload), { status: 200, headers });
+          await logUsage();
+          return finish(payload);
         } catch (err: unknown) {
           await refund();
           console.error("[promptor-ai] error", err);
