@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Copy, Check, Save, Trash2, Music4, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Copy, Check, Save, Trash2, Music4, Sparkles, Search, Brain } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import type { PromptorResult as PromptorResultType } from "@/lib/promptor-ai";
 
 export type SavedPrompt = {
   id: string;
