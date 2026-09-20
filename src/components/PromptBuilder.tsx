@@ -42,8 +42,11 @@ function Phase({ number, title, description, children }: { number: string; title
   </section>;
 }
 
-function Chips({ options, selected, onToggle, locked }: { options: readonly string[]; selected: string[]; onToggle: (v: string) => void; locked?: boolean }) {
-  return <div className="flex flex-wrap gap-2">{options.map((o) => <button key={o} type="button" disabled={locked} onClick={() => onToggle(o)} className={`rounded-md border px-2.5 py-1.5 text-xs transition ${selected.includes(o) ? "border-primary bg-primary/15 text-copper-soft" : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"} disabled:cursor-not-allowed disabled:opacity-45`}>{locked && <Lock className="mr-1 inline h-3 w-3" />}{o}</button>)}</div>;
+function Chips({ options, selected, onToggle, locked, lockedOptions }: { options: readonly string[]; selected: string[]; onToggle: (v: string) => void; locked?: boolean; lockedOptions?: readonly string[] }) {
+  return <div className="flex flex-wrap gap-2">{options.map((o) => {
+    const isLocked = locked || (lockedOptions?.includes(o) ?? false);
+    return <button key={o} type="button" disabled={isLocked} title={isLocked ? "Unlock with Pro Studio" : undefined} onClick={() => onToggle(o)} className={`rounded-md border px-2.5 py-1.5 text-xs transition ${selected.includes(o) ? "border-primary bg-primary/15 text-copper-soft" : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"} disabled:cursor-not-allowed disabled:opacity-45`}>{isLocked && <Lock className="mr-1 inline h-3 w-3" />}{o}</button>;
+  })}</div>;
 }
 
 export function PromptBuilder({ value, onChange, isPro = false }: Props) {
