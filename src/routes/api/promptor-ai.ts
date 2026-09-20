@@ -227,8 +227,14 @@ songStructure is a short arrangement map such as "Intro - Verse - Pre-chorus - C
 score fields are 0-100 and measure only how clearly and completely the prompt communicates musical intent — never commercial success. recommendations: up to 3 short actionable notes.
 For every control field, choose the closest value from the allowed list given below; use null when you have no opinion.`;
 
-function allowedLists() {
+function allowedLists(isPro: boolean) {
   const list = (name: string, values: readonly string[]) => `${name}: ${values.join(" | ")}`;
+  const MAIN_GENRES_A = isPro ? MAIN_GENRES : STANDARD_MAIN_GENRES;
+  const MOODS_A = isPro ? MOODS : STANDARD_MOODS;
+  const INSTRUMENTS_A = isPro ? INSTRUMENTS : STANDARD_INSTRUMENTS;
+  const DRUM_STYLES_A = isPro ? DRUM_STYLES : STANDARD_DRUM_STYLES;
+  const PRODUCTION_STYLES_A = isPro ? PRODUCTION_STYLES : STANDARD_PRODUCTION_STYLES;
+  const REFERENCE_TRAITS_A = isPro ? REFERENCE_TRAITS : STANDARD_REFERENCE_TRAITS;
   return [
     list("promptType", PROMPT_TYPES),
     list("songLength", SONG_LENGTHS),
