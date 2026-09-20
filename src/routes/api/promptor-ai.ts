@@ -24,10 +24,17 @@ const ALL_SUBGENRES = Array.from(new Set(Object.values(SUBGENRES).flat()));
 const CREDIT_COST = 2;
 
 const RequestSchema = z.object({
-  action: z.enum(["analyze", "surprise", "improve", "variation"]),
+  action: z.enum(["analyze", "surprise", "improve", "variation", "chat", "explain", "lyricConcept"]),
   idea: z.string().max(1200).optional().default(""),
   existingPrompt: z.string().max(4000).optional().default(""),
   variationStyle: z.string().max(40).optional().default(""),
+  message: z.string().max(1200).optional().default(""),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
+    .max(20)
+    .optional()
+    .default([]),
+  currentSettings: z.string().max(3000).optional().default(""),
   environment: z.enum(["sandbox", "live"]),
 });
 
