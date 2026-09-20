@@ -91,7 +91,7 @@ function AppPage() {
   }, [isGuest, guestUsed.used]);
 
   // Auto-open upgrade modal once when a signed-in free user runs out of credits
-  const outOfCredits = !isGuest && !isPro && !creditsQuery.isLoading && balance < 2;
+  const outOfCredits = !authLoading && !!user && !isPro && !creditsQuery.isLoading && balance < 2;
   useEffect(() => {
     if (outOfCredits) setShowUpgradeModal(true);
   }, [outOfCredits]);
