@@ -739,7 +739,22 @@ function AppPage() {
             onRegenerate={handleAiRegenerate}
             onVariation={handleAiVariation}
             onEdit={(text) => { setAiResult({ ...aiResult, finalPrompt: text }); setPrompt(text); }}
-          />
+          >
+            <PromptorWhyThisWorks
+              open={explainOpen}
+              busy={explainBusy}
+              data={explain}
+              costLabel={aiCostLabel}
+              onToggle={() => void handleAiExplain()}
+            />
+            <PromptorLyricConcept
+              busy={conceptBusy}
+              data={lyricConcept}
+              costLabel={aiCostLabel}
+              onGenerate={() => void handleAiLyricConcept()}
+              onWriteLyrics={handleWriteLyrics}
+            />
+          </PromptorResult>
         )}
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
