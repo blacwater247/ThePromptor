@@ -19,6 +19,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as ApiPromptorAiRouteImport } from './routes/api/promptor-ai'
 import { Route as ApiPromptStreamRouteImport } from './routes/api/prompt-stream'
 import { Route as ApiLyricsStreamRouteImport } from './routes/api/lyrics-stream'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -79,6 +80,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/checkout/return',
   path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPromptorAiRoute = ApiPromptorAiRouteImport.update({
+  id: '/api/promptor-ai',
+  path: '/api/promptor-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPromptStreamRoute = ApiPromptStreamRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
+  '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
+  '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
+  '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
+    | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/api/public/comment'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
+    | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/api/public/comment'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
+    | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
     | '/api/public/comment'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiLyricsStreamRoute: typeof ApiLyricsStreamRoute
   ApiPromptStreamRoute: typeof ApiPromptStreamRoute
+  ApiPromptorAiRoute: typeof ApiPromptorAiRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiPublicCommentRoute: typeof ApiPublicCommentRoute
@@ -384,6 +397,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout/return'
       fullPath: '/checkout/return'
       preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/promptor-ai': {
+      id: '/api/promptor-ai'
+      path: '/api/promptor-ai'
+      fullPath: '/api/promptor-ai'
+      preLoaderRoute: typeof ApiPromptorAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/prompt-stream': {
@@ -495,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   ApiLyricsStreamRoute: ApiLyricsStreamRoute,
   ApiPromptStreamRoute: ApiPromptStreamRoute,
+  ApiPromptorAiRoute: ApiPromptorAiRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiPublicCommentRoute: ApiPublicCommentRoute,

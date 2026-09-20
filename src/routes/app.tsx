@@ -23,6 +23,9 @@ import { isSubscriptionActive } from "@/lib/subscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useAuth } from "@/hooks/use-auth";
+import { PromptorAIBox } from "@/components/PromptorAIBox";
+import { PromptorResult } from "@/components/PromptorResult";
+import type { PromptorAction, PromptorResult as PromptorResultType, VariationStyle } from "@/lib/promptor-ai";
 
 const GUEST_LIMIT = 10;
 
@@ -272,6 +275,130 @@ function AppPage() {
     toast.success("Prompt saved");
   };
 
+  // ---------------- PROMPTOR AI ----------------
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiAction, setAiAction] = useState<PromptorAction | null>(null);
+  const [aiResult, setAiResult] = useState<PromptorResultType | null>(null);
+  const [aiImprove, setAiImprove] = useState<{ original: string; improved: string; issues: string[] } | null>(null);
+  const [aiPrevInputs, setAiPrevInputs] = useState<PromptInputs | null>(null);
+  const [aiLastIdea, setAiLastIdea] = useState("");
+
+  const aiCostLabel = isGuest
+    ? `Uses 1 of your ${GUEST_LIMIT} free generations`
+    : isPro
+      ? "Unlimited with your Monthly plan"
+      : "2 credits per AI action";
+
+  const callPromptor = async (
+    action: PromptorAction,
+    body: { idea?: string; existingPrompt?: string; variationStyle?: string },
+  ) => {
+    if (isGuest && guestUsed.used >= GUEST_LIMIT) {
+      setShowSignupWall(true);
+      setShowUpgradeModal(true);
+      return;
+    }
+    if (!isGuest && !isPro && balance < 2) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    setAiBusy(true);
+    setAiAction(action);
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (!isGuest) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) throw new Error("Please sign in again.");
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const res = await fetch("/api/promptor-ai", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ action, environment: getStripeEnvironment(), ...body }),
+      });
+
+      if (!res.ok) {
+        let msg = `PROMPTOR AI failed (${res.status}).`;
+        try {
+          const j = await res.json();
+          if (j?.error) msg = j.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+
+      const balanceHeader = res.headers.get("X-Credit-Balance");
+      if (balanceHeader !== null) {
+        const bal = Number(balanceHeader);
+        if (!Number.isNaN(bal)) queryClient.setQueryData(["credits", "balance"], { balance: bal });
+      }
+
+      const data = (await res.json()) as PromptorResultType;
+
+      if (action === "improve") {
+        setAiImprove({ original: body.existingPrompt ?? "", improved: data.finalPrompt, issues: data.issues });
+      } else {
+        setAiImprove(null);
+      }
+
+      setAiPrevInputs(inputs);
+      setInputs((prev) => ({ ...prev, ...data.fields }));
+      setAiResult(data);
+      setPrompt(data.finalPrompt);
+      setError(null);
+
+      if (isGuest) {
+        const nextUsed = guestUsed.used + 1;
+        setGuestUsed({ used: nextUsed });
+        if (nextUsed >= GUEST_LIMIT) setShowUpgradeModal(true);
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      if (msg.startsWith("INSUFFICIENT_CREDITS")) {
+        setShowUpgradeModal(true);
+      } else {
+        toast.error(msg);
+      }
+      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    } finally {
+      setAiBusy(false);
+      setAiAction(null);
+    }
+  };
+
+  const handleAiGenerate = (idea: string) => {
+    setAiLastIdea(idea);
+    void callPromptor("analyze", { idea });
+  };
+  const handleAiSurprise = () => {
+    setAiLastIdea("");
+    void callPromptor("surprise", {});
+  };
+  const handleAiRegenerate = () => {
+    if (aiLastIdea.trim()) void callPromptor("analyze", { idea: aiLastIdea });
+    else void callPromptor("surprise", {});
+  };
+  const handleAiVariation = (style: VariationStyle) => {
+    if (!aiResult) return;
+    void callPromptor("variation", { existingPrompt: aiResult.finalPrompt, variationStyle: style });
+  };
+  const handleAiUndo = () => {
+    if (!aiPrevInputs) return;
+    setInputs(aiPrevInputs);
+    setAiPrevInputs(null);
+    toast("Reverted to your previous settings");
+  };
+  const handleAiSavePrompt = (text: string) => {
+    if (!text.trim()) return;
+    setSaved([
+      { id: crypto.randomUUID(), title: inputs.title.trim() || `${inputs.mainGenre} · PROMPTOR AI`, createdAt: Date.now(), prompt: text },
+      ...saved,
+    ]);
+    toast.success("Prompt saved");
+  };
+
   const handleSignOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -415,6 +542,33 @@ function AppPage() {
               </Button>
             </div>
           </Card>
+         )}
+
+        <PromptorAIBox
+          busy={aiBusy}
+          busyAction={aiAction}
+          disabled={isGuest ? guestRemaining === 0 : !isPro && balance < 2}
+          costLabel={aiCostLabel}
+          improve={aiImprove}
+          onGenerate={handleAiGenerate}
+          onSurprise={handleAiSurprise}
+          onImprove={(existing) => void callPromptor("improve", { existingPrompt: existing })}
+          onUseImproved={(text) => { setPrompt(text); setAiImprove(null); toast.success("Improved prompt loaded"); }}
+          onDismissImprove={() => setAiImprove(null)}
+        />
+
+        {aiResult && (
+          <PromptorResult
+            result={aiResult}
+            busy={aiBusy}
+            appliedLabels={aiResult.appliedLabels}
+            canUndo={!!aiPrevInputs}
+            onUndoApply={handleAiUndo}
+            onSave={handleAiSavePrompt}
+            onRegenerate={handleAiRegenerate}
+            onVariation={handleAiVariation}
+            onEdit={(text) => { setAiResult({ ...aiResult, finalPrompt: text }); setPrompt(text); }}
+          />
         )}
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 lg:gap-8">
