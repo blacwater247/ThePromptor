@@ -185,6 +185,9 @@ function AuthPage() {
               <Button onClick={signIn} disabled={busy || !email || !password} className="w-full brand-gradient text-black font-semibold border-0 hover:opacity-90">
                 <Sparkles className="h-4 w-4" /> Sign in
               </Button>
+              <button type="button" onClick={forgotPassword} disabled={busy} className="w-full text-center text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
+                Forgot password?
+              </button>
             </TabsContent>
             <TabsContent value="signup" className="space-y-3">
               <div className="space-y-1.5">
