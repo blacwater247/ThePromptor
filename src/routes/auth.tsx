@@ -40,64 +40,98 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  const friendly = (error: { message?: string; status?: number }, fallback: string) => {
+    const m = (error.message || "").toLowerCase();
+    if (m.includes("invalid login")) return "Incorrect email or password.";
+    if (m.includes("email not confirmed")) return "Please confirm your email first — check your inbox.";
+    if (m.includes("already registered")) return "That email already has an account. Try signing in.";
+    if (m.includes("rate limit") || error.status === 429) return "Too many attempts. Please wait a minute and try again.";
+    if (m.includes("fetch") || m.includes("network") || (error.status ?? 0) >= 500)
+      return "Sign-in service is unavailable right now. Please try again shortly.";
+    return error.message || fallback;
+  };
+
   const signIn = async () => {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) {
-      console.error("Sign-in error:", error);
-      return toast.error("Incorrect email or password.");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        console.error("Sign-in error:", error);
+        return toast.error(friendly(error, "Could not sign in."));
+      }
+      toast.success("Welcome back");
+      navigate({ to: "/app" });
+    } catch (e) {
+      toast.error(friendly(e as Error, "Could not sign in."));
+    } finally {
+      setBusy(false);
     }
-    toast.success("Welcome back");
-    navigate({ to: "/app" });
+  };
+
+  const forgotPassword = async () => {
+    if (!email.trim()) return toast.error("Enter your email above first.");
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) return toast.error(friendly(error, "Could not send reset email."));
+      toast.success("Password reset link sent — check your inbox.");
+    } catch (e) {
+      toast.error(friendly(e as Error, "Could not send reset email."));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const signUp = async () => {
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/app`,
-        data: { full_name: name },
-      },
-    });
-    setBusy(false);
-    if (error) {
-      console.error("Sign-up error:", error);
-      return toast.error("Could not create account. Please try again.");
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/app`,
+          data: { full_name: name },
+        },
+      });
+      if (error) {
+        console.error("Sign-up error:", error);
+        return toast.error(friendly(error, "Could not create account."));
+      }
+      if (!data.session) {
+        toast.success("Account created — check your email to confirm, then sign in.");
+        return;
+      }
+      toast.success("Account created — you have 10 free prompts!");
+      navigate({ to: "/app" });
+    } catch (e) {
+      toast.error(friendly(e as Error, "Could not create account."));
+    } finally {
+      setBusy(false);
     }
-    toast.success("Account created — you have 10 free prompts!");
-    navigate({ to: "/app" });
   };
 
-  const google = async () => {
+  const social = async (provider: "google" | "apple") => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    try {
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (result.error) {
+        toast.error(friendly(result.error, `${provider === "google" ? "Google" : "Apple"} sign-in failed`));
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/app" });
+    } catch (e) {
+      toast.error(friendly(e as Error, "Sign-in failed"));
+    } finally {
       setBusy(false);
-      toast.error(result.error.message || "Google sign-in failed");
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/app" });
   };
-
-  const apple = async () => {
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setBusy(false);
-      toast.error(result.error.message || "Apple sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: "/app" });
-  };
+  const google = () => social("google");
+  const apple = () => social("apple");
 
   return (
     <div className="min-h-screen text-foreground flex flex-col">
