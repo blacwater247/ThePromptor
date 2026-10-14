@@ -291,6 +291,7 @@ function AppPage() {
   const [aiAction, setAiAction] = useState<PromptorAction | null>(null);
   const [aiResult, setAiResult] = useState<PromptorResultType | null>(null);
   const [aiImprove, setAiImprove] = useState<{ original: string; improved: string; issues: string[] } | null>(null);
+  const [aiImprovePending, setAiImprovePending] = useState<PromptorResultType | null>(null);
   const [aiPrevInputs, setAiPrevInputs] = useState<PromptInputs | null>(null);
   const [aiLastIdea, setAiLastIdea] = useState("");
 
