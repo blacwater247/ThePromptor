@@ -745,8 +745,23 @@ function AppPage() {
           onGenerate={handleAiGenerate}
           onSurprise={handleAiSurprise}
           onImprove={(existing) => void callPromptor("improve", { existingPrompt: existing })}
-          onUseImproved={(text) => { setPrompt(text); setAiImprove(null); toast.success("Improved prompt loaded"); }}
-          onDismissImprove={() => setAiImprove(null)}
+          onUseImproved={(text) => {
+            const pending = aiImprovePending;
+            if (pending) {
+              setAiPrevInputs(inputs);
+              setInputs((prev) => ({ ...prev, ...pending.fields }));
+              setAiResult({ ...pending, finalPrompt: text });
+              setExplain(null);
+              setExplainOpen(false);
+              setLyricConcept(null);
+              setError(null);
+            }
+            setPrompt(text);
+            setAiImprove(null);
+            setAiImprovePending(null);
+            toast.success("Improved prompt loaded");
+          }}
+          onDismissImprove={() => { setAiImprove(null); setAiImprovePending(null); }}
         />
 
         {aiResult && (
