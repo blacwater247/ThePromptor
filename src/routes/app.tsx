@@ -291,6 +291,7 @@ function AppPage() {
   const [aiAction, setAiAction] = useState<PromptorAction | null>(null);
   const [aiResult, setAiResult] = useState<PromptorResultType | null>(null);
   const [aiImprove, setAiImprove] = useState<{ original: string; improved: string; issues: string[] } | null>(null);
+  const [aiImprovePending, setAiImprovePending] = useState<PromptorResultType | null>(null);
   const [aiPrevInputs, setAiPrevInputs] = useState<PromptInputs | null>(null);
   const [aiLastIdea, setAiLastIdea] = useState("");
 
@@ -509,19 +510,22 @@ function AppPage() {
       const data = (await res.json()) as PromptorResultType;
 
       if (action === "improve") {
+        // Show the side-by-side comparison only — do not touch the user's
+        // prompt or settings until they choose "Use improved version".
         setAiImprove({ original: body.existingPrompt ?? "", improved: data.finalPrompt, issues: data.issues });
+        setAiImprovePending(data);
       } else {
         setAiImprove(null);
+        setAiImprovePending(null);
+        setAiPrevInputs(inputs);
+        setInputs((prev) => ({ ...prev, ...data.fields }));
+        setAiResult(data);
+        setPrompt(data.finalPrompt);
+        setExplain(null);
+        setExplainOpen(false);
+        setLyricConcept(null);
+        setError(null);
       }
-
-      setAiPrevInputs(inputs);
-      setInputs((prev) => ({ ...prev, ...data.fields }));
-      setAiResult(data);
-      setPrompt(data.finalPrompt);
-      setExplain(null);
-      setExplainOpen(false);
-      setLyricConcept(null);
-      setError(null);
 
       if (isGuest) {
         const nextUsed = guestUsed.used + 1;
@@ -741,8 +745,23 @@ function AppPage() {
           onGenerate={handleAiGenerate}
           onSurprise={handleAiSurprise}
           onImprove={(existing) => void callPromptor("improve", { existingPrompt: existing })}
-          onUseImproved={(text) => { setPrompt(text); setAiImprove(null); toast.success("Improved prompt loaded"); }}
-          onDismissImprove={() => setAiImprove(null)}
+          onUseImproved={(text) => {
+            const pending = aiImprovePending;
+            if (pending) {
+              setAiPrevInputs(inputs);
+              setInputs((prev) => ({ ...prev, ...pending.fields }));
+              setAiResult({ ...pending, finalPrompt: text });
+              setExplain(null);
+              setExplainOpen(false);
+              setLyricConcept(null);
+              setError(null);
+            }
+            setPrompt(text);
+            setAiImprove(null);
+            setAiImprovePending(null);
+            toast.success("Improved prompt loaded");
+          }}
+          onDismissImprove={() => { setAiImprove(null); setAiImprovePending(null); }}
         />
 
         {aiResult && (
