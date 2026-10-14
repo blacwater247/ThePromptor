@@ -510,19 +510,22 @@ function AppPage() {
       const data = (await res.json()) as PromptorResultType;
 
       if (action === "improve") {
+        // Show the side-by-side comparison only — do not touch the user's
+        // prompt or settings until they choose "Use improved version".
         setAiImprove({ original: body.existingPrompt ?? "", improved: data.finalPrompt, issues: data.issues });
+        setAiImprovePending(data);
       } else {
         setAiImprove(null);
+        setAiImprovePending(null);
+        setAiPrevInputs(inputs);
+        setInputs((prev) => ({ ...prev, ...data.fields }));
+        setAiResult(data);
+        setPrompt(data.finalPrompt);
+        setExplain(null);
+        setExplainOpen(false);
+        setLyricConcept(null);
+        setError(null);
       }
-
-      setAiPrevInputs(inputs);
-      setInputs((prev) => ({ ...prev, ...data.fields }));
-      setAiResult(data);
-      setPrompt(data.finalPrompt);
-      setExplain(null);
-      setExplainOpen(false);
-      setLyricConcept(null);
-      setError(null);
 
       if (isGuest) {
         const nextUsed = guestUsed.used + 1;
