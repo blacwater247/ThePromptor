@@ -16,9 +16,9 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — The Promptor by Blacure" },
-      { name: "description", content: "Start with 10 free AI music prompts, top up 20 prompts for $5, or get unlimited Standard and Pro Studio prompts for $19.99 monthly." },
+      { name: "description", content: "The Promptor is 100% free. Try 10 prompts without signup, then get unlimited Standard and Pro Studio prompts with a free account." },
       { property: "og:title", content: "Pricing — The Promptor by Blacure" },
-      { property: "og:description", content: "Start with 10 free prompts. Pay-as-you-go or monthly subscription." },
+      { property: "og:description", content: "100% free AI music prompts. Optional $2 downloadable prompt packs." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://thepromptor.life/pricing" },
@@ -41,7 +41,7 @@ type Tier = {
 
 const TIERS: Tier[] = [
   {
-    name: "Free",
+    name: "Guest",
     price: "$0",
     cadence: "no signup",
     prompts: "10 prompts — no account needed",
@@ -49,27 +49,17 @@ const TIERS: Tier[] = [
     features: ["10 free prompts, no signup", "Every genre & vocal style", "Randomize Vibe", "Save prompts locally"],
   },
   {
-    name: "Pack",
-    price: "$5",
-    cadence: "one-time",
-    prompts: "20 prompts (40 credits)",
-    cta: "Buy 20 prompts",
-    priceId: "credits_pack_20_onetime",
-    features: ["Top up any time", "Never expires", "Same studio-grade prompts"],
-  },
-  {
-    name: "Monthly",
-    price: "$19.99",
-    cadence: "per month",
+    name: "Free account",
+    price: "$0",
+    cadence: "forever",
     prompts: "Unlimited prompts + Pro Studio",
     highlight: true,
-    cta: "Subscribe monthly",
-    priceId: "blacure_monthly",
+    cta: "Create free account",
     features: [
       "Unlimited Standard prompts",
       "Unlimited Pro Studio prompts",
-      "Priority generation",
-      "Cancel any time",
+      "Lyrics Builder & PROMPTOR AI",
+      "No credit card, ever",
     ],
   },
 ];
@@ -122,17 +112,17 @@ function Pricing() {
         ) : (
           <>
             <header className="text-center mb-12">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-primary">Choose your studio access</p>
-              <h1 className="mt-3 font-display text-4xl sm:text-5xl">Build free. Scale when ready.</h1>
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-primary">100% free studio access</p>
+              <h1 className="mt-3 font-display text-4xl sm:text-5xl">The Promptor is free.</h1>
               <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-                Start free with 10 prompts. Top up when you need more, or go monthly for the best value.
+                Try 10 prompts instantly, then create a free account for unlimited everything.
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                 Standard uses 2 credits. Pro Studio uses 6 credits. Monthly is unlimited — your purchased credits remain on your account.
+                 Fair-use limit: up to 60 generations per hour to keep the studio fast for everyone.
               </p>
             </header>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {TIERS.map((t) => (
                 <Card
                   key={t.name}
@@ -140,7 +130,7 @@ function Pricing() {
                 >
                   {t.highlight && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 brand-gradient text-black text-[11px] font-bold px-3 py-1 rounded-full">
-                      BEST VALUE
+                      RECOMMENDED
                     </div>
                   )}
                   <h2 className="font-display text-xl font-semibold">{t.name}</h2>
@@ -157,22 +147,14 @@ function Pricing() {
                       </li>
                     ))}
                   </ul>
-                  {t.name === "Free" ? (
-                    <Link to="/app" className="block mt-6">
-                      <Button className="w-full" variant="outline">
-                        <Sparkles className="h-4 w-4" /> {t.cta}
-                      </Button>
-                    </Link>
-                  ) : (
+                  <Link to={t.highlight ? (user ? "/app" : "/auth") : "/app"} className="block mt-6">
                     <Button
-                      onClick={() => t.priceId && handleCheckout(t.priceId)}
-                      disabled={loading || !configured}
-                      className={`w-full mt-6 ${t.highlight ? "brand-gradient text-black font-semibold border-0 hover:opacity-90" : ""}`}
+                      className={`w-full ${t.highlight ? "brand-gradient text-black font-semibold border-0 hover:opacity-90" : ""}`}
                       variant={t.highlight ? "default" : "outline"}
                     >
-                      {!configured ? "Coming soon" : t.cta}
+                      <Sparkles className="h-4 w-4" /> {t.highlight && user ? "Open the studio" : t.cta}
                     </Button>
-                  )}
+                  </Link>
                 </Card>
               ))}
             </div>
@@ -183,7 +165,7 @@ function Pricing() {
                 <p className="text-xs uppercase tracking-widest brand-text font-bold">Instant Download</p>
                 <h2 className="mt-2 font-display text-3xl sm:text-4xl">Commercial Prompt Packs</h2>
                 <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
-                  Curated, studio-ready prompt collections delivered as polished PDFs. Each pack is a separate $2 one-time purchase.
+                  Curated, studio-ready prompt collections delivered as polished PDFs. Optional — each pack is a separate $2 one-time purchase.
                 </p>
               </div>
               <div className="grid gap-5 md:grid-cols-3">
