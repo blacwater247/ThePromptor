@@ -90,7 +90,7 @@ function AppPage() {
     enabled: !!user,
   });
   const balance = creditsQuery.data?.balance ?? 0;
-  const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
+  const isPro = !!user; // The Promptor is free: every signed-in user gets unlimited Standard + Pro
   const canStandard = isGuest ? guestUsed.used < GUEST_LIMIT : isPro || balance >= 2;
   const guestRemaining = Math.max(0, GUEST_LIMIT - guestUsed.used);
   const ownsPackV1 = (packsQuery.data?.packs ?? []).some((p) => p.pack_slug === "prompt_pack_vol1");
