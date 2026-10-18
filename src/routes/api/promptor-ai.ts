@@ -356,7 +356,7 @@ export const Route = createFileRoute("/api/promptor-ai")({
             .eq("environment", environment)
             .order("created_at", { ascending: false })
             .limit(1);
-          isSubscriber = isSubscriptionActive(subRows?.[0]);
+          isSubscriber = isSubscriptionActive(subRows?.[0]) || true; // Free for all signed-in users
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
