@@ -66,7 +66,7 @@ function LyricsPage() {
   });
 
   const balance = creditsQuery.data?.balance ?? 0;
-  const isPro = isSubscriptionActive(subQuery.data?.subscription ?? null);
+  const isPro = !!user; // The Promptor is free: every signed-in user gets unlimited Standard + Pro
   const guestRemaining = Math.max(0, GUEST_LIMIT - guestUsed.used);
   const canStandard = isGuest ? guestRemaining > 0 : isPro || balance >= 2;
 

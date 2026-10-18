@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/lyrics-stream")({
           .eq("environment", data.environment)
           .order("created_at", { ascending: false })
           .limit(1);
-        const isSubscriber = isSubscriptionActive(subRows?.[0]);
+        const isSubscriber = isSubscriptionActive(subRows?.[0]) || true; // Free for all signed-in users
 
         if (data.mode === "pro" && !isSubscriber) {
           return errorResponse("PRO_REQUIRED: Pro Lyrics is a subscriber feature.", 403);

@@ -143,7 +143,7 @@ export const generatePrompt = createServerFn({ method: "POST" })
       .eq("environment", data.environment)
       .order("created_at", { ascending: false })
       .limit(1);
-    const isSubscriber = isSubscriptionActive(subRows?.[0]);
+    const isSubscriber = isSubscriptionActive(subRows?.[0]) || true; // Free for all signed-in users
 
     // Pro mode requires an active subscription
     if (data.mode === "pro" && !isSubscriber) {
