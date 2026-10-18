@@ -653,7 +653,7 @@ function AppPage() {
                   <Link to="/pricing">
                     <Button size="sm" variant="outline" className="border-primary/40 hover:bg-primary/10">
                       <CreditCard className="h-4 w-4" />
-                      <span className="hidden sm:inline ml-1">{isPro ? "Plans" : "Buy credits"}</span>
+                      <span className="hidden sm:inline ml-1">Prompt packs</span>
                     </Button>
                   </Link>
                   <Link to="/account">
@@ -681,10 +681,10 @@ function AppPage() {
               <span className="block mt-1 text-sm brand-text">
                 {guestRemaining > 0
                   ? `${guestRemaining} of ${GUEST_LIMIT} free prompts left — no signup required.`
-                  : "You've used all 10 free prompts. Create a free account to keep going."}
+                  : "You've used all 10 guest prompts. Create a free account for unlimited prompts."}
               </span>
             ) : isPro ? (
-              <span className="block mt-1 text-sm brand-text">Monthly plan active — unlimited Standard & Pro Studio prompts.</span>
+              <span className="block mt-1 text-sm brand-text">Free account — unlimited Standard & Pro Studio prompts.</span>
             ) : (
               <span className="block mt-1 text-sm">Go Monthly for unlimited Standard + Pro Studio prompts.</span>
             )}
@@ -692,7 +692,7 @@ function AppPage() {
           <div className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-xs uppercase tracking-widest text-muted-foreground"><span>01 Identity</span><span>02 Rhythm</span><span>03 Voice</span><span>04 Arrangement</span><span>05 Mix</span></div>
           {isGuest && guestRemaining === 0 && (
             <p className="mt-4 text-sm text-destructive">
-              You've used your 10 free prompts. <Link to="/auth" className="underline font-semibold">Create a free account</Link> to keep going — then top up 20 more for $5.
+              You've used your 10 free prompts. <Link to="/auth" className="underline font-semibold">Create a free account</Link> for unlimited free prompts.
             </p>
           )}
           {!isGuest && !isPro && !canStandard && (

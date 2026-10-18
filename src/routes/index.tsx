@@ -172,13 +172,13 @@ function Landing() {
 
       {/* How it works */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20 border-t border-border/40">
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-3">Start free. Scale when it earns its place.</h2>
-        <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">A clear path from first experiment to an unlimited production workflow.</p>
+        <h2 className="font-display text-3xl sm:text-4xl font-bold text-center mb-3">100% free. No credit card, ever.</h2>
+        <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-12">Try it instantly, then create a free account for unlimited prompts.</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {[
             { n: "$0", title: "10 prompts free", body: "No signup and no credit card. Build and test complete song blueprints immediately." },
-            { n: "$5", title: "20-prompt top-up", body: "A one-time pack of 40 credits that never expires. Each Standard prompt uses 2 credits." },
-            { n: "$19.99", title: "Studio membership", body: "Unlimited Standard and Pro Studio prompts every month, with no credit counting." },
+            { n: "$0", title: "Free account", body: "Unlimited Standard and Pro Studio blueprints, lyrics, and PROMPTOR AI — all free." },
+            { n: "$2", title: "Optional prompt packs", body: "Curated downloadable PDF prompt packs, if you want ready-made ideas offline." },
           ].map((s) => (
             <div key={s.title} className="rounded-lg border border-border/60 bg-card/40 p-6">
               <div className="brand-text font-display text-3xl font-bold mb-3">{s.n}</div>
