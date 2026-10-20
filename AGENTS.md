@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Public music guides use standalone, server-rendered content routes with leaf metadata and explicit sitemap entries, so their content is discoverable without signing in.

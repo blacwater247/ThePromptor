@@ -1,5 +1,12 @@
 # THE PROMPTOR™ AI Song Blueprint upgrade
 
+# SEO corrections
+
+- [x] Add an original Suno prompt guide and link it from the homepage.
+- [x] Include public guide, lyrics, and pricing pages in the sitemap without invented lastmod dates.
+- [x] Keep page metadata on leaf routes and remove inherited social-image overrides.
+- [ ] Verify guide rendering, copy controls, navigation, and sitemap; record the completed SEO correction.
+
 - [x] Install the Carbon Copper brand system and typography.
 - [x] Add the complete blueprint field model and generation support.
 - [x] Rebuild the prompt builder as a five-phase Studio Console.
