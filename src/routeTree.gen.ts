@@ -17,6 +17,7 @@ import { Route as LyricsRouteImport } from './routes/lyrics'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SunoPromptsRouteImport } from './routes/suno-prompts'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiLyricsStreamRouteImport } from './routes/api/lyrics-stream'
@@ -71,6 +72,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SunoPromptsRoute = SunoPromptsRouteImport.update({
+  id: '/suno-prompts',
+  path: '/suno-prompts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/suno-prompts'
     | '/unsubscribe'
     | '/account'
     | '/api/lyrics-stream'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/suno-prompts'
     | '/unsubscribe'
     | '/account'
     | '/api/lyrics-stream'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/suno-prompts'
     | '/unsubscribe'
     | '/_authenticated/account'
     | '/api/lyrics-stream'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SunoPromptsRoute: typeof SunoPromptsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiLyricsStreamRoute: typeof ApiLyricsStreamRoute
   ApiPromptStreamRoute: typeof ApiPromptStreamRoute
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suno-prompts': {
+      id: '/suno-prompts'
+      path: '/suno-prompts'
+      fullPath: '/suno-prompts'
+      preLoaderRoute: typeof SunoPromptsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -533,6 +553,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SunoPromptsRoute: SunoPromptsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ApiLyricsStreamRoute: ApiLyricsStreamRoute,
   ApiPromptStreamRoute: ApiPromptStreamRoute,
