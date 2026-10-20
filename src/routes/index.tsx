@@ -13,9 +13,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "THE PROMPTOR™ by Blacure — AI Song Blueprint Studio" },
       { property: "og:description", content: "Turn a musical idea into a detailed, production-ready AI song blueprint." },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://thepromptor.life/favicon.ico" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://thepromptor.life/" },
-      { name: "twitter:image", content: "https://thepromptor.life/favicon.ico" },
     ],
     links: [{ rel: "canonical", href: "https://thepromptor.life/" }],
   }),
@@ -198,6 +197,7 @@ function Landing() {
         <p className="mt-5 text-center text-sm text-muted-foreground">
           Prefer ready-made ideas? <Link to="/pricing" className="font-semibold text-primary hover:underline">Downloadable Blacure prompt packs start at $2.</Link>
         </p>
+        <p className="mt-4 text-center text-sm text-muted-foreground">Looking for a starting point? <Link to="/suno-prompts" className="font-semibold text-primary hover:underline">Explore Suno prompt examples and our writing guide.</Link></p>
       </section>
 
       {/* Comments */}

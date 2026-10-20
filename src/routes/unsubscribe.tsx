@@ -8,6 +8,11 @@ export const Route = createFileRoute("/unsubscribe")({
   head: () => ({
     meta: [
       { title: "Unsubscribe — Blacure" },
+      { name: "description", content: "Manage your email subscription to The Promptor by Blacure." },
+      { property: "og:title", content: "Unsubscribe — Blacure" },
+      { property: "og:description", content: "Manage your email subscription to The Promptor by Blacure." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
