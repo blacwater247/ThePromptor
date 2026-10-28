@@ -27,6 +27,7 @@ import { Route as ApiPromptStreamRouteImport } from './routes/api/prompt-stream'
 import { Route as ApiPromptorAiRouteImport } from './routes/api/promptor-ai'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicCommentRouteImport } from './routes/api/public/comment'
 import { Route as ApiPublicPackDownloadRouteImport } from './routes/api/public/pack-download'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -127,6 +128,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCommentRoute = ApiPublicCommentRouteImport.update({
   id: '/api/public/comment',
   path: '/api/public/comment',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/api/promptor-ai': typeof ApiPromptorAiRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/comment': typeof ApiPublicCommentRoute
   '/api/public/pack-download': typeof ApiPublicPackDownloadRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/.lovable/oauth/consent'
     | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/.lovable/oauth/consent'
     | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/api/promptor-ai'
     | '/checkout/return'
     | '/email/unsubscribe'
+    | '/.lovable/oauth/consent'
     | '/api/public/comment'
     | '/api/public/pack-download'
     | '/lovable/email/suppression'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   ApiPromptorAiRoute: typeof ApiPromptorAiRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicCommentRoute: typeof ApiPublicCommentRoute
   ApiPublicPackDownloadRoute: typeof ApiPublicPackDownloadRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -508,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/comment': {
       id: '/api/public/comment'
       path: '/api/public/comment'
@@ -604,6 +624,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPromptorAiRoute: ApiPromptorAiRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicCommentRoute: ApiPublicCommentRoute,
   ApiPublicPackDownloadRoute: ApiPublicPackDownloadRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
