@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({ next: oauthReturnPath(search.next ?? "/app") }),
+  validateSearch: (search: Record<string, unknown>): { next?: string } => ({ next: search.next === undefined ? undefined : oauthReturnPath(search.next) }),
   head: () => ({
     meta: [
       { title: "Sign in — The Promptor by Blacure" },
@@ -30,8 +30,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const search = Route.useSearch();
+  const next = search.next ?? "/app";
   const returnToApp = () => { window.location.assign(next); };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

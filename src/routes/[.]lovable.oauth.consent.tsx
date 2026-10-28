@@ -33,7 +33,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     return data;
   },
   pendingComponent: () => <main className="mx-auto max-w-lg px-6 py-16"><p role="status">Loading connection request…</p></main>,
-  errorComponent: ({ error }) => <main className="mx-auto max-w-lg px-6 py-16"><h1 className="font-display text-2xl">Connection unavailable</h1><p role="alert" className="mt-4 text-muted-foreground">{error.message}</p><Button asChild variant="outline" className="mt-6"><Link to="/app">Back to The Promptor</Link></Button></main>,
+  errorComponent: ({ error }) => <main className="mx-auto max-w-lg px-6 py-16"><h1 className="font-display text-2xl">Connection unavailable</h1><p role="alert" className="mt-4 text-muted-foreground">{error instanceof Error ? error.message : "Please restart this connection from your assistant."}</p><Button asChild variant="outline" className="mt-6"><Link to="/app">Back to The Promptor</Link></Button></main>,
   component: Consent,
 });
 
@@ -69,7 +69,7 @@ function Consent() {
     <div className="my-6 space-y-3 border-y border-border py-5 text-sm">
       <p>Signed in as {accountEmail}</p>
       <p className="break-all">Return address: {details.redirect_uri}</p>
-      <ul className="space-y-2">{details.scopes.split(/\s+/).filter(Boolean).map(scope => <li key={scope}>{scopeLabels[scope] ?? `Additional permission requested: ${scope}`}</li>)}</ul>
+      <ul className="space-y-2">{details.scope.split(/\s+/).filter(Boolean).map(scope => <li key={scope}>{scopeLabels[scope] ?? `Additional permission requested: ${scope}`}</li>)}</ul>
       <p>Read music prompt choices and writing guidance.</p>
       <p className="text-muted-foreground">Saved blueprints and lyrics stay in your browser and are not shared by this connection.</p>
       <p className="text-muted-foreground">This does not bypass The Promptor’s account permissions.</p>
