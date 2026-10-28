@@ -1,5 +1,12 @@
 # THE PROMPTOR™ AI Song Blueprint upgrade
 
+# Agent integrations
+
+- [ ] Enable managed OAuth and preserve consent through existing sign-in methods.
+- [ ] Add protected remote music choices and writing guidance tools.
+- [ ] Add browser-local tools for the current blueprint and lyrics.
+- [ ] Verify consent states, protected endpoint, tool catalog and browser tools.
+
 # SEO corrections
 
 - [x] Add an original Suno prompt guide and link it from the homepage.

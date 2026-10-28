@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -72,6 +74,14 @@ function AppPage() {
   const [guestUsed, setGuestUsed] = useLocalStorage<{ used: number }>("blacure.freePrompts.v1", { used: 0 });
   const [showSignupWall, setShowSignupWall] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  useWebMCP({
+    name: "read_current_blueprint",
+    description: "Read the current studio blueprint and selected musical direction shown on this screen; does not generate or save anything.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    enabled: !authLoading && !loading && !streaming,
+    execute: () => runWebMCPTool("read_current_blueprint", () => `Genre: ${inputs.mainGenre}. Mood: ${inputs.moods.join(", ")}. Vocals: ${inputs.vocalType}. Instruments: ${inputs.instruments.join(", ")}. Tempo: ${inputs.tempo}.\nBlueprint: ${prompt || "No blueprint generated yet."}`),
+  });
 
 
   const creditsQuery = useQuery({

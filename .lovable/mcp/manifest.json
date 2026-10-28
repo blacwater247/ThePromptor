@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "sdk_version": "3.3.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://kyepwayhnnrhjjyjzopi.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "the-promptor",
+      "version": "0.1.0",
+      "title": "The Promptor"
+    },
+    "tools": [
+      {
+        "name": "list_prompt_options",
+        "title": "List music prompt choices",
+        "description": "Read The Promptor's genre, mood, instrument, tempo, vocal or production choices; optionally look up a genre's subgenres.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "genres",
+                "moods",
+                "instruments",
+                "tempos",
+                "vocals",
+                "production"
+              ]
+            },
+            "genre": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "category"
+          ],
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_prompt_framework",
+        "title": "Get music prompt framework",
+        "description": "Read The Promptor's music prompt writing framework and links to its studio and Suno guide.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

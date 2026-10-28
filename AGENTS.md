@@ -10,3 +10,6 @@
 <!-- LOVABLE:END -->
 
 - Public music guides use standalone, server-rendered content routes with leaf metadata and explicit sitemap entries, so their content is discoverable without signing in.
+- Remote agent tools use the MCP SDK's generated TanStack transport with managed OAuth; tools stay in src/lib/mcp and never read browser-local storage or use privileged database clients.
+- Browser agent tools register in the screen owning the visible state using useWebMCP and the shared fail-open telemetry helper; they remain separate from remote tools.
+- Auth return targets are canonical same-origin paths preserved through every login method, so integration consent is not lost after sign-in.

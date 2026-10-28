@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,9 +10,11 @@ import { Toaster, toast } from "sonner";
 import logoAsset from "@/assets/blacure-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { next?: string } => ({ next: search.next === undefined ? undefined : oauthReturnPath(search.next) }),
   head: () => ({
     meta: [
       { title: "Sign in — The Promptor by Blacure" },
@@ -28,7 +30,9 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const next = search.next ?? "/app";
+  const returnToApp = () => { window.location.assign(next); };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -36,9 +40,9 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/app" });
+      if (data.user) window.location.assign(next);
     });
-  }, [navigate]);
+  }, [next]);
 
   const friendly = (error: { message?: string; status?: number }, fallback: string) => {
     const m = (error.message || "").toLowerCase();
@@ -60,7 +64,7 @@ function AuthPage() {
         return toast.error(friendly(error, "Could not sign in."));
       }
       toast.success("Welcome back");
-      navigate({ to: "/app" });
+      returnToApp();
     } catch (e) {
       toast.error(friendly(e as Error, "Could not sign in."));
     } finally {
@@ -91,7 +95,7 @@ function AuthPage() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/app`,
+          emailRedirectTo: new URL(next, window.location.origin).href,
           data: { full_name: name },
         },
       });
@@ -104,7 +108,7 @@ function AuthPage() {
         return;
       }
       toast.success("Account created — you have 10 free prompts!");
-      navigate({ to: "/app" });
+      returnToApp();
     } catch (e) {
       toast.error(friendly(e as Error, "Could not create account."));
     } finally {
@@ -116,14 +120,14 @@ function AuthPage() {
     setBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}/auth`,
+        redirect_uri: new URL(`/auth?next=${encodeURIComponent(next)}`, window.location.origin).href,
       });
       if (result.error) {
         toast.error(friendly(result.error, `${provider === "google" ? "Google" : "Apple"} sign-in failed`));
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/app" });
+      returnToApp();
     } catch (e) {
       toast.error(friendly(e as Error, "Sign-in failed"));
     } finally {
