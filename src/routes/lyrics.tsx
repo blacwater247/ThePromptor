@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,6 +55,14 @@ function LyricsPage() {
   const [guestUsed, setGuestUsed] = useLocalStorage<{ used: number }>("blacure.freePrompts.v1", { used: 0 });
   const [showSignupWall, setShowSignupWall] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  useWebMCP({
+    name: "read_current_lyrics",
+    description: "Read the lyrics currently shown in Lyrics Builder without generating or saving anything.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    enabled: !authLoading && !loading && !streaming,
+    execute: () => runWebMCPTool("read_current_lyrics", () => lyrics || "No lyrics generated yet."),
+  });
 
   const creditsQuery = useQuery({
     queryKey: ["credits", "balance"],

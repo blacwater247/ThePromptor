@@ -14,11 +14,13 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as LyricsRouteImport } from './routes/lyrics'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SunoPromptsRouteImport } from './routes/suno-prompts'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiLyricsStreamRouteImport } from './routes/api/lyrics-stream'
 import { Route as ApiPromptStreamRouteImport } from './routes/api/prompt-stream'
@@ -59,6 +61,11 @@ const LyricsRoute = LyricsRouteImport.update({
   path: '/lyrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -84,6 +91,12 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
   path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -169,11 +182,13 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/lyrics': typeof LyricsRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
@@ -195,11 +210,13 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/lyrics': typeof LyricsRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
@@ -223,11 +240,13 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/lyrics': typeof LyricsRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suno-prompts': typeof SunoPromptsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/lyrics-stream': typeof ApiLyricsStreamRoute
   '/api/prompt-stream': typeof ApiPromptStreamRoute
@@ -251,11 +270,13 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/lyrics'
+    | '/mcp'
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
     | '/suno-prompts'
     | '/unsubscribe'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
@@ -277,11 +298,13 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/lyrics'
+    | '/mcp'
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
     | '/suno-prompts'
     | '/unsubscribe'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
@@ -304,11 +327,13 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/lyrics'
+    | '/mcp'
     | '/pricing'
     | '/reset-password'
     | '/sitemap.xml'
     | '/suno-prompts'
     | '/unsubscribe'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
     | '/api/lyrics-stream'
     | '/api/prompt-stream'
@@ -332,11 +357,13 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRoute
   LyricsRoute: typeof LyricsRoute
+  McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SunoPromptsRoute: typeof SunoPromptsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiLyricsStreamRoute: typeof ApiLyricsStreamRoute
   ApiPromptStreamRoute: typeof ApiPromptStreamRoute
   ApiPromptorAiRoute: typeof ApiPromptorAiRoute
@@ -390,6 +417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LyricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -423,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -550,11 +591,14 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   AuthRoute: AuthRoute,
   LyricsRoute: LyricsRoute,
+  McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SunoPromptsRoute: SunoPromptsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiLyricsStreamRoute: ApiLyricsStreamRoute,
   ApiPromptStreamRoute: ApiPromptStreamRoute,
   ApiPromptorAiRoute: ApiPromptorAiRoute,
